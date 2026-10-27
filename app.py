@@ -14,7 +14,7 @@ st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 �
 # 2. 엑셀 데이터 로드 함수 (캐시 적용)
 @st.cache_data
 def load_data():
-    excel_file = "Genealogy.xlsx"
+    excel_file = "genealogy.xlsx"
     df = pd.read_excel(excel_file)
     # 모든 열의 데이터를 문자열로 변환하고 앞뒤 공백 제거
     df = df.astype(str).apply(lambda x: x.str.strip())
