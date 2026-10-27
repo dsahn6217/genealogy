@@ -52,15 +52,27 @@ try:
     filtered_df = filtered_df[filtered_df["파"] == selected_pa]
 
   # --- [검색 결과 출력 화면] ---
-  st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
+  # --- [검색 결과 출력 화면] ---
+st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
 
-  # 표 형태로 데이터 출력
-  # 표 형태로 데이터 출력 (주군께서 명하신 열 순서 및 너비 확장)
-    cols_order = [
-        "고유ID", "선조", "관계", "부친", "조부",
-        "한글 프로필 정렬", "한문 프로필 정렬", "한글 프로필", "한문 프로필 원문"
-    ]
-    # 실제 엑셀에 존재하는 열만 추려서 순서 배치
+# 표 형태로 데이터 출력 (들여쓰기 없이 맨 앞부터 시작)
+cols_order = [
+    "고유ID", "선조", "관계", "부친", "조부",
+    "한글 프로필 정렬", "한문 프로필 정렬", "한글 프로필", "한문 프로필 원문"
+]
+display_cols = [c for c in cols_order if c in filtered_df.columns]
+
+st.dataframe(
+    filtered_df[display_cols],
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "한글 프로필 정렬": st.column_config.TextColumn("한글 프로필 정렬", width="large"),
+        "한문 프로필 정렬": st.column_config.TextColumn("한문 프로필 정렬", width="large"),
+        "한글 프로필": st.column_config.TextColumn("한글 프로필", width="large"),
+        "한문 프로필 원문": st.column_config.TextColumn("한문 프로필 원문", width="large"),
+    }
+)
     display_cols = [c for c in cols_order if c in filtered_df.columns]
     
     st.dataframe(
