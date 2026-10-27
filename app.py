@@ -3,93 +3,59 @@ import streamlit as st
 
 # 페이지 설정
 st.set_page_config(
-    page_title="문중 족보 통합 조회 시스템", page_icon="📜", layout="wide"
+    page_title="완귀공파 족보 통합 검색 시스템", page_icon="📜", layout="wide"
 )
 
-# [보안] 간단한 비밀번호 설정 (문중원 공용 비밀번호)
-PASSWORD = (  # 추후 변경 가능
-    "wangui1494"
-)
+st.title("📜 문중 족보 통합 검색 시스템")
+st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 조회하세요.")
 
 
-def check_password():
-  """비밀번호 인증 함수"""
-  if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
-
-  if st.session_state["authenticated"]:
-    return True
-
-  st.title("🔒 문중 족보 보안 로그인")
-  st.markdown("본 족보는 문중원 전용 공간입니다. 공용 비밀번호를 입력해주세요.")
-  input_pw = st.text_input("비밀번호", type="password")
-
-  if st.button("로그인"):
-    if input_pw == PASSWORD:
-      st.session_state["authenticated"] = True
-      st.rerun()
-    else:
-      st.error("비밀번호가 올바르지 않습니다.")
-  return False
+# 데이터 로드 함수 (캐싱 적용)
+@st.cache_data
+def load_data():
+  # 첫 번째 시트 '족보전사결과' 로드
+  df = pd.read_excel("genealogy.xlsx", sheet_name="족보전사결과")
+  # 모든 열을 문자열로 변환하고 공백 정리
+  df = df.astype(str).apply(lambda x: x.str.strip())
+  return df
 
 
-if check_password():
-  # 로그인 성공 시 나타나는 메인 화면
-  st.title("📜 문중 족보 통합 검색 시스템")
-  st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 조회하세요.")
+# 데이터 불러오기 시도
+try:
+  df = load_data()
 
+  # --- [사이드바 검색 조건 패널] ---
+  st.sidebar.header("🔍 검색 조건")
 
-  # 엑셀 데이터 로드
-  @st.cache_data
-  def load_data():
-    df = pd.read_excel("genealogy.xlsx")
-    return df.astype(str)
+  # 1. 성함 검색 (실제 엑셀 열 이름인 '선조' 기준)
+  search_query = st.sidebar.text_input("성함 검색", "")
 
+  # 2. 파(派) 선택 필터 (엑셀에 '파' 또는 관련 열이 있을 경우 활용)
+  # 만약 파 분류 열이 따로 없다면 '선조' 기준으로 대체 가능하옵니다.
+  if "파" in df.columns:
+    pa_list = ["전체"] + sorted(df["파"].unique().tolist())
+    selected_pa = st.sidebar.selectbox("파(派) 선택", pa_list)
+  else:
+    selected_pa = "전체"
 
-  try:
-    df = load_data()
+  # --- [데이터 필터링 로직] ---
+  filtered_df = df.copy()
 
-    # 사이드바 검색 필터
-    st.sidebar.header("🔍 검색 조건")
-    search_query = st.sidebar.text_input("성함 검색", "")
-    selected_派 = st.sidebar.selectbox(
-        "파(派) 선택", ["전체"] + list(df["선조"].unique())
-    )
+  # 성함 검색어 적용
+  if search_query:
+    filtered_df = filtered_df[
+        filtered_df["선조"].str.contains(search_query, na=False)
+    ]
 
-    # 데이터 필터링
-    filtered_df = df.copy()
-    if search_query:
-      filtered_df = filtered_df[
-          filtered_df["이름"].str.contains(search_query, na=False)
-      ]
-    if selected_派 != "전체":
-      filtered_df = filtered_df[filtered_df["선조"] == selected_派]
+  # 파 선택 적용
+  if selected_pa != "전체" and "파" in df.columns:
+    filtered_df = filtered_df[filtered_df["파"] == selected_pa]
 
-    # 결과 출력
-    st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
-    st.dataframe(filtered_df, use_container_width=True)
+  # --- [검색 결과 출력 화면] ---
+  st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
 
-    # 상세 조회
-    st.markdown("---")
-    st.subheader("👤 인물 상세 정보")
-    if not filtered_df.empty:
-      selected_name = st.selectbox(
-          "상세 조회할 인물을 선택하세요", filtered_df["이름"].tolist()
-      )
-      if selected_name:
-        person_info = df[df["이름"] == selected_name].iloc[0]
-        col1, col2 = st.columns(2)
-        with col1:
-          st.metric(label="성함", value=person_info["이름"])
-          st.write(f"**선조:** {person_info.get('선조', '')}")
-          st.write(f"**항렬:** {person_info.get('항렬', '')}")
-        with col2:
-          st.write(f"**배우자:** {person_info.get('배우자', '')}")
-          st.write(f"**기타/거주지:** {person_info.get('거주지/비고', '')}")
-    else:
-      st.warning("검색 결과가 없습니다.")
+  # 표 형태로 데이터 출력
+  st.dataframe(filtered_df, use_container_width=True)
 
-  except Exception as e:
-    st.error(
-        f"엑셀 파일('genealogy.xlsx')을 읽어오는 중 오류가 발생했습니다: {e}"
-    )
+except Exception as e:
+  st.error(f"엑셀 파일('genealogy.xlsx')을 읽어오는 중 오류가 발생했습니다: {e}")
