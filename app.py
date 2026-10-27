@@ -92,4 +92,29 @@ try:
             word-break: break-all;
             white-space: normal !important; /* 자동 줄바꿈 및 행 높이 자동 확장 */
         }
-        /* 기본 정보 열(고유ID, 선조,
+        /* 기본 정보 열(고유ID, 선조, 관계, 부친, 조부)은 가운데 정렬 */
+        .custom-genealogy-table td:nth-child(1),
+        .custom-genealogy-table td:nth-child(2),
+        .custom-genealogy-table td:nth-child(3),
+        .custom-genealogy-table td:nth-child(4),
+        .custom-genealogy-table td:nth-child(5) {
+            text-align: center;
+            white-space: nowrap !important;
+        }
+        /* 프로필 열은 좌측 정렬 및 충분한 최소 너비 확보 */
+        .custom-genealogy-table td:nth-child(n+6) {
+            text-align: left;
+            min-width: 260px;
+        }
+        .custom-genealogy-table tr:hover {
+            background-color: #f9fbfd;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(table_html, unsafe_allow_html=True)
+
+except Exception as e:
+    st.error(f"데이터를 처리하는 중 오류가 발생했습니다: {e}")
