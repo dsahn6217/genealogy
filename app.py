@@ -53,7 +53,7 @@ if check_password():
     st.sidebar.header("🔍 검색 조건")
     search_query = st.sidebar.text_input("성함 검색", "")
     selected_派 = st.sidebar.selectbox(
-        "파(派) 선택", ["전체"] + list(df["파수"].unique())
+        "파(派) 선택", ["전체"] + list(df["선조"].unique())
     )
 
     # 데이터 필터링
@@ -63,7 +63,7 @@ if check_password():
           filtered_df["이름"].str.contains(search_query, na=False)
       ]
     if selected_派 != "전체":
-      filtered_df = filtered_df[filtered_df["파수"] == selected_派]
+      filtered_df = filtered_df[filtered_df["선조"] == selected_派]
 
     # 결과 출력
     st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
@@ -81,7 +81,7 @@ if check_password():
         col1, col2 = st.columns(2)
         with col1:
           st.metric(label="성함", value=person_info["이름"])
-          st.write(f"**파수:** {person_info.get('파수', '')}")
+          st.write(f"**선조:** {person_info.get('선조', '')}")
           st.write(f"**항렬:** {person_info.get('항렬', '')}")
         with col2:
           st.write(f"**배우자:** {person_info.get('배우자', '')}")
