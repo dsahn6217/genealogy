@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 페이지 기본 환경 설정
+# 1. 페이지 기본 환경 설정 (와이드 레이아웃 적용)
 st.set_page_config(
     page_title="문중 족보 통합 검색 시스템",
     page_icon="📜",
@@ -11,7 +11,7 @@ st.set_page_config(
 st.title("📜 문중 족보 통합 검색 시스템")
 st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 조회하세요.")
 
-# 2. 엑셀 데이터 로드 함수 (캐시 적용)
+# 2. 엑셀 데이터 로드 함수 (캐시 적용 및 소문자 파일명 반영)
 @st.cache_data
 def load_data():
     excel_file = "genealogy.xlsx"
@@ -59,21 +59,37 @@ try:
         "고유ID", "선조", "관계", "부친", "조부",
         "한글 프로필 정렬", "한문 프로필 정렬", "한글 프로필", "한문 프로필 원문"
     ]
-    # 실제 엑셀 파일에 존재하는 열만 안전하게 선택
+    # 실제 엑셀 파일에 존재하는 열만 선택
     display_cols = [c for c in cols_order if c in filtered_df.columns]
+    display_df = filtered_df[display_cols]
 
-    # 프로필 내용이 시원하게 보이도록 TextColumn 및 너비 확장 적용
-    st.dataframe(
-        filtered_df[display_cols],
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            "한글 프로필 정렬": st.column_config.TextColumn("한글 프로필 정렬", width="large"),
-            "한문 프로필 정렬": st.column_config.TextColumn("한문 프로필 정렬", width="large"),
-            "한글 프로필": st.column_config.TextColumn("한글 프로필", width="large"),
-            "한문 프로필 원문": st.column_config.TextColumn("한문 프로필 원문", width="large"),
+    # 내용 전체가 잘리지 않고 아래로 자동 줄맞춤(행 높이 자동 확장)되도록 스타일 적용
+    table_html = display_df.to_html(classes="custom-genealogy-table", index=False, escape=False)
+
+    st.markdown(
+        """
+        <style>
+        .custom-genealogy-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-top: 10px;
         }
-    )
-
-except Exception as e:
-    st.error(f"데이터를 처리하는 중 오류가 발생했습니다: {e}")
+        .custom-genealogy-table th {
+            background-color: #f0f2f6;
+            color: #31333F;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 8px;
+            border: 1px solid #dcdcdc;
+            white-space: nowrap;
+        }
+        .custom-genealogy-table td {
+            padding: 10px 8px;
+            border: 1px solid #e6e6e6;
+            vertical-align: top;
+            line-height: 1.6;
+            word-break: break-all;
+            white-space: normal !important; /* 자동 줄바꿈 및 행 높이 자동 확장 */
+        }
+        /* 기본 정보 열(고유ID, 선조,
