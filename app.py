@@ -38,7 +38,7 @@ if not df.empty:
 
     filtered_df = df.copy()
 
-    # 성함 검색 필터 (선조 열에서 한글/한문 부분 일치 검색)
+    # 성함 검색 필터
     if search_query:
         if "선조" in filtered_df.columns:
             filtered_df = filtered_df[filtered_df["선조"].str.contains(search_query, na=False, case=False)]
@@ -68,50 +68,26 @@ if not df.empty:
                         lbl += f" (부: {opt_father}"
                         if opt_rel:
                             lbl += f", {opt_rel}"
-                        lbl += ")"
-                    options.append(lbl)
+                    lbl += ")"
+                options.append(lbl)
 
-                selected_label = st.selectbox("조회할 선조 선택", options)
-                selected_gid = selected_label.split("]")[0].replace("[", "").strip()
-                selected_person_row = filtered_df[filtered_df["고유ID"] == selected_gid].iloc[0]
-            else:
-                selected_person_row = filtered_df.iloc[0]
+            selected_label = st.selectbox("조회할 선조 선택", options)
+            selected_gid = selected_label.split("]")[0].replace("[", "").strip()
+            selected_person_row = filtered_df[filtered_df["고유ID"] == selected_gid].iloc[0]
+        else:
+            selected_person_row = filtered_df.iloc[0]
 
-            person_name = selected_person_row.get("선조", "").strip()
-            person_gid = selected_person_row.get("고유ID", "").strip()
-            relation = selected_person_row.get("관계", "").strip()
+        person_name = selected_person_row.get("선조", "").strip()
+        person_gid = selected_person_row.get("고유ID", "").strip()
+        relation = selected_person_row.get("관계", "").strip()
 
-            st.subheader(f"🌳 [{person_name}] 선조 중심 7대 직계 계보 및 상세 약력")
+        st.subheader(f"🌳 [{person_name}] 선조 중심 7대 직계 계보 및 상세 약력")
 
-            # 직계 7대 탐색 (선대 거슬러 올라가기)
-            ancestors = []
-            curr_row = selected_person_row
-            while len(ancestors) < 5:
-                f_name = curr_row.get("부친", "").strip()
-                if not f_name or f_name in ["미상", "없음", ""]:
-                    break
-                ancestors.append(f_name)
-                f_rows = df[df["선조"] == f_name]
-                if f_rows.empty:
-                    break
-                curr_row = f_rows.iloc[0]
-
-            # 직계 하위 자손 탐색
-            children = df[df["부친"] == person_name]
-
-            # Graphviz DOT 코드 조립
-            dot_lines = [
-                'digraph G {',
-                '  rankdir="TB";',
-                '  node [shape="box", style="filled,rounded", fontname="sans-serif", fontsize="11"];'
-            ]
-
-            p_label = f"★ {person_name}\\n({relation})" if relation else f"★ {person_name}"
-            dot_lines.append(f'  "{person_name}" [label="{p_label}", fillcolor="#FFE0B2", color="#F57C00", penwidth="2.5"];')
-
-            prev_node = person_name
-            rel_labels = ["부(父)", "조부(祖父)", "증조부(曾祖)", "고조부(高祖)", "5대조", "6대조"]
-            for idx, anc in enumerate(ancestors):
-                lbl = rel_labels[idx] if idx < len(rel_labels) else f"{idx+1}대조"
-                dot_lines.append(f'  "{anc}" [label="{lbl}: {anc}", fillcolor="#EDE7F6", color="#512DA8"];')
-                dot
+        # 직계 7대 탐색 (선대 거슬러 올라가기)
+        ancestors = []
+        curr_row = selected_person_row
+        while len(ancestors) < 5:
+            f_name = curr_row.get("부친", "").strip()
+            if not f_name or f_name in ["미상", "없음", ""]:
+                break
+            ancestors.append(f_name)
