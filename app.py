@@ -8,7 +8,7 @@ st.set_page_config(
 
 # [보안] 간단한 비밀번호 설정 (문중원 공용 비밀번호)
 PASSWORD = (  # 추후 변경 가능
-    "1234"
+    "wangui1494"
 )
 
 
