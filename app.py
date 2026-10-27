@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import graphviz
 
 # 1. 페이지 기본 환경 설정
 st.set_page_config(
@@ -50,16 +49,10 @@ try:
     if search_query and not filtered_df.empty:
         st.markdown("---")
         st.subheader(f"🌳 '{search_query}' 관련 직계 계보도")
-        
-        # 검색된 인물들 중 최대 3명에 대해 각각 계보도 트리 생성
-        target_people = filtered_df["선조"].unique()[:3]
-        
-        for person in target_people:
-            dot = graphviz.Digraph(comment=f"{person} 계보도")
-            dot.attr(rankdir="TB", size="8,5")
-            dot.attr("node", shape="box", style="filled,rounded", fontname="Malgun Gothic", fontsize="11")
 
-            # 해당 인물 레코드 추출
+        target_people = filtered_df["선조"].unique()[:3]
+
+        for person in target_people:
             person_rows = df[df["선조"] == person]
             if person_rows.empty:
                 continue
@@ -69,34 +62,44 @@ try:
             grandfather = row.get("조부", "").strip()
             relation = row.get("관계", "").strip()
 
-            # 1. 본인 노드 (강조 색상)
-            dot.node(person, f"★ {person}\n({relation})", fillcolor="#FFE0B2", color="#F57C00", penwidth="2")
+            # Graphviz 텍스트 규격(DOT 언어) 직접 조립
+            dot_lines = [
+                'digraph G {',
+                '  rankdir="TB";',
+                '  node [shape="box", style="filled,rounded", fontname="sans-serif", fontsize="11"];'
+            ]
 
-            # 2. 직계 상위 (조부 ➔ 부친 ➔ 본인)
+            # 1. 본인 노드
+            person_label = f"★ {person}\\n({relation})" if relation else f"★ {person}"
+            dot_lines.append(f'  "{person}" [label="{person_label}", fillcolor="#FFE0B2", color="#F57C00", penwidth="2"];')
+
+            # 2. 직계 상위 (조부 -> 부친 -> 본인)
             if father:
-                dot.node(father, f"부: {father}", fillcolor="#E1F5FE", color="#0288D1")
-                dot.edge(father, person)
-
+                dot_lines.append(f'  "{father}" [label="부: {father}", fillcolor="#E1F5FE", color="#0288D1"];')
+                dot_lines.append(f'  "{father}" -> "{person}";')
                 if grandfather:
-                    dot.node(grandfather, f"조부: {grandfather}", fillcolor="#EDE7F6", color="#512DA8")
-                    dot.edge(grandfather, father)
+                    dot_lines.append(f'  "{grandfather}" [label="조부: {grandfather}", fillcolor="#EDE7F6", color="#512DA8"];')
+                    dot_lines.append(f'  "{grandfather}" -> "{father}";')
 
-            # 3. 직계 하위 (자녀 탐색: 부친 이름이 본인인 인물)
+            # 3. 직계 하위 (자녀)
             children = df[df["부친"] == person]
             if not children.empty:
                 for _, child_row in children.iterrows():
-                    child_name = child_row.get("선조", "").strip()
-                    child_rel = child_row.get("관계", "").strip()
-                    child_label = f"{child_name}\n({child_rel})" if child_rel else child_name
-                    dot.node(child_name, child_label, fillcolor="#E8F5E9", color="#388E3C")
-                    dot.edge(person, child_name)
+                    c_name = child_row.get("선조", "").strip()
+                    c_rel = child_row.get("관계", "").strip()
+                    c_label = f"{c_name}\\n({c_rel})" if c_rel else c_name
+                    dot_lines.append(f'  "{c_name}" [label="{c_label}", fillcolor="#E8F5E9", color="#388E3C"];')
+                    dot_lines.append(f'  "{person}" -> "{c_name}";')
+
+            dot_lines.append('}')
+            dot_code = "\n".join(dot_lines)
 
             st.caption(f"**[{person}] 선조 중심 직계 계보**")
-            st.graphviz_chart(dot)
+            st.graphviz_chart(dot_code)
 
     st.markdown("---")
 
-    # --- [검색 결과 표 출력 화면] ---
+    # --- [검색 결과 출력 표] ---
     st.subheader(f"검색 결과 (총 {len(filtered_df)}명)")
 
     cols_order = [
@@ -106,7 +109,6 @@ try:
     display_cols = [c for c in cols_order if c in filtered_df.columns]
     display_df = filtered_df[display_cols]
 
-    # 내용 전체가 아래로 줄바꿈되어 보이도록 스타일 적용
     table_html = display_df.to_html(classes="custom-genealogy-table", index=False, escape=False)
 
     st.markdown(
