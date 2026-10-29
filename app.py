@@ -3,7 +3,8 @@ import pandas as pd
 
 # 1. 페이지 설정
 st.set_page_config(
-    page_title="문중 족보 통합 검색 시스템",
+    page_title="광주안씨 완귀공파 문중_
+    족보 통합 검색 시스템",
     page_icon="📜",
     layout="wide"
 )
