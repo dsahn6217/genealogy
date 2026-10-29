@@ -19,6 +19,7 @@ title_html = """
     </span>
 </div>
 """
+st.markdown(title_html, unsafe_allow_html=True)
 
 
 # 3. 엑셀 데이터 로드 함수
