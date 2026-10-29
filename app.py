@@ -34,9 +34,7 @@ title_html = """
     <span style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px;">
         족보 통합 검색 시스템
     </span>
-    <p style="font-size: 15px; color: #666666; margin-top: 10px;">
-        전산화된 족보 데이터를 언제 어디서나 편리하게 다각도로 조회하세요.
-    </p>
+
 </div>
 """
 st.markdown(title_html, unsafe_allow_html=True)
