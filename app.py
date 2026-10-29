@@ -7,6 +7,23 @@ st.set_page_config(
     page_icon="📜",
     layout="wide"
 )
+# 상단 헤더 및 본문 여백 조절 CSS
+st.markdown("""
+<style>
+/* 1. 본문 영역 최상단 패딩을 줄여 제목을 위로 끌어올림 */
+.block-container {
+    padding-top: 1.5rem !important;    /* 기본값 약 6rem -> 1.5rem으로 축소 */
+    padding-bottom: 2rem !important;
+}
+
+/* 2. 상단 Share 툴바(헤더) 자체의 높이 및 배경 조정 */
+header[data-testid="stHeader"] {
+    height: 2.5rem !important;        /* 헤더 높이를 낮춤 */
+    background: transparent !important; /* 배경을 투명하게 처리 */
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # 2. 메인 타이틀 (중앙 정렬)
 title_html = """
