@@ -31,7 +31,7 @@ if df.empty:
 # 3. 사이드바: 다각적 검색 조건 구축
 st.sidebar.header("🔍 검색 조건")
 
-# (1) 검색 모드 선택
+# (1) 검색 방식 라디오 버튼
 search_mode = st.sidebar.radio(
     "검색 방식 선택",
     ["인명(선조) 검색", "직계(부친/조부) 검색", "통합 키워드 검색"],
@@ -46,13 +46,13 @@ if "파" in df.columns:
 
 filtered_df = df.copy()
 
-# 파 필터 선적용
+# 파 필터 우선 적용
 if selected_pa != "전체" and "파" in filtered_df.columns:
     filtered_df = filtered_df[filtered_df["파"] == selected_pa]
 
 target_query = ""
 
-# (3) 모드별 입력창 및 필터링 로직
+# (3) 모드별 검색 입력창 및 필터링
 if search_mode == "인명(선조) 검색":
     target_query = st.sidebar.text_input("선조 성함 입력", placeholder="예: 효방, 효빈, 황원").strip()
     if target_query and "선조" in filtered_df.columns:
@@ -74,35 +74,15 @@ elif search_mode == "통합 키워드 검색":
         mask = filtered_df.astype(str).apply(lambda col: col.str.contains(target_query, case=False, na=False)).any(axis=1)
         filtered_df = filtered_df[mask]
 
-# 4. 상세 조회 및 계보도 영역 (조회 대상이 확정되거나 필터링 결과가 있을 때)
+# 4. 상세 조회 및 계보도 영역
 if target_query:
     if filtered_df.empty:
         st.warning(f"⚠️ '{target_query}' 조건으로 등록된 기록이 족보 데이터에 존재하지 않습니다.")
     else:
         st.markdown("---")
         
-        # 조회 대상 인물 확정
+        # 1명 또는 다수 인물 판별
         if len(filtered_df) == 1:
             selected_person_row = filtered_df.iloc[0]
         else:
-            st.info(f"💡 검색 결과 총 {len(filtered_df)}명이 조회되었습니다. 계보도를 확인할 선조 한 분을 선택하십시오.")
-            options = []
-            for _, r in filtered_df.iterrows():
-                opt_gid = r.get("고유ID", "")
-                opt_name = r.get("선조", "")
-                opt_father = r.get("부친", "")
-                opt_rel = r.get("관계", "")
-                lbl = f"[{opt_gid}] {opt_name}"
-                if opt_father:
-                    lbl += f" (부: {opt_father}"
-                    if opt_rel:
-                        lbl += f", {opt_rel}"
-                    lbl += ")"
-                options.append(lbl)
-            
-            selected_label = st.selectbox("조회할 선조 선택", options)
-            selected_gid = selected_label.split("]")[0].replace("[", "").strip()
-            selected_person_row = filtered_df[filtered_df["고유ID"] == selected_gid].iloc[0]
-
-        person_name = selected_person_row.get("선조", "").strip()
-        person_
+            st.info(f"💡 검색 결과 총 {len(filtered_df)}
