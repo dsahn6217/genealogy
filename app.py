@@ -1,18 +1,28 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 페이지 설정 (브라우저 탭 이름은 규격상 한 줄로 지정)
+# 1. 페이지 기본 설정
 st.set_page_config(
     page_title="광주안씨 완귀공파 문중 족보 통합 검색 시스템",
     page_icon="📜",
     layout="wide"
 )
 
-# 2. 화면 상단 메인 제목 (2줄로 표시)
-st.title("📜 광주안씨 완귀공파 문중\n족보 통합 검색 시스템")
+# 2. 메인 타이틀 (2줄 배치 및 폰트 크기/색상 맞춤 스타일링)
+title_html = """
+<div style="margin-top: 5px; margin-bottom: 15px;">
+    <span style="font-size: 28px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
+        📜 광주안씨 완귀공파 문중
+    </span><br>
+    <span style="font-size: 24px; font-weight: 600; color: #212121; letter-spacing: -0.5px;">
+        족보 통합 검색 시스템
+    </span>
+</div>
+"""
+st.markdown(title_html, unsafe_allow_html=True)
 st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 다각도로 조회하세요.")
 
-# 2. 엑셀 데이터 로드 함수
+# 3. 엑셀 데이터 로드 함수
 @st.cache_data
 def load_data():
     try:
@@ -29,7 +39,7 @@ df = load_data()
 if df.empty:
     st.stop()
 
-# 3. 사이드바: st.form 적용
+# 4. 사이드바: 폼(Form) 기반 다각적 검색 체계
 with st.sidebar:
     st.header("🔍 검색 조건")
     
@@ -57,9 +67,10 @@ with st.sidebar:
         elif search_mode == "통합 키워드 검색":
             target_input = st.text_input("통합 검색어 (지명, 묘소, 관직, 약력 등)", placeholder="예: 통정대부, 청도, 참판 등").strip()
 
+        # 엔터 입력 및 버튼 클릭 시 즉시 폼 전송
         submit_btn = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
 
-# 검색 필터링 로직
+# 5. 검색 필터링 로직
 filtered_df = df.copy()
 
 if selected_pa != "전체" and "파" in filtered_df.columns:
@@ -71,7 +82,7 @@ if search_mode == "직계(부친/조부) 검색":
 else:
     target_query = target_input
 
-# 4. 상세 계보 및 약력표 영역
+# 6. 상세 계보 및 약력표 영역
 if target_query:
     if search_mode == "인명(선조) 검색" and "선조" in filtered_df.columns:
         filtered_df = filtered_df[filtered_df["선조"].str.contains(target_query, na=False, case=False)]
@@ -89,6 +100,7 @@ if target_query:
     else:
         st.markdown("---")
         
+        # 단일 인물 또는 동명이인 판별
         if len(filtered_df) == 1:
             selected_person_row = filtered_df.iloc[0]
         else:
@@ -175,7 +187,7 @@ if target_query:
         chart_lines.append('}')
         final_chart_code = "\n".join(chart_lines)
 
-        # 계보도와 약력표 나란히 배치
+        # 계보도와 상세 약력표 분할 배치
         col_tree, col_profile = st.columns([5, 7])
 
         with col_tree:
@@ -217,7 +229,7 @@ if target_query:
 
 st.markdown("---")
 
-# 5. 검색 결과 전체 목록 표 출력
+# 7. 검색 결과 전체 목록 표 출력
 st.subheader(f"📋 검색 결과 목록 (총 {len(filtered_df)}명)")
 
 cols_order = [
