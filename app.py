@@ -19,8 +19,7 @@ title_html = """
     </span>
 </div>
 """
-st.markdown(title_html, unsafe_allow_html=True)
-st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 다각도로 조회하세요.")
+
 
 # 3. 엑셀 데이터 로드 함수
 @st.cache_data
