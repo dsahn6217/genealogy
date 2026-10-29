@@ -10,7 +10,7 @@ st.set_page_config(
 
 # 2. 메인 타이틀 (2줄 배치 및 폰트 크기/색상 맞춤 스타일링)
 title_html = """
-<div style="margin-top: 5px; margin-bottom: 15px;">
+<div style="margin-top: 1px; margin-bottom: 5px;">
     <span style="font-size: 28px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
         📜 광주안씨 완귀공파 문중
     </span><br>
