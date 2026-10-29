@@ -1,4 +1,14 @@
-# 2. 메인 타이틀 (중앙 정렬 및 글자 크기 조절)
+import streamlit as st
+import pandas as pd
+
+# 1. 페이지 기본 설정
+st.set_page_config(
+    page_title="광주안씨 완귀공파 문중 족보 통합 검색 시스템",
+    page_icon="📜",
+    layout="wide"
+)
+
+# 2. 메인 타이틀 (중앙 정렬 및 크기 지정)
 title_html = """
 <div style="text-align: center; margin-top: 10px; margin-bottom: 20px;">
     <span style="font-size: 32px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
