@@ -1,15 +1,15 @@
 import streamlit as st
 import pandas as pd
 
-# 1. 페이지 설정
+# 1. 페이지 설정 (브라우저 탭 이름은 규격상 한 줄로 지정)
 st.set_page_config(
-    page_title="광주안씨 완귀공파 문중\n
-    족보 통합 검색 시스템",
+    page_title="광주안씨 완귀공파 문중 족보 통합 검색 시스템",
     page_icon="📜",
     layout="wide"
 )
 
-st.title("📜 문중 족보 통합 검색 시스템")
+# 2. 화면 상단 메인 제목 (2줄로 표시)
+st.title("📜 광주안씨 완귀공파 문중\n족보 통합 검색 시스템")
 st.markdown("전산화된 족보 데이터를 언제 어디서나 편리하게 다각도로 조회하세요.")
 
 # 2. 엑셀 데이터 로드 함수
