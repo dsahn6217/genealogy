@@ -28,17 +28,15 @@ df = load_data()
 if df.empty:
     st.stop()
 
-# 3. 사이드바: 다각적 검색 조건 구축
+# 3. 사이드바: 다각적 검색 조건
 st.sidebar.header("🔍 검색 조건")
 
-# (1) 검색 방식 라디오 버튼
 search_mode = st.sidebar.radio(
     "검색 방식 선택",
     ["인명(선조) 검색", "직계(부친/조부) 검색", "통합 키워드 검색"],
     index=0
 )
 
-# (2) 파 필터 (파 컬럼 존재 시)
 selected_pa = "전체"
 if "파" in df.columns:
     pa_list = ["전체"] + sorted([p for p in df["파"].unique() if p and p != "nan"])
@@ -46,13 +44,11 @@ if "파" in df.columns:
 
 filtered_df = df.copy()
 
-# 파 필터 우선 적용
 if selected_pa != "전체" and "파" in filtered_df.columns:
     filtered_df = filtered_df[filtered_df["파"] == selected_pa]
 
 target_query = ""
 
-# (3) 모드별 검색 입력창 및 필터링
 if search_mode == "인명(선조) 검색":
     target_query = st.sidebar.text_input("선조 성함 입력", placeholder="예: 효방, 효빈, 황원").strip()
     if target_query and "선조" in filtered_df.columns:
@@ -74,15 +70,7 @@ elif search_mode == "통합 키워드 검색":
         mask = filtered_df.astype(str).apply(lambda col: col.str.contains(target_query, case=False, na=False)).any(axis=1)
         filtered_df = filtered_df[mask]
 
-# 4. 상세 조회 및 계보도 영역
+# 4. 상세 계보 및 약력표 영역
 if target_query:
     if filtered_df.empty:
-        st.warning(f"⚠️ '{target_query}' 조건으로 등록된 기록이 족보 데이터에 존재하지 않습니다.")
-    else:
-        st.markdown("---")
-        
-        # 1명 또는 다수 인물 판별
-        if len(filtered_df) == 1:
-            selected_person_row = filtered_df.iloc[0]
-        else:
-            st.info(f"💡 검색 결과 총 {len(filtered_df)}
+        st
