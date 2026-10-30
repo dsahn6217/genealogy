@@ -38,22 +38,21 @@ header[data-testid="stHeader"] {
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (광주안씨 완귀공파 종중 / 줄간격 0 밀착)
+# 2. 메인 타이틀 (음수 마진을 적용하여 줄간격 완전 밀착)
 title_html = f"""
 <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 5px; margin-bottom: 20px;">
-    <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0; line-height: 1;">
+    <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0;">
         {icon_html}
-        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; margin: 0; line-height: 1;">
+        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1;">
             광주안씨 완귀공파 종중
         </span>
     </div>
-    <div style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px; margin: 0; padding: 0; line-height: 1.1; margin-top: 4px;">
+    <div style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px; margin-top: -10px; padding: 0; line-height: 1;">
         족보 통합 검색 시스템
     </div>
 </div>
 """
 st.markdown(title_html, unsafe_allow_html=True)
-
 
 # 3. 엑셀 데이터 로드 함수
 @st.cache_data
