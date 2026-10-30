@@ -39,9 +39,9 @@ header[data-testid="stHeader"] {
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (Share와 간격 극소화)
+# 2. 메인 타이틀 (상단 여백을 주어 보기 좋게 아래로 내림)
 title_html = f"""
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -20px; margin-bottom: 20px;">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15px; margin-bottom: 20px;">
     <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0;">
         {icon_html}
         <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1;">
