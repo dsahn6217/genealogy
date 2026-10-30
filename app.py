@@ -38,21 +38,22 @@ header[data-testid="stHeader"] {
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (현판 아이콘 적용)
+# 2. 메인 타이틀 (광주안씨 완귀공파 종중 / 줄간격 0 밀착)
 title_html = f"""
-<div style="text-align: center; margin-top: 10px; margin-bottom: 25px;">
-    <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 5px; margin-bottom: 20px;">
+    <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0; line-height: 1;">
         {icon_html}
-        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
-            광주안씨 완귀공파 문중
+        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; margin: 0; line-height: 1;">
+            광주안씨 완귀공파 종중
         </span>
-    </div><br>
-    <span style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px;">
+    </div>
+    <div style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px; margin: 0; padding: 0; line-height: 1.1; margin-top: 4px;">
         족보 통합 검색 시스템
-    </span>
+    </div>
 </div>
 """
 st.markdown(title_html, unsafe_allow_html=True)
+
 
 # 3. 엑셀 데이터 로드 함수
 @st.cache_data
