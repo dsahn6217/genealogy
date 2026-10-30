@@ -39,15 +39,15 @@ header[data-testid="stHeader"] {
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (아이콘과 문장 간격을 좁게 밀착)
+# 2. 메인 타이틀 (아래 문장을 위 문장의 정중앙에 정렬)
 title_html = f"""
 <div style="display: flex; justify-content: center; align-items: center; margin-top: 15px; margin-bottom: 20px;">
-    <!-- 왼쪽: 원형 현판 아이콘 (간격을 4px로 최소화) -->
+    <!-- 왼쪽: 원형 현판 아이콘 -->
     <div style="display: flex; align-items: center; justify-content: center; margin-right: -4px;">
         {icon_html}
     </div>
-    <!-- 오른쪽: 두 줄 문장 묶음 -->
-    <div style="display: flex; flex-direction: column; justify-content: center; text-align: left;">
+    <!-- 오른쪽: 두 줄 문장 묶음 (가로 중앙 정렬) -->
+    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
         <div style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1.15; margin: 0; padding: 0;">
             광주안씨 완귀공파 종중
         </div>
