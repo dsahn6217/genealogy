@@ -39,17 +39,21 @@ header[data-testid="stHeader"] {
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (상단 여백을 주어 보기 좋게 아래로 내림)
+# 2. 메인 타이틀 (아이콘을 두 문장의 세로 정중앙에 배치)
 title_html = f"""
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 15px; margin-bottom: 20px;">
-    <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0;">
+<div style="display: flex; justify-content: center; align-items: center; margin-top: 15px; margin-bottom: 20px;">
+    <!-- 왼쪽: 원형 현판 아이콘 -->
+    <div style="display: flex; align-items: center; justify-content: center; margin-right: 14px;">
         {icon_html}
-        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1;">
-            광주안씨 완귀공파 종중
-        </span>
     </div>
-    <div style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px; margin-top: -10px; padding: 0; line-height: 1;">
-        족보 통합 검색 시스템
+    <!-- 오른쪽: 두 줄 문장 묶음 (세로 정렬) -->
+    <div style="display: flex; flex-direction: column; justify-content: center; text-align: left;">
+        <div style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1.15; margin: 0; padding: 0;">
+            광주안씨 완귀공파 종중
+        </div>
+        <div style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px; line-height: 1.15; margin: 0; padding: 0; margin-top: 2px;">
+            족보 통합 검색 시스템
+        </div>
     </div>
 </div>
 """
