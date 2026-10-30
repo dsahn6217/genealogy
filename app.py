@@ -17,7 +17,7 @@ if os.path.exists(ICON_PATH):
 
 # 1. 페이지 기본 설정
 st.set_page_config(
-    page_title="광주안씨 완귀공파 문중 족보 통합 검색 시스템",
+    page_title="광주안씨 완귀공파 종중 족보 통합 검색 시스템",
     page_icon=ICON_PATH if os.path.exists(ICON_PATH) else "📜",
     layout="wide"
 )
