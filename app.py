@@ -25,22 +25,23 @@ st.set_page_config(
 # 상단 헤더 및 본문 여백 조절 CSS
 st.markdown("""
 <style>
-/* 본문 최상단 패딩 축소 */
+/* 본문 최상단 패딩을 0으로 만들어 Share 라인에 바짝 밀착 */
 .block-container {
-    padding-top: 1.5rem !important;
+    padding-top: 0rem !important;
     padding-bottom: 2rem !important;
 }
-/* 헤더 영역 투명화 및 높이 축소 */
+
+/* 상단 Share 툴바(헤더) 높이 및 투명도 유지 */
 header[data-testid="stHeader"] {
-    height: 2.5rem !important;
+    height: 2rem !important;
     background: transparent !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# 2. 메인 타이틀 (음수 마진을 적용하여 줄간격 완전 밀착)
+# 2. 메인 타이틀 (Share와 간격 극소화)
 title_html = f"""
-<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 5px; margin-bottom: 20px;">
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: -20px; margin-bottom: 20px;">
     <div style="display: inline-flex; align-items: center; justify-content: center; margin: 0; padding: 0;">
         {icon_html}
         <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px; line-height: 1;">
