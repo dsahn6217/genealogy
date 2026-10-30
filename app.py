@@ -1,40 +1,55 @@
 import streamlit as st
 import pandas as pd
+import base64
+import os
+
+# 0. 아이콘 이미지 읽기 (파일 존재 여부 확인 후 Base64 변환)
+ICON_PATH = "icon.png"
+icon_html = "📜 "
+
+if os.path.exists(ICON_PATH):
+    try:
+        with open(ICON_PATH, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode()
+            icon_html = f'<img src="data:image/png;base64,{encoded}" style="width: 52px; height: 52px; vertical-align: middle; margin-right: 10px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.2);">'
+    except Exception:
+        icon_html = "📜 "
 
 # 1. 페이지 기본 설정
 st.set_page_config(
     page_title="광주안씨 완귀공파 문중 족보 통합 검색 시스템",
-    page_icon="📜",
+    page_icon=ICON_PATH if os.path.exists(ICON_PATH) else "📜",
     layout="wide"
 )
+
 # 상단 헤더 및 본문 여백 조절 CSS
 st.markdown("""
 <style>
-/* 1. 본문 영역 최상단 패딩을 줄여 제목을 위로 끌어올림 */
+/* 본문 최상단 패딩 축소 */
 .block-container {
-    padding-top: 1.5rem !important;    /* 기본값 약 6rem -> 1.5rem으로 축소 */
+    padding-top: 1.5rem !important;
     padding-bottom: 2rem !important;
 }
-
-/* 2. 상단 Share 툴바(헤더) 자체의 높이 및 배경 조정 */
+/* 헤더 영역 투명화 및 높이 축소 */
 header[data-testid="stHeader"] {
-    height: 2.5rem !important;        /* 헤더 높이를 낮춤 */
-    background: transparent !important; /* 배경을 투명하게 처리 */
+    height: 2.5rem !important;
+    background: transparent !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-
-# 2. 메인 타이틀 (중앙 정렬)
-title_html = """
+# 2. 메인 타이틀 (현판 아이콘 적용)
+title_html = f"""
 <div style="text-align: center; margin-top: 10px; margin-bottom: 25px;">
-    <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
-        📜 광주안씨 완귀공파 문중
-    </span><br>
+    <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 6px;">
+        {icon_html}
+        <span style="font-size: 26px; font-weight: 700; color: #1a237e; letter-spacing: -0.5px;">
+            광주안씨 완귀공파 문중
+        </span>
+    </div><br>
     <span style="font-size: 20px; font-weight: 600; color: #212121; letter-spacing: -0.5px;">
         족보 통합 검색 시스템
     </span>
-
 </div>
 """
 st.markdown(title_html, unsafe_allow_html=True)
