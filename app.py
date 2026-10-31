@@ -436,6 +436,158 @@ div[data-testid="stAlert"] {
 }
 
 """ + bg_style + """
+/* 족보 검색 통합 창 스타일 */
+div[data-testid="stVerticalBlockBorderWrapper"] {
+    border: 2px solid #0f2b5c !important;
+    border-radius: 8px !important;
+    padding: 10px 14px !important;
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 8px !important;
+}
+
+div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0px !important;
+    margin-top: 4px !important;
+    margin-bottom: 2px !important;
+}
+
+.unified-search-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f2b5c;
+    border-bottom: 1.5px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+/* 결과 카드 외곽: 상단 창 테두리 중앙에 타이틀 배치 */
+.result-outer-card {
+    position: relative;
+    border: 2px solid #0f2b5c;
+    border-radius: 8px;
+    padding: 18px 16px 14px 16px;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.result-card-top-title {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    padding: 2px 18px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0f2b5c;
+    border: 2px solid #0f2b5c;
+    border-radius: 14px;
+    white-space: nowrap;
+    z-index: 2;
+    letter-spacing: -0.3px;
+}
+
+.result-person-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #cbd5e1;
+    margin-bottom: 8px;
+}
+
+.person-icon-badge {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.person-name-hangul {
+    font-family: 'HCR Dotum', 'Noto Sans KR', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f2b5c;
+    letter-spacing: -0.5px;
+}
+
+.person-name-hanja {
+    font-family: 'Noto Serif KR', 'Batang', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #334155;
+    margin-left: 2px;
+}
+
+.person-rel-badge {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #1e3a8a;
+    background-color: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #bfdbfe;
+}
+
+.person-gid-text {
+    font-size: 12.5px;
+    color: #64748b;
+    margin-left: auto;
+}
+
+/* 주요 약력: 테두리 표시 뚜렷하게 */
+.bio-summary-box {
+    border: 2px solid #0f2b5c; /* 테두리 뚜렷하게 */
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+    background-color: #fbfcfe;
+}
+
+.bio-summary-header {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #0f2b5c;
+    border-bottom: 1.5px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+}
+
+.bio-item-line {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2937;
+}
+
+.bio-item-line:last-child {
+    margin-bottom: 0;
+}
+
+.bio-label {
+    font-weight: 700;
+    color: #0f2b5c;
+    margin-right: 4px;
+}
+
+.bio-val {
+    color: #111827;
+    font-weight: 500;
+}
+
+.spouse-line {
+    margin-top: 4px;
+    padding-left: 12px;
+    color: #1e293b;
+    line-height: 1.55;
+}
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -538,131 +690,105 @@ st.markdown(f"""
 
 
 # =============================================================================
-# 제4장 3항: 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향) & 제3장 3항 동영상 삽입
-# =============================================================================
-with st.expander("🏛️ 완귀정(玩龜亭) 유래", expanded=False):
-    st.markdown("""
-    <div class="wanguijeong-card">
-        <h4>영천 완귀정 (경상북도 민속문화재 제20호)</h4>
-        <ul>
-            <li><b>건립자</b> : 완귀 안증(1494~1553)</li>
-            <li><b>위치</b> : 경상북도 영천시 도남동</li>
-            <li><b>유래</b> : 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</li>
-            <li><b>제향</b> : 매년 양력 4월 2째주 일요일 구암리 상로재(霜露齋)에서 봉행</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+
+
+
+
 
 
 # =============================================================================
-# 제4장 4항: 족보 검색 창 (타이틀, 방식 선택, 너비 최소화 입력창 & 우측 문구 표시)
 # =============================================================================
-st.markdown("""
-<div class="search-header-box">
-    <h3>🔍 족보 검색(아래 검색 방식을 선택하세요)</h3>
-</div>
-""", unsafe_allow_html=True)
-
-# 제4장 4항 ②: 검색 방식 : 인명, 단어, 계보 (+ 묘제일)
-search_mode = st.radio(
-    "검색 방식 선택",
-    ["인명", "단어", "계보"],
-    horizontal=True,
-    index=0,
-    label_visibility="collapsed"
-)
-
-
+# 제4장 5항 ①: 세부 항목 파싱 및 렌더링 함수
 # =============================================================================
-# 제4장 5항 ①: 한글·한자 병기 세부 항목 파싱 함수 (오류 없는 안전한 정규식)
-# =============================================================================
+def split_name(name_raw):
+    m_h = re.findall(r"[一-龥]+", str(name_raw))
+    m_k = re.findall(r"[가-힣]+", str(name_raw))
+    hanja = "".join(m_h)
+    hangul = "".join(m_k)
+    if not hangul and not hanja:
+        hangul = str(name_raw)
+    return hangul, hanja
+
+def extract_tomb_clean(kp, hp):
+    p_kp = kp.split("배위")[0]
+    p_hp = hp.split("配")[0]
+    m = re.search(r"(?:^|,\s*|\.\s*)(?:묘는|묘소는|묘소가|묘소|◯묘는|◯墓는|◯墓|墓는|墓)\s*(.+?)(?=(?:,\s*(?:헌종|고종|순조|정조|숙종|영조|철종|경종|인조|효종|현종|명종|선조|중종|성종)|설서|유허비|$))", p_kp, re.DOTALL)
+    if m:
+        return m.group(1).strip().rstrip(",")
+    m_h = re.search(r"(?:^|,\s*)(?:墓\s*(?:는)?|◯墓)\s*([^\r\n]+)", p_hp)
+    if m_h:
+        return m_h.group(1).strip().rstrip(",")
+    return ""
+
+def extract_spouses(kp, hp):
+    spouses = []
+    if "배위" in kp:
+        k_parts = kp.split("배위")[1:]
+        for idx, k_text in enumerate(k_parts):
+            val = k_text.strip().rstrip(",")
+            if val and val not in spouses:
+                spouses.append(val)
+    elif "配" in hp:
+        h_parts = hp.split("配")[1:]
+        for idx, h_text in enumerate(h_parts):
+            val = h_text.strip().rstrip(",")
+            if val and val not in spouses:
+                spouses.append(val)
+    return spouses
+
 def parse_detailed_facts(row):
     kp = str(row.get("한글 프로필 정렬", "") or row.get("한글 프로필", ""))
     hp = str(row.get("한문 프로필 정렬", "") or row.get("한문 프로필 원문", ""))
     uid = str(row.get("고유ID", ""))
-    facts = {}
-
-    # 1. 세수 (완귀공의 0대 손)
+    
     parts = uid.split("-")
     gen_num = int(parts[-1]) if len(parts) >= 4 and parts[-1].isdigit() else 0
     if gen_num == 24:
-        facts["세수"] = "24세손 (파조 완귀공)"
+        se_su = "24세손 (파조 완귀공)"
     elif gen_num > 24:
-        facts["세수"] = f"{gen_num}세손 (완귀공의 {gen_num - 24}대손)"
+        se_su = f"{gen_num}세손 (완귀공의 {gen_num - 24}대손)"
     elif gen_num > 0:
-        facts["세수"] = f"{gen_num}세손"
+        se_su = f"{gen_num}세손"
     else:
-        facts["세수"] = "-"
-
-    # 2. 부, 조부
-    facts["부"] = str(row.get("부친", "")) or "-"
-    facts["조부"] = str(row.get("조부", "")) or "-"
-
-    # 配(배위) 이전 본인 구역만 분리하여 호/자 오인 매칭 방지
+        se_su = ""
+    
     main_hp = hp.split("配")[0]
     main_kp = kp.split("배위")[0]
-
-    # 3. 자(字) 한글한자 병기
-    m_ja_h = re.search(r"字\s*([一-龥]+)", main_hp)
-    m_ja_k = re.search(r"(?:자는|자)\s*([가-힣]+)", main_kp)
-    if m_ja_h and m_ja_k:
-        facts["자"] = f"{m_ja_h.group(1)}({m_ja_k.group(1)})"
-    elif m_ja_h:
-        facts["자"] = m_ja_h.group(1)
-    elif m_ja_k:
-        facts["자"] = m_ja_k.group(1)
-    else:
-        facts["자"] = "-"
-
-    # 4. 호(號) 한글한자 병기
-    m_ho_h = re.search(r"號\s*([一-龥\(\)]+)", main_hp)
-    m_ho_k = re.search(r"(?:호는|호)\s*([가-힣\(\)]+)", main_kp)
-    if m_ho_h and m_ho_k:
-        facts["호"] = f"{m_ho_h.group(1)}({m_ho_k.group(1)})"
-    elif m_ho_h:
-        facts["호"] = m_ho_h.group(1)
-    elif m_ho_k:
-        facts["호"] = m_ho_k.group(1)
-    else:
-        facts["호"] = "-"
-
-    # 5. 초휘(初諱) / 일휘(一諱)
-    m_ch_h = re.search(r"(?:初諱|一諱)\s*([一-龥]+)", main_hp)
-    m_ch_k = re.search(r"(?:초휘는|초휘|일휘는|일휘)\s*([가-힣]+)", main_kp)
-    if m_ch_h and m_ch_k:
-        facts["초휘_일휘"] = f"{m_ch_h.group(1)}({m_ch_k.group(1)})"
-    elif m_ch_h:
-        facts["초휘_일휘"] = m_ch_h.group(1)
-    elif m_ch_k:
-        facts["초휘_일휘"] = m_ch_k.group(1)
-    else:
-        facts["초휘_일휘"] = "-"
-
-    # 6. 초자(初字)
-    m_cj_h = re.search(r"初字\s*([一-龥]+)", main_hp)
-    m_cj_k = re.search(r"(?:초자는|초자)\s*([가-힣]+)", main_kp)
-    if m_cj_h and m_cj_k:
-        facts["초자"] = f"{m_cj_h.group(1)}({m_cj_k.group(1)})"
-    elif m_cj_h:
-        facts["초자"] = m_cj_h.group(1)
-    elif m_cj_k:
-        facts["초자"] = m_cj_k.group(1)
-    else:
-        facts["초자"] = "-"
-
-    # 7. 통명(通名) / 초명(初名) / 일명(一名) / 개명(改名)
-    m_tm_h = re.search(r"(?:通名|初名|一名|改名|官名)\s*([一-龥]+)", main_hp)
-    m_tm_k = re.search(r"(?:통명은|통명|초명은|초명|일명은|일명|개명은|개명|관명은|관명)\s*([가-힣]+)", main_kp)
-    if m_tm_h and m_tm_k:
-        facts["통명_초명"] = f"{m_tm_h.group(1)}({m_tm_k.group(1)})"
-    elif m_tm_h:
-        facts["통명_초명"] = m_tm_h.group(1)
-    elif m_tm_k:
-        facts["통명_초명"] = m_tm_k.group(1)
-    else:
-        facts["통명_초명"] = "-"
-
-    # 8. 과거·관직 (한글한자 병기)
+    
+    items = {}
+    if se_su:
+        items["세수"] = se_su
+    
+    f_val = str(row.get("부친", "")).strip()
+    gf_val = str(row.get("조부", "")).strip()
+    if f_val in ["미상", "없음", "nan", "None"]: f_val = ""
+    if gf_val in ["미상", "없음", "nan", "None"]: gf_val = ""
+    
+    if f_val and gf_val:
+        items["부·조부"] = f"부 {f_val} / 조부 {gf_val}"
+    elif f_val:
+        items["부"] = f_val
+    elif gf_val:
+        items["조부"] = gf_val
+        
+    for tag_h, tag_k, key in [
+        ("字", r"(?:자는|자)", "자"),
+        ("初字", r"(?:초자는|초자)", "초자"),
+        ("號", r"(?:호는|호)", "호"),
+        ("初諱", r"(?:초휘는|초휘)", "초휘"),
+        ("一諱", r"(?:일휘는|일휘)", "일휘"),
+        ("通名", r"(?:통명은|통명)", "통명"),
+        ("初名", r"(?:초명은|초명)", "초명"),
+    ]:
+        mh = re.search(rf"{tag_h}\s*([一-龥]+)", main_hp)
+        mk = re.search(rf"{tag_k}\s*([가-힣]+)", main_kp)
+        if mh and mk:
+            items[key] = f"{mh.group(1)}({mk.group(1)})"
+        elif mh:
+            items[key] = mh.group(1)
+        elif mk:
+            items[key] = mk.group(1)
+            
     offices = []
     career_pairs = [
         ("文科", "문과"), ("司馬", "사마"), ("生員", "생원"), ("進士", "진사"),
@@ -676,77 +802,75 @@ def parse_detailed_facts(row):
     for hj, hg in career_pairs:
         if hj in hp or hg in kp:
             offices.append(f"{hj}({hg})")
-    facts["과거_관직"] = ", ".join(offices[:3]) if offices else "유학(幼學) / 미기재"
+    if offices:
+        items["과거 및 관직"] = ", ".join(offices[:4])
+        
+    tomb = extract_tomb_clean(kp, hp)
+    if tomb:
+        items["묘"] = tomb
+        
+    sps = extract_spouses(kp, hp)
+    if sps:
+        items["배위"] = sps
+        
+    return items
 
-    # 9. 배위 한글한자 병기
-    sp_list = []
-    m_sp = re.findall(r"(?:配\s*(?:[一-龥]{2,4}\s+)?([一-龥]{2,4}氏)|배위\s*(?:[가-힣]{2,4}\s+)?([가-힣]{2,4}씨))", hp + " " + kp)
-    for sp_h, sp_k in m_sp:
-        s_val = sp_h or sp_k
-        if s_val and s_val not in sp_list:
-            sp_list.append(s_val)
-    facts["배위"] = ", ".join(sp_list) if sp_list else "미기재 / 무후"
-
-    return facts
-
-
-# =============================================================================
-# 제4장 5항: 검색 결과창 렌더링 함수
-# =============================================================================
-def render_search_result_view(row, title_prefix="검색 결과"):
+def render_search_result_view(row, title_prefix="인명 검색결과"):
     gid = row.get("고유ID", "")
-    name = row.get("선조", "")
+    name_raw = row.get("선조", "")
     rel = row.get("관계", "")
     kp = row.get("한글 프로필 정렬", "") or row.get("한글 프로필", "") or "약력 없음"
     hp = row.get("한문 프로필 정렬", "") or row.get("한문 프로필 원문", "") or "약력 없음"
     kp_raw = row.get("한글 프로필", "")
     hp_raw = row.get("한문 프로필 원문", "")
-
-    facts = parse_detailed_facts(row)
-
+    
+    hangul, hanja = split_name(name_raw)
+    items = parse_detailed_facts(row)
+    
+    lines_html = []
+    for k in ["세수", "부·조부", "부", "조부", "자", "초자", "호", "초휘", "일휘", "통명", "초명", "과거 및 관직", "묘"]:
+        if k in items and items[k]:
+            lines_html.append(f'<p class="bio-item-line"><span class="bio-label">{k} :</span> <span class="bio-val">{items[k]}</span></p>')
+            
+    if "배위" in items and items["배위"]:
+        sps = items["배위"]
+        if len(sps) == 1:
+            lines_html.append(f'<p class="bio-item-line"><span class="bio-label">배위 :</span> <span class="bio-val">{sps[0]}</span></p>')
+        else:
+            circ_nums = ["①", "②", "③", "④", "⑤", "⑥"]
+            sp_lines = "".join([f'<div class="spouse-line">{circ_nums[i] if i < len(circ_nums) else f"({i+1})"} {s}</div>' for i, s in enumerate(sps)])
+            lines_html.append(f'<div class="bio-item-line"><span class="bio-label">배위 :</span>{sp_lines}</div>')
+            
+    bio_content = "".join(lines_html)
+    
     st.markdown(f"""
-    <div class="result-card">
-        <div class="result-card-title">
-            📜 {name} ({rel}) — {title_prefix} <span class="result-gid-badge">[고유ID: {gid}]</span>
+    <div class="result-outer-card">
+        <div class="result-card-top-title">{title_prefix}</div>
+        
+        <div class="result-person-row">
+            <span class="person-icon-badge">📜</span>
+            <span class="person-name-hangul">{hangul}</span>
+            <span class="person-name-hanja">{hanja}</span>
+            <span class="person-rel-badge">({rel})</span>
+            <span class="person-gid-text">고유ID: {gid}</span>
         </div>
-        <div class="result-summary-para">
-            <p class="info-para-line">
-                <span class="info-label">• 세수(世數)</span> : <span class="info-val">{facts['세수']}</span>
-                <span class="info-sep">|</span>
-                <span class="info-label">부(父)</span> : <span class="info-val">{facts['부']}</span>
-                <span class="info-sep">|</span>
-                <span class="info-label">조부(祖父)</span> : <span class="info-val">{facts['조부']}</span>
-            </p>
-            <p class="info-para-line">
-                <span class="info-label">• 자(字)</span> : <span class="info-val">{facts['자']}</span>
-                <span class="info-sep">|</span>
-                <span class="info-label">호(號)</span> : <span class="info-val">{facts['호']}</span>
-            </p>
-            <p class="info-para-line">
-                <span class="info-label">• 초휘·일휘</span> : <span class="info-val">{facts['초휘_일휘']}</span>
-                <span class="info-sep">|</span>
-                <span class="info-label">초자(初字)</span> : <span class="info-val">{facts['초자']}</span>
-                <span class="info-sep">|</span>
-                <span class="info-label">통명·초명</span> : <span class="info-val">{facts['통명_초명']}</span>
-            </p>
-            <p class="info-para-line">
-                <span class="info-label">• 과거 및 관직</span> : <span class="info-val">{facts['과거_관직']}</span>
-            </p>
-            <p class="info-para-line">
-                <span class="info-label">• 배위(配位)</span> : <span class="info-val">{facts['배위']}</span>
-            </p>
+        
+        <div class="bio-summary-box">
+            <div class="bio-summary-header">주요 약력</div>
+            <div class="bio-summary-body">
+                {bio_content}
+            </div>
         </div>
+    </div>
     """, unsafe_allow_html=True)
-
-    # 제4장 5항 ②: 별도로 아래에 상세한 한문·한글 약력 (정리된 한문 한글 약력 표기)
+    
     st.markdown(f"""
     <div style="font-weight: 700; font-size: 13.5px; color: #1e3a8a; margin: 4px 0 2px 0;">🇰🇷 정리된 한글 약력</div>
     <div class='hangul-box'>{kp}</div>
     <div style="font-weight: 700; font-size: 13.5px; color: #1e3a8a; margin: 5px 0 2px 0;">漢 정리된 한문 약력</div>
     <div class='hanja-box'>{hp}</div>
     """, unsafe_allow_html=True)
-
-    # 제4장 5항 ③: 마지막에 족보 수록 원문 보기 생성
+    
     with st.expander("📖 족보 수록 원문(原文字句) 보기", expanded=False):
         c1, c2 = st.columns(2)
         with c1:
@@ -756,28 +880,74 @@ def render_search_result_view(row, title_prefix="검색 결과"):
             st.caption("한문 원문")
             st.write(hp_raw if hp_raw else "-")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
+# =============================================================================
+# 족보 검색 통합 창 (족보 검색, 검색 방식, 입력 창, 검색실행 버튼, 입력 요령 - 단일 창 통합)
+# =============================================================================
+person_query, word_query, tree_query = "", "", ""
+with st.container(border=True):
+    st.markdown('<div class="unified-search-title">🔍 족보 검색 <span style="font-size: 13px; font-weight: normal; color: #4b5563;">(아래 검색 방식을 선택하세요)</span></div>', unsafe_allow_html=True)
+    
+    search_mode = st.radio(
+        "검색 방식 선택",
+        ["인명", "단어", "계보"],
+        horizontal=True,
+        index=0,
+        label_visibility="collapsed"
+    )
+    
+    if search_mode == "인명":
+        with st.form(key="search_person_form"):
+            col_input, col_hint = st.columns([3.5, 6.5])
+            with col_input:
+                person_query = st.text_input(
+                    "인명 검색어 입력",
+                    placeholder=" 여기에 입력하세요",
+                    label_visibility="collapsed"
+                ).strip()
+                p_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
+            with col_hint:
+                st.markdown("""
+                <div class="search-hint-text">
+                    👉 <b>인물의 함자, 자(字), 호(號), 초휘(初諱), 일휘(一諱), 초자(初字), 통명(通名), 초명(初名) 등을 입력</b>
+                </div>
+                """, unsafe_allow_html=True)
+    elif search_mode == "단어":
+        with st.form(key="search_word_form"):
+            col_input, col_hint = st.columns([3.5, 6.5])
+            with col_input:
+                word_query = st.text_input(
+                    "단어 검색어 입력",
+                    placeholder=" 여기에 입력하세요",
+                    label_visibility="collapsed"
+                ).strip()
+                w_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
+            with col_hint:
+                st.markdown("""
+                <div class="search-hint-text">
+                    👉 <b>약력에 포함된 단어(관직, 지명, 묘소, 비문 찬술자, 사적 등)를 입력</b>
+                </div>
+                """, unsafe_allow_html=True)
+    elif search_mode == "계보":
+        with st.form(key="search_tree_form"):
+            col_input, col_hint = st.columns([3.5, 6.5])
+            with col_input:
+                tree_query = st.text_input(
+                    "계보 검색어 입력",
+                    placeholder=" 여기에 입력하세요",
+                    label_visibility="collapsed"
+                ).strip()
+                t_submit = st.form_submit_button("🌳 계보 작성 및 검색", use_container_width=True, type="primary")
+            with col_hint:
+                st.markdown("""
+                <div class="search-hint-text">
+                    👉 <b>인물의 함자, 자(字), 호(號) 입력 후 계보 작성 조건에 따라 계보도 생성</b>
+                </div>
+                """, unsafe_allow_html=True)
 
 # =============================================================================
-# 검색 방식 1: 인명 검색 (제4장 4항 ③ 너비 최소화 & 우측 문구 표시)
+# 검색 결과 처리
 # =============================================================================
 if search_mode == "인명":
-    with st.form(key="search_person_form"):
-        col_input, col_hint = st.columns([3, 7])
-        with col_input:
-            person_query = st.text_input(
-                "인명 검색어 입력",
-                placeholder=" 여기에 입력하세요",
-                label_visibility="collapsed"
-            ).strip()
-            p_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
-        with col_hint:
-            st.markdown("""
-            <div class="search-hint-text">
-                👉 <b>인물의 함자, 자(字), 호(號), 초휘(初諱), 일휘(一諱) 초자(初字), 통명(通名), 초명(初名) 등을 입력</b>
-            </div>
-            """, unsafe_allow_html=True)
 
     if person_query:
         kw = person_query
@@ -824,21 +994,6 @@ if search_mode == "인명":
 # 검색 방식 2: 단어 검색 (제4장 4항 ③ 너비 최소화 & 우측 문구 표시)
 # =============================================================================
 elif search_mode == "단어":
-    with st.form(key="search_word_form"):
-        col_input, col_hint = st.columns([3, 7])
-        with col_input:
-            word_query = st.text_input(
-                "단어 검색어 입력",
-                placeholder=" 여기에 입력하세요",
-                label_visibility="collapsed"
-            ).strip()
-            w_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
-        with col_hint:
-            st.markdown("""
-            <div class="search-hint-text">
-                👉 <b>약력에 포함된 단어(관직, 지명, 묘소, 비문 찬술자, 사적 등)를 입력</b>
-            </div>
-            """, unsafe_allow_html=True)
 
     if word_query:
         search_cols = ["한글 프로필 정렬", "한문 프로필 정렬", "한글 프로필", "한문 프로필 원문"]
@@ -871,21 +1026,6 @@ elif search_mode == "단어":
 # 검색 방식 3: 계보 검색 (제2장 계보 작성 요령 전 조항 완벽 반영)
 # =============================================================================
 elif search_mode == "계보":
-    with st.form(key="search_tree_form"):
-        col_input, col_hint = st.columns([3, 7])
-        with col_input:
-            tree_query = st.text_input(
-                "계보 검색어 입력",
-                placeholder=" 여기에 입력하세요",
-                label_visibility="collapsed"
-            ).strip()
-            t_submit = st.form_submit_button("🌳 계보 작성 및 검색", use_container_width=True, type="primary")
-        with col_hint:
-            st.markdown("""
-            <div class="search-hint-text">
-                👉 <b>인물의 함자, 자(字), 호(號) 입력 후 계보 작성 조건에 따라 계보도 생성</b>
-            </div>
-            """, unsafe_allow_html=True)
 
     if tree_query:
         kw = tree_query
@@ -1047,6 +1187,23 @@ elif search_mode == "계보":
                     index=p_keys.index(p_name) if p_name in p_keys else 0
                 )
                 render_search_result_view(all_tree_people[sel_p_in_tree], title_prefix="계보 연동 약력")
+
+
+# =============================================================================
+# 제4장 3항: 완귀정 소개 글 (화면 하단 배치)
+# =============================================================================
+with st.expander("🏛️ 완귀정(玩龜亭) 유래", expanded=False):
+    st.markdown("""
+    <div class="wanguijeong-card">
+        <h4>영천 완귀정 (경상북도 민속문화재 제20호)</h4>
+        <ul>
+            <li><b>건립자</b> : 완귀 안증(1494~1553)</li>
+            <li><b>위치</b> : 경상북도 영천시 도남동</li>
+            <li><b>유래</b> : 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</li>
+            <li><b>제향</b> : 매년 양력 4월 2째주 일요일 구암리 상로재(霜露齋)에서 봉행</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # =============================================================================
