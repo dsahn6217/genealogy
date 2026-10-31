@@ -85,6 +85,16 @@ header[data-testid="stHeader"] {
     display: none !important;
 }
 
+/* Streamlit Cloud 우측 하단 Manage app 박스 및 배지/푸터 숨기기 */
+#MainMenu { visibility: hidden !important; }
+footer { visibility: hidden !important; }
+[data-testid="manage-app-button"] { display: none !important; }
+.viewerBadge_container__r5tak, .viewerBadge_link__qRIco { display: none !important; }
+div[class*="viewerBadge"] { display: none !important; }
+div[class*="manage-app"] { display: none !important; }
+div[data-testid="stStatusWidget"] { display: none !important; }
+div[data-testid="stDecoration"] { display: none !important; }
+
 [data-testid="stVerticalBlock"] {
     gap: 0.25rem !important;
 }
@@ -106,10 +116,10 @@ div[data-testid="stElementContainer"] {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     margin-top: 2px;
-    margin-bottom: 4px;
-    padding: 2px 0;
+    margin-bottom: 12px;
+    padding-bottom: 2px;
 }
 
 .clan-icon-img {
@@ -160,9 +170,9 @@ div[data-testid="stElementContainer"] {
 div[data-testid="stExpander"] {
     border: 1px solid #dbe2ea !important;
     border-radius: 6px !important;
-    margin-top: 2px !important;
-    margin-bottom: 3px !important;
-    background-color: rgba(255, 255, 255, 0.88) !important;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
+    background-color: rgba(255, 255, 255, 0.92) !important;
 }
 
 div[data-testid="stExpander"] summary {
@@ -236,35 +246,57 @@ div[data-testid="stRadio"] label {
     margin: 0px !important;
 }
 
-/* 폼, 입력창, 버튼 상하 간격 극소화 */
+/* 폼, 입력창, 버튼 뚜렷한 강조 스타일 */
 form[data-testid="stForm"] {
-    border: 1px solid #e2e8f0 !important;
-    padding: 5px 8px !important;
-    border-radius: 6px !important;
-    margin-top: 2px !important;
-    margin-bottom: 3px !important;
-    background-color: rgba(255, 255, 255, 0.92) !important;
+    border: 1.5px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    margin-top: 3px !important;
+    margin-bottom: 4px !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
 }
 
 div[data-testid="stTextInput"] {
     margin-bottom: 0px !important;
 }
 
+/* 검색어 입력창을 선명하고 뚜렷하게 강조 */
 div[data-testid="stTextInput"] input {
-    height: 32px !important;
-    padding: 2px 8px !important;
-    font-size: 13px !important;
-    border-radius: 4px !important;
+    height: 38px !important;
+    padding: 4px 12px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    border: 2px solid #1e3a8a !important; /* 뚜렷하고 선명한 짙은 남색 테두리 */
+    border-radius: 6px !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(30, 58, 138, 0.12) !important;
+    transition: all 0.2s ease-in-out !important;
 }
 
+div[data-testid="stTextInput"] input:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
+    outline: none !important;
+}
+
+div[data-testid="stTextInput"] input::placeholder {
+    color: #64748b !important;
+    font-size: 13.5px !important;
+}
+
+/* 검색 실행 버튼도 38px로 높이를 맞추고 그림자 추가 */
 div[data-testid="stButton"] button, div[data-testid="stFormSubmitButton"] button {
-    height: 32px !important;
-    padding: 2px 14px !important;
-    font-size: 13px !important;
-    min-height: 32px !important;
+    height: 38px !important;
+    padding: 4px 16px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    min-height: 38px !important;
     line-height: 1 !important;
     margin-top: 0px !important;
-    border-radius: 4px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* 검색창 우측 안내문구 */
