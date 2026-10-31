@@ -53,7 +53,7 @@ if os.path.exists(BG_FILE):
             b64_bg = base64.b64encode(f_bg.read()).decode()
         bg_style = f"""
         .stApp {{
-            background: linear-gradient(rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.75)),
+            background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.95)),
                         url("data:image/png;base64,{b64_bg}") no-repeat center center fixed !important;
             background-size: cover !important;
         }}
@@ -65,162 +65,304 @@ custom_css = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
-/* 제4장 1항: 페이지 타이틀 함초롱돋움체 */
-.clan-title-box {{
-    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    line-height: 1.35;
-    margin-top: 2px;
-    margin-bottom: 6px;
-}}
+/* 전체 여백 및 컴포넌트 상하 간격 극소화 (최대 압축 컴팩트 레이아웃) */
+html, body, [class*="css"] {
+    font-family: 'Noto Sans KR', 'HCR Dotum', sans-serif;
+}
 
-.clan-title-main {{
+.block-container {
+    padding-top: 0.2rem !important;
+    padding-bottom: 1.2rem !important;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+    max-width: 1400px;
+}
+
+header[data-testid="stHeader"] {
+    height: 0px !important;
+    min-height: 0px !important;
+    background: transparent !important;
+    display: none !important;
+}
+
+[data-testid="stVerticalBlock"] {
+    gap: 0.25rem !important;
+}
+
+[data-testid="stHorizontalBlock"] {
+    gap: 0.4rem !important;
+    align-items: center;
+}
+
+div[data-testid="stElementContainer"] {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+/* 상단 헤더: 아이콘 오른쪽에 타이틀 가로 나란히 배치 (모바일 화면에서도 줄바꿈 없이 가로 정렬 고정) */
+.clan-header-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    padding: 2px 0;
+}
+
+.clan-icon-img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    background-color: #ffffff;
+}
+
+.clan-title-box {
+    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
+    line-height: 1.22;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+}
+
+.clan-title-main {
     font-size: 22px !important;
     font-weight: 700 !important;
     color: #0f2b5c !important; /* 짙은 청색 */
     letter-spacing: -0.5px;
-}}
+    display: block;
+    line-height: 1.22;
+}
 
-.clan-title-sub {{
+.clan-title-sub {
     font-size: 20px !important;
     font-weight: 700 !important;
     color: #111111 !important; /* 검정 글자 */
     letter-spacing: -0.5px;
-}}
+    display: block;
+    line-height: 1.22;
+}
 
-.clan-title-ref {{
-    font-size: 14px;
+.clan-title-ref {
+    font-size: 13px !important;
     color: #4b5563;
     font-weight: 500;
-    margin-bottom: 14px;
-}}
+    margin-top: 2px;
+    line-height: 1.2;
+}
 
-/* 상단 패딩 축소 */
-.block-container {{
-    padding-top: 1.0rem !important;
-    padding-bottom: 3rem !important;
-    max-width: 1380px;
-}}
+/* 완귀정 소개 expander */
+div[data-testid="stExpander"] {
+    border: 1px solid #dbe2ea !important;
+    border-radius: 6px !important;
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+    background-color: rgba(255, 255, 255, 0.88) !important;
+}
 
-header[data-testid="stHeader"] {{
-    height: 1.8rem !important;
-    background: transparent !important;
-}}
+div[data-testid="stExpander"] summary {
+    padding: 4px 8px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    color: #1e3a8a !important;
+}
 
-/* 제4장 3항: 완귀정 소개 카드 */
-.wanguijeong-card {{
+div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
+    padding: 6px 10px !important;
+}
+
+.wanguijeong-card {
     background-color: #fbfbfe;
     border: 1px solid #dbe2ea;
-    border-left: 5px solid #1a365d;
-    padding: 14px 18px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}}
+    border-left: 4px solid #1a365d;
+    padding: 8px 12px !important;
+    border-radius: 6px;
+    margin-bottom: 2px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
 
-.wanguijeong-card h4 {{
-    margin: 0 0 8px 0;
-    font-size: 16px;
+.wanguijeong-card h4 {
+    margin: 0 0 4px 0 !important;
+    font-size: 14.5px !important;
     color: #1a365d;
     font-weight: 700;
-}}
+}
 
-.wanguijeong-card ul {{
-    margin: 0;
-    padding-left: 20px;
-    font-size: 13.5px;
+.wanguijeong-card ul {
+    margin: 0 !important;
+    padding-left: 18px !important;
+    font-size: 12.5px !important;
     color: #334155;
-    line-height: 1.65;
-}}
+    line-height: 1.45 !important;
+}
 
-/* 제4장 4항: 족보 검색창 타이틀 박스 */
-.search-header-box {{
+/* 검색창 헤더 박스 */
+.search-header-box {
     background: #f1f5f9;
-    border-left: 5px solid #0f2b5c;
-    padding: 10px 16px;
-    border-radius: 6px;
-    margin-bottom: 14px;
-}}
+    border-left: 4px solid #0f2b5c;
+    padding: 4px 10px !important;
+    border-radius: 5px;
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+}
 
-.search-header-box h3 {{
-    margin: 0;
-    font-size: 17px;
+.search-header-box h3 {
+    margin: 0 !important;
+    font-size: 15px !important;
     color: #0f172a;
     font-weight: 700;
-}}
+    line-height: 1.25 !important;
+}
 
-/* 제4장 4항 ③: 검색창 우측 안내문구 */
-.search-hint-text {{
-    padding-top: 8px;
-    font-size: 13.5px;
-    color: #334155;
-    font-weight: 600;
-    line-height: 1.5;
-}}
+/* 라디오 버튼 간격 */
+div[data-testid="stRadio"] {
+    margin-top: 0px !important;
+    margin-bottom: 3px !important;
+}
 
-/* 제4장 5항: 상세 결과창 카드 */
-.result-card {{
+div[data-testid="stRadio"] > div {
+    gap: 8px !important;
+    padding: 0px !important;
+}
+
+div[data-testid="stRadio"] label {
+    font-size: 13.5px !important;
+    padding: 0px 4px !important;
+    margin: 0px !important;
+}
+
+/* 폼, 입력창, 버튼 상하 간격 극소화 */
+form[data-testid="stForm"] {
+    border: 1px solid #e2e8f0 !important;
+    padding: 5px 8px !important;
+    border-radius: 6px !important;
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+    background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+div[data-testid="stTextInput"] {
+    margin-bottom: 0px !important;
+}
+
+div[data-testid="stTextInput"] input {
+    height: 32px !important;
+    padding: 2px 8px !important;
+    font-size: 13px !important;
+    border-radius: 4px !important;
+}
+
+div[data-testid="stButton"] button, div[data-testid="stFormSubmitButton"] button {
+    height: 32px !important;
+    padding: 2px 14px !important;
+    font-size: 13px !important;
+    min-height: 32px !important;
+    line-height: 1 !important;
+    margin-top: 0px !important;
+    border-radius: 4px !important;
+}
+
+/* 검색창 우측 안내문구 */
+.search-hint-text {
+    padding-top: 3px !important;
+    font-size: 12.5px !important;
+    color: #475569;
+    font-weight: 500;
+    line-height: 1.35 !important;
+}
+
+/* 결과 카드 */
+.result-card {
     background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    padding: 18px 22px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-    margin-top: 15px;
-}}
+    border-radius: 8px;
+    padding: 8px 12px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+    margin-top: 3px !important;
+    margin-bottom: 4px !important;
+}
 
-.result-card-title {{
+.result-card-title {
     font-family: 'Noto Serif KR', serif;
-    font-size: 21px;
+    font-size: 17px !important;
     font-weight: 700;
     color: #0f2b5c;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 8px;
-    margin-bottom: 12px;
-}}
+    border-bottom: 1.5px solid #e2e8f0;
+    padding-bottom: 3px !important;
+    margin-bottom: 5px !important;
+}
 
-.bilingual-table {{
+.bilingual-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13.5px;
-    margin-bottom: 16px;
-}}
+    font-size: 12px !important;
+    margin-bottom: 6px !important;
+}
 
-.bilingual-table th {{
+.bilingual-table th {
     background: #f8fafc;
     color: #1e3a8a;
     font-weight: 700;
     text-align: center;
-    padding: 7px 10px;
+    padding: 3px 6px !important;
     border: 1px solid #cbd5e1;
-    width: 18%;
-}}
+    width: 16%;
+}
 
-.bilingual-table td {{
-    padding: 7px 12px;
+.bilingual-table td {
+    padding: 3px 6px !important;
     border: 1px solid #e2e8f0;
     color: #1f2937;
     font-weight: 500;
-}}
+}
 
-.hanja-box {{
+.hanja-box {
     font-family: 'Noto Serif KR', 'Batang', serif;
     background: #fafaf9;
     border: 1px solid #e2e8f0;
-    padding: 14px 16px;
-    border-radius: 8px;
-    line-height: 1.85;
-    font-size: 15px;
+    padding: 6px 10px !important;
+    border-radius: 6px;
+    line-height: 1.55 !important;
+    font-size: 13px !important;
     color: #18181b;
-}}
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+}
 
-.hangul-box {{
+.hangul-box {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    padding: 14px 16px;
-    border-radius: 8px;
-    line-height: 1.8;
-    font-size: 14.5px;
+    padding: 6px 10px !important;
+    border-radius: 6px;
+    line-height: 1.5 !important;
+    font-size: 12.5px !important;
     color: #1e293b;
-}}
+    margin-top: 2px !important;
+    margin-bottom: 3px !important;
+}
+
+.condition-box {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #2563eb;
+    padding: 5px 8px !important;
+    border-radius: 6px;
+    margin-bottom: 4px !important;
+    font-size: 12px !important;
+    color: #1e40af;
+    line-height: 1.35 !important;
+}
+
+/* 알림 및 캡션 상하 간격 */
+div[data-testid="stAlert"] {
+    padding: 4px 10px !important;
+    margin: 2px 0 !important;
+}
 
 {bg_style}
 </style>
@@ -292,28 +434,41 @@ if df.empty:
 
 
 # =============================================================================
-# 제4장 1항 & 2항: 페이지 타이틀(함초롱돋움 22/20pt) 및 참고 글
 # =============================================================================
-header_col1, header_col2 = st.columns([1, 11])
-with header_col1:
-    if os.path.exists(ICON_FILE):
-        st.image(ICON_FILE, width=95)
-    else:
-        st.markdown("<div style='font-size: 55px; text-align:center;'>📜</div>", unsafe_allow_html=True)
-with header_col2:
-    st.markdown("""
+# 제4장 1항 & 2항: 페이지 타이틀(함초롱돋움 22/20pt) 및 참고 글 (아이콘 옆 가로 배치)
+# =============================================================================
+b64_icon_html = ""
+if os.path.exists(ICON_FILE):
+    try:
+        from PIL import Image
+        import io
+        img_icon = Image.open(ICON_FILE)
+        img_icon.thumbnail((160, 160), Image.Resampling.LANCZOS)
+        buf_icon = io.BytesIO()
+        img_icon.save(buf_icon, format="PNG", optimize=True)
+        b64_icon = base64.b64encode(buf_icon.getvalue()).decode()
+        b64_icon_html = f'<img src="data:image/png;base64,{b64_icon}" class="clan-icon-img" alt="완귀정 현판">'
+    except Exception:
+        with open(ICON_FILE, "rb") as f_ic:
+            b64_icon = base64.b64encode(f_ic.read()).decode()
+        b64_icon_html = f'<img src="data:image/png;base64,{b64_icon}" class="clan-icon-img" alt="완귀정 현판">'
+else:
+    b64_icon_html = '<div style="font-size: 42px; line-height: 1; flex-shrink: 0;">📜</div>'
+
+st.markdown(f"""
+<div class="clan-header-wrapper">
+    {b64_icon_html}
     <div class="clan-title-box">
-        <span class="clan-title-main">광주안씨 완귀공파 종중</span><br>
+        <span class="clan-title-main">광주안씨 완귀공파 종중</span>
         <span class="clan-title-sub">족보 검색 시스템</span>
+        <div class="clan-title-ref">광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
     </div>
-    <div class="clan-title-ref">
-        광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)
-    </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
 
 # =============================================================================
-# 제4장 3항: 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향)
+# 제4장 3항: 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향) & 제3장 3항 동영상 삽입
 # =============================================================================
 with st.expander("🏛️ 완귀정(玩龜亭) 유래", expanded=False):
     col_intro, col_vid = st.columns([7, 5])
@@ -525,13 +680,12 @@ def render_search_result_view(row, title_prefix="검색 결과"):
     """, unsafe_allow_html=True)
 
     # 제4장 5항 ②: 별도로 아래에 상세한 한문·한글 약력 (정리된 한문 한글 약력 표기)
-    st.markdown("##### 🇰🇷 정리된 한글 약력")
-    st.markdown(f"<div class='hangul-box'>{kp}</div>", unsafe_allow_html=True)
-
-    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
-
-    st.markdown("##### 漢 정리된 한문 약력")
-    st.markdown(f"<div class='hanja-box'>{hp}</div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="font-weight: 700; font-size: 13.5px; color: #1e3a8a; margin: 4px 0 2px 0;">🇰🇷 정리된 한글 약력</div>
+    <div class='hangul-box'>{kp}</div>
+    <div style="font-weight: 700; font-size: 13.5px; color: #1e3a8a; margin: 5px 0 2px 0;">漢 정리된 한문 약력</div>
+    <div class='hanja-box'>{hp}</div>
+    """, unsafe_allow_html=True)
 
     # 제4장 5항 ③: 마지막에 족보 수록 원문 보기 생성
     with st.expander("📖 족보 수록 원문(原文字句) 보기", expanded=False):
@@ -975,7 +1129,6 @@ elif search_mode == "묘제일":
 # =============================================================================
 # 하단 전체 족보 데이터 목록 뷰
 # =============================================================================
-st.markdown("---")
 with st.expander("📑 전체 족보 전사 데이터 목록 (총 2,887행)", expanded=False):
     col_f1, col_f2 = st.columns([4, 8])
     with col_f1:
