@@ -71,7 +71,7 @@ if BG_FILE and os.path.exists(BG_FILE):
             b64_bg = base64.b64encode(f_bg.read()).decode()
         bg_style = f"""
         .stApp {{
-            background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.25)),
+            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.15)),
                         url("data:{mime};base64,{b64_bg}") no-repeat center center fixed !important;
             background-size: cover !important;
         }}
