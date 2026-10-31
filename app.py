@@ -123,13 +123,14 @@ div[data-testid="stElementContainer"] {
 }
 
 .clan-icon-img {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
     object-fit: contain;
     flex-shrink: 0;
-    border-radius: 6px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    background-color: #ffffff;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .clan-title-box {
@@ -176,39 +177,48 @@ div[data-testid="stExpander"] {
 }
 
 div[data-testid="stExpander"] summary {
-    padding: 4px 8px !important;
-    font-size: 13.5px !important;
-    font-weight: 600 !important;
-    color: #1e3a8a !important;
+    padding: 6px 12px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #0f2b5c !important;
 }
 
 div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
-    padding: 6px 10px !important;
+    padding: 8px 14px !important;
 }
 
 .wanguijeong-card {
     background-color: #fbfbfe;
     border: 1px solid #dbe2ea;
-    border-left: 4px solid #1a365d;
-    padding: 8px 12px !important;
+    border-left: 5px solid #1a365d;
+    padding: 12px 16px !important;
     border-radius: 6px;
-    margin-bottom: 2px !important;
+    margin-bottom: 4px !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .wanguijeong-card h4 {
-    margin: 0 0 4px 0 !important;
-    font-size: 14.5px !important;
+    margin: 0 0 8px 0 !important;
+    font-size: 17.5px !important;
     color: #1a365d;
     font-weight: 700;
 }
 
 .wanguijeong-card ul {
     margin: 0 !important;
-    padding-left: 18px !important;
-    font-size: 12.5px !important;
-    color: #334155;
-    line-height: 1.45 !important;
+    padding-left: 20px !important;
+    font-size: 15px !important;
+    color: #1e293b;
+    line-height: 1.75 !important;
+}
+
+.wanguijeong-card li {
+    margin-bottom: 6px !important;
+}
+
+.wanguijeong-card li b {
+    color: #0f2b5c;
+    font-weight: 700;
 }
 
 /* 검색창 헤더 박스 */
@@ -261,29 +271,40 @@ div[data-testid="stTextInput"] {
     margin-bottom: 0px !important;
 }
 
-/* 검색어 입력창을 선명하고 뚜렷하게 강조 */
+/* 검색어 입력창: 두툼한 검은색 테두리 및 매우 희미한 입력 안내 글자 */
 div[data-testid="stTextInput"] input {
     height: 38px !important;
     padding: 4px 12px !important;
     font-size: 14px !important;
     font-weight: 500 !important;
-    color: #0f172a !important;
+    color: #000000 !important;
     background-color: #ffffff !important;
-    border: 2px solid #1e3a8a !important; /* 뚜렷하고 선명한 짙은 남색 테두리 */
+    border: 2.8px solid #000000 !important; /* 두툼한 까만색 테두리 */
     border-radius: 6px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(30, 58, 138, 0.12) !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
     transition: all 0.2s ease-in-out !important;
 }
 
 div[data-testid="stTextInput"] input:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25) !important;
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.3) !important;
     outline: none !important;
 }
 
 div[data-testid="stTextInput"] input::placeholder {
-    color: #64748b !important;
+    color: #d1d5db !important; /* 매우 희미한 색 */
+    opacity: 0.55 !important;
     font-size: 13.5px !important;
+}
+
+div[data-testid="stTextInput"] input::-webkit-input-placeholder {
+    color: #d1d5db !important; /* 매우 희미한 색 */
+    opacity: 0.55 !important;
+}
+
+div[data-testid="stTextInput"] input::-moz-placeholder {
+    color: #d1d5db !important; /* 매우 희미한 색 */
+    opacity: 0.55 !important;
 }
 
 /* 검색 실행 버튼도 38px로 높이를 맞추고 그림자 추가 */
@@ -329,28 +350,46 @@ div[data-testid="stButton"] button, div[data-testid="stFormSubmitButton"] button
     margin-bottom: 5px !important;
 }
 
-.bilingual-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px !important;
-    margin-bottom: 6px !important;
-}
-
-.bilingual-table th {
+.result-summary-para {
     background: #f8fafc;
-    color: #1e3a8a;
-    font-weight: 700;
-    text-align: center;
-    padding: 3px 6px !important;
-    border: 1px solid #cbd5e1;
-    width: 16%;
+    border: 1px solid #e2e8f0;
+    border-left: 4.5px solid #0f2b5c;
+    border-radius: 6px;
+    padding: 10px 14px !important;
+    margin-bottom: 8px !important;
 }
 
-.bilingual-table td {
-    padding: 3px 6px !important;
-    border: 1px solid #e2e8f0;
+.info-para-line {
+    margin: 0 0 5px 0 !important;
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
     color: #1f2937;
+}
+
+.info-para-line:last-child {
+    margin-bottom: 0px !important;
+}
+
+.info-label {
+    font-weight: 700 !important;
+    color: #0f2b5c !important;
+}
+
+.info-val {
+    color: #111827 !important;
     font-weight: 500;
+}
+
+.info-sep {
+    color: #94a3b8 !important;
+    margin: 0 8px !important;
+}
+
+.result-gid-badge {
+    font-size: 13px !important;
+    font-weight: normal !important;
+    color: #64748b !important;
+    margin-left: 8px;
 }
 
 .hanja-box {
@@ -473,7 +512,7 @@ if os.path.exists(ICON_FILE):
     try:
         from PIL import Image
         import io
-        img_icon = Image.open(ICON_FILE)
+        img_icon = Image.open(ICON_FILE).convert("RGBA")
         img_icon.thumbnail((160, 160), Image.Resampling.LANCZOS)
         buf_icon = io.BytesIO()
         img_icon.save(buf_icon, format="PNG", optimize=True)
@@ -502,25 +541,17 @@ st.markdown(f"""
 # 제4장 3항: 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향) & 제3장 3항 동영상 삽입
 # =============================================================================
 with st.expander("🏛️ 완귀정(玩龜亭) 유래", expanded=False):
-    col_intro, col_vid = st.columns([7, 5])
-    with col_intro:
-        st.markdown("""
-        <div class="wanguijeong-card">
-            <h4>영천 완귀정 (경상북도 민속문화재 제20호)</h4>
-            <ul>
-                <li><b>건립자</b> : 완귀 안증(1494~1553)</li>
-                <li><b>위치</b> : 경상북도 영천시 도남동</li>
-                <li><b>유래</b> : 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</li>
-                <li><b>제향</b> : 매년 양력 4월 2째주 일요일 구암리 상로재(霜露齋)에서 봉행</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_vid:
-        st.markdown("**🎥 완귀정 및 문중 역사 소개 영상**")
-        if os.path.exists("intro.mp4"):
-            st.video("intro.mp4")
-        else:
-            st.video("https://www.youtube.com/watch?v=s5e_VjTqT64")
+    st.markdown("""
+    <div class="wanguijeong-card">
+        <h4>영천 완귀정 (경상북도 민속문화재 제20호)</h4>
+        <ul>
+            <li><b>건립자</b> : 완귀 안증(1494~1553)</li>
+            <li><b>위치</b> : 경상북도 영천시 도남동</li>
+            <li><b>유래</b> : 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</li>
+            <li><b>제향</b> : 매년 양력 4월 2째주 일요일 구암리 상로재(霜露齋)에서 봉행</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -535,7 +566,7 @@ st.markdown("""
 # 제4장 4항 ②: 검색 방식 : 인명, 단어, 계보 (+ 묘제일)
 search_mode = st.radio(
     "검색 방식 선택",
-    ["인명", "단어", "계보", "묘제일"],
+    ["인명", "단어", "계보"],
     horizontal=True,
     index=0,
     label_visibility="collapsed"
@@ -676,38 +707,35 @@ def render_search_result_view(row, title_prefix="검색 결과"):
     st.markdown(f"""
     <div class="result-card">
         <div class="result-card-title">
-            📜 {name} ({rel}) — {title_prefix} [고유ID: {gid}]
+            📜 {name} ({rel}) — {title_prefix} <span class="result-gid-badge">[고유ID: {gid}]</span>
         </div>
-        <table class="bilingual-table">
-            <tr>
-                <th>세수(世數)</th>
-                <td>{facts['세수']}</td>
-                <th>부 / 조부</th>
-                <td>부: <b>{facts['부']}</b> / 조부: <b>{facts['조부']}</b></td>
-            </tr>
-            <tr>
-                <th>자(字)</th>
-                <td>{facts['자']}</td>
-                <th>호(號)</th>
-                <td>{facts['호']}</td>
-            </tr>
-            <tr>
-                <th>초휘(初諱) / 일휘(一諱)</th>
-                <td>{facts['초휘_일휘']}</td>
-                <th>초자(初字)</th>
-                <td>{facts['초자']}</td>
-            </tr>
-            <tr>
-                <th>통명(通名) / 초명(初名)</th>
-                <td>{facts['통명_초명']}</td>
-                <th>과거 · 관직</th>
-                <td>{facts['과거_관직']}</td>
-            </tr>
-            <tr>
-                <th>배위(配位)</th>
-                <td colspan="3">{facts['배위']}</td>
-            </tr>
-        </table>
+        <div class="result-summary-para">
+            <p class="info-para-line">
+                <span class="info-label">• 세수(世數)</span> : <span class="info-val">{facts['세수']}</span>
+                <span class="info-sep">|</span>
+                <span class="info-label">부(父)</span> : <span class="info-val">{facts['부']}</span>
+                <span class="info-sep">|</span>
+                <span class="info-label">조부(祖父)</span> : <span class="info-val">{facts['조부']}</span>
+            </p>
+            <p class="info-para-line">
+                <span class="info-label">• 자(字)</span> : <span class="info-val">{facts['자']}</span>
+                <span class="info-sep">|</span>
+                <span class="info-label">호(號)</span> : <span class="info-val">{facts['호']}</span>
+            </p>
+            <p class="info-para-line">
+                <span class="info-label">• 초휘·일휘</span> : <span class="info-val">{facts['초휘_일휘']}</span>
+                <span class="info-sep">|</span>
+                <span class="info-label">초자(初字)</span> : <span class="info-val">{facts['초자']}</span>
+                <span class="info-sep">|</span>
+                <span class="info-label">통명·초명</span> : <span class="info-val">{facts['통명_초명']}</span>
+            </p>
+            <p class="info-para-line">
+                <span class="info-label">• 과거 및 관직</span> : <span class="info-val">{facts['과거_관직']}</span>
+            </p>
+            <p class="info-para-line">
+                <span class="info-label">• 배위(配位)</span> : <span class="info-val">{facts['배위']}</span>
+            </p>
+        </div>
     """, unsafe_allow_html=True)
 
     # 제4장 5항 ②: 별도로 아래에 상세한 한문·한글 약력 (정리된 한문 한글 약력 표기)
@@ -740,7 +768,7 @@ if search_mode == "인명":
         with col_input:
             person_query = st.text_input(
                 "인명 검색어 입력",
-                placeholder="예: 증, 사겸, 완귀, 후정, 구중, 효방 등",
+                placeholder=" 여기에 입력하세요",
                 label_visibility="collapsed"
             ).strip()
             p_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
@@ -801,7 +829,7 @@ elif search_mode == "단어":
         with col_input:
             word_query = st.text_input(
                 "단어 검색어 입력",
-                placeholder="예: 통정대부, 청도, 성균관, 진사, 신도비 등",
+                placeholder=" 여기에 입력하세요",
                 label_visibility="collapsed"
             ).strip()
             w_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
@@ -848,7 +876,7 @@ elif search_mode == "계보":
         with col_input:
             tree_query = st.text_input(
                 "계보 검색어 입력",
-                placeholder="예: 증, 구중, 시한, 효방, 후정 등",
+                placeholder=" 여기에 입력하세요",
                 label_visibility="collapsed"
             ).strip()
             t_submit = st.form_submit_button("🌳 계보 작성 및 검색", use_container_width=True, type="primary")
@@ -1019,142 +1047,6 @@ elif search_mode == "계보":
                     index=p_keys.index(p_name) if p_name in p_keys else 0
                 )
                 render_search_result_view(all_tree_people[sel_p_in_tree], title_prefix="계보 연동 약력")
-
-
-# =============================================================================
-# 검색 방식 4: 제5장 묘제일 메뉴 생성
-# =============================================================================
-elif search_mode == "묘제일":
-    st.markdown("##### 🕯️ 광주안씨 완귀공파 종중 묘제일(시제일) 종합 안내")
-    tab_myo1, tab_myo2 = st.tabs(["주요 선조 시제일 종합 안내표", "족보 전체 기일(忌日)·묘소 검색"])
-
-    with tab_myo1:
-        st.markdown("###### 🏛️ 주요 분파조 및 선조 제향일(묘제일) 일람표")
-        myoje_data = [
-            {
-                "세수": "24세",
-                "선조 함자": "완귀공 증(嶒)",
-                "분파": "파조 (완귀공파)",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일 (10월 상정일)",
-                "제향 장소": "영천시 금호읍 청제내 호연사(虎淵祠) 및 화전등 묘소",
-                "묘좌(좌향)": "유좌(酉坐, 서향)",
-                "비고": "파조 묘제 및 유허비, 종중 총회 겸 봉행"
-            },
-            {
-                "세수": "25세",
-                "선조 함자": "참봉공 종경(宗慶)",
-                "분파": "완귀공 계자",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 청제내 재사 좌록 배위(거창신씨) 묘소 설단",
-                "묘좌(좌향)": "유좌(酉坐)",
-                "비고": "양주 수락산 실전으로 배위 묘하 설단 행사"
-            },
-            {
-                "세수": "26세",
-                "선조 함자": "음참봉 대해(大海)",
-                "분파": "종경공 1자",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 청제내 배위(안동권씨) 묘소 설단",
-                "묘좌(좌향)": "유좌(酉坐)",
-                "비고": "양주 선고 묘하 실전으로 배위 묘하 설단 행사"
-            },
-            {
-                "세수": "27세",
-                "선조 함자": "감찰공 전(琠)",
-                "분파": "대해공 계자",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 금호읍 청제내 재사 북록 묘소",
-                "묘좌(좌향)": "유좌(酉坐)",
-                "비고": "병와 이형상 찬 묘갈명"
-            },
-            {
-                "세수": "28세",
-                "선조 함자": "판결사 명한(鳴漢)",
-                "분파": "전공 1자",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 청제내 신수곡(臣守谷) 묘소",
-                "묘좌(좌향)": "유좌(酉坐)",
-                "비고": "증 장례원 판결사, 오천 정환국 찬 묘갈명"
-            },
-            {
-                "세수": "28세",
-                "선조 함자": "시한(蓍漢)",
-                "분파": "전공 2자",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 청제 재사 우록 묘소",
-                "묘좌(좌향)": "신좌(辛坐)",
-                "비고": "광주 이채진 찬 묘갈"
-            },
-            {
-                "세수": "29세",
-                "선조 함자": "성재 후정(后靜)",
-                "분파": "상석계파 (제1지파)",
-                "묘제일(시제일)": "매년 음력 10월 첫째 일요일",
-                "제향 장소": "영천 청제내 선공 묘하 자좌",
-                "묘좌(좌향)": "자좌(子坐)",
-                "비고": "성균관 학정, 매산 정중기 찬 묘갈명"
-            },
-            {
-                "세수": "29세",
-                "선조 함자": "인정(仁靜)",
-                "분파": "위계파 (제2지파)",
-                "묘제일(시제일)": "매년 음력 10월 상정일",
-                "제향 장소": "영천시 대창면 임하리 선영",
-                "묘좌(좌향)": "묘좌(卯坐)",
-                "비고": "위계파 지파 묘제 봉행"
-            },
-            {
-                "세수": "29세",
-                "선조 함자": "태정(泰靜)",
-                "분파": "목계파 (제3지파)",
-                "묘제일(시제일)": "매년 음력 10월 상정일",
-                "제향 장소": "영천 청제 가음제외 북록 묘소",
-                "묘좌(좌향)": "자좌(子坐)",
-                "비고": "종인 종묵 찬 묘갈명"
-            },
-            {
-                "세수": "29세",
-                "선조 함자": "삼괴당 처정(處靜)",
-                "분파": "봉계파 (제4지파)",
-                "묘제일(시제일)": "매년 음력 10월 상정일",
-                "제향 장소": "영천시 봉동 정모산 독산 후 묘소",
-                "묘좌(좌향)": "진좌(辰坐)",
-                "비고": "순암 정복 찬 묘갈명, 정모재 봉향"
-            },
-            {
-                "세수": "선영",
-                "선조 함자": "작산(鵲山) 선영 선조 40위",
-                "분파": "완귀공파 작산 묘소",
-                "묘제일(시제일)": "매년 음력 10월 상정일",
-                "제향 장소": "영천시 작산동 선영",
-                "묘좌(좌향)": "유좌/자좌 등",
-                "비고": "작산 묘소 선조 40위 일괄 합동 묘제"
-            }
-        ]
-        df_myo = pd.DataFrame(myoje_data)
-        st.dataframe(df_myo, use_container_width=True, hide_index=True)
-
-    with tab_myo2:
-        st.markdown("###### 🔍 족보 수록 선조 묘소 및 기일(忌日) 검색")
-        m_col1, m_col2 = st.columns([6, 4])
-        with m_col1:
-            myo_kw = st.text_input("묘소 지명 검색 (예: 청제, 작산, 정모산, 도일, 나월산, 가음, 임하 등)", "").strip()
-        with m_col2:
-            gi_month = st.selectbox("기일 월별 필터", ["전체", "1월(정월)", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"])
-
-        m_df = df.copy()
-        if myo_kw:
-            m_df = m_df[m_df["한글 프로필 정렬"].str.contains(myo_kw, na=False) | m_df["한문 프로필 정렬"].str.contains(myo_kw, na=False)]
-        if gi_month != "전체":
-            m_num = gi_month.split("월")[0]
-            m_df = m_df[m_df["한글 프로필 정렬"].str.contains(rf"기일은\s*{m_num}월|忌\s*{m_num}월|{m_num}월\s*[0-9]+일졸", regex=True, na=False)]
-
-        st.caption(f"검색 결과: 총 {len(m_df)}위 선조")
-        st.dataframe(
-            m_df[["고유ID", "선조", "세수", "관계", "부친", "조부", "한글 프로필 정렬"]],
-            use_container_width=True,
-            hide_index=True
-        )
 
 
 # =============================================================================
