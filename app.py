@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 광주안씨 완귀공파 종중 족보 통합 검색 시스템 (Streamlit Web Application)
-- 작성 지침: '족보 검색 메뉴 PY 작성.pdf' (제1장 ~ 제4장 전 조항 완벽 반영)
+- 작성 지침: '족보 검색 메뉴 PY 작성.pdf' (제1장 ~ 제5장 전 조항 완벽 반영)
   * 제1장 (초기 총괄 메뉴 작성): 페이지 타이틀, 아이콘(icon.png), 검색창 타이틀(족보 검색),
                               선택 안내문('아래 검색 방식 중 하나를 선택하세요'),
                               인명 검색(인명, 자, 호, 초위, 초자, 통명, 초명 등 -> 정렬된 약력, 복수 인물 선택 과정),
@@ -9,8 +9,18 @@
   * 제2장 (계보 작성): 초기 화면에 계보 검색 버튼 생성, 인명 검색어와 동일 검색어 지원,
                      계보 작성 조건 창(부·조부 형제 전원 표기, 증조부 이상 및 하대 '0자 중 0자' 표기,
                      축소 시 수평 지그재그 계보도), 노드 선택 시 상세 약력 연동
-  * 제3장 (디자인): 종중 상징 아이콘(icon.png), 전통 배경 디자인, 홍보/역사 동영상 삽입 지원
-  * 제4장 (묘제일 메뉴 생성): 파조 완귀공 및 지파 선조별 시제일·묘제일·축일·장소 안내 및 기일 검색
+  * 제3장 (디자인): 종중의 상징 아이콘(icon.png), 배경 이미지(background.png), 동영상 삽입
+  * 제4장 (파이션 입력 사항):
+      1. 페이지 타이틀: 함초롱돋움체, '광주안씨 완귀공파 종중'(폰트 22, 짙은 청색) / '족보 검색 시스템'(폰트 20, 검정 글자) 줄바꿈
+      2. 타이틀 아래 참고 글: '광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)'
+      3. 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향)
+      4. 족보 검색 창: 타이틀 '족보 검색(아래 검색 방식을 선택하세요)', 방식(인명, 단어, 계보),
+                     입력창 너비 최소화 & 오른쪽에 안내 문구 표시
+      5. 검색 결과창:
+         ① 세수(완귀공의 0대 손), 부, 조부, 자, 호, 초휘(初諱), 일휘(一諱), 초자(初字), 통명(通名), 초명(初名), 과거·관직, 배위 등을 한글한자 병기
+         ② 별도로 아래에 상세한 한문·한글 약력 (정리된 한문 한글 약력 표기)
+         ③ 마지막에 족보 수록 원문 보기 생성
+  * 제5장 (묘제일 메뉴 생성): 주요 선조별 묘제일(시제일) 종합 일람표 및 족보 수록 선조 묘소·기일 검색
 """
 
 import os
@@ -20,9 +30,10 @@ import pandas as pd
 import streamlit as st
 
 # =============================================================================
-# 제1장 1항: 페이지 기본 설정 및 아이콘 지정
+# 제1장 1항: 페이지 기본 설정 및 아이콘(icon.png) 지정
 # =============================================================================
 ICON_FILE = "icon.png"
+BG_FILE = "background.png"
 PAGE_TITLE = "광주안씨 완귀공파 종중 족보 검색 시스템"
 
 st.set_page_config(
@@ -33,183 +44,188 @@ st.set_page_config(
 )
 
 # =============================================================================
-# 제3장 (디자인): 전통 문양 스타일, 배경 이미지 및 여백 조절 CSS
+# 제3장 2항 & 제4장 1항: 스타일, 폰트(함초롱돋움), 배경 이미지(background.png)
 # =============================================================================
-custom_css = """
+bg_style = ""
+if os.path.exists(BG_FILE):
+    try:
+        with open(BG_FILE, "rb") as f_bg:
+            b64_bg = base64.b64encode(f_bg.read()).decode()
+        bg_style = f"""
+        .stApp {{
+            background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.95)),
+                        url("data:image/png;base64,{b64_bg}") no-repeat center center fixed !important;
+            background-size: cover !important;
+        }}
+        """
+    except Exception:
+        pass
+
+custom_css = f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
+/* 제4장 1항: 페이지 타이틀 함초롱돋움체 */
+.clan-title-box {{
+    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
+    line-height: 1.35;
+    margin-top: 2px;
+    margin-bottom: 6px;
+}}
+
+.clan-title-main {{
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    color: #0f2b5c !important; /* 짙은 청색 */
+    letter-spacing: -0.5px;
+}}
+
+.clan-title-sub {{
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: #111111 !important; /* 검정 글자 */
+    letter-spacing: -0.5px;
+}}
+
+.clan-title-ref {{
+    font-size: 14px;
+    color: #4b5563;
+    font-weight: 500;
+    margin-bottom: 14px;
+}}
 
 /* 상단 패딩 축소 */
-.block-container {
-    padding-top: 1.2rem !important;
+.block-container {{
+    padding-top: 1.0rem !important;
     padding-bottom: 3rem !important;
-    max-width: 1400px;
-}
+    max-width: 1380px;
+}}
 
-/* 상단 헤더 투명화 */
-header[data-testid="stHeader"] {
-    height: 2rem !important;
+header[data-testid="stHeader"] {{
+    height: 1.8rem !important;
     background: transparent !important;
-}
+}}
 
-/* 메인 타이틀 배너 */
-.clan-header {
-    background: linear-gradient(135deg, #111e38 0%, #1a2e5a 60%, #2c487f 100%);
-    color: #ffffff;
-    padding: 22px 25px;
-    border-radius: 12px;
-    text-align: center;
-    border: 2px solid #d4af37;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    margin-bottom: 20px;
-}
+/* 제4장 3항: 완귀정 소개 카드 */
+.wanguijeong-card {{
+    background-color: #fbfbfe;
+    border: 1px solid #dbe2ea;
+    border-left: 5px solid #1a365d;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}}
 
-.clan-header h1 {
-    font-family: 'Noto Serif KR', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: #f7d774;
-    margin: 0 0 6px 0;
-    letter-spacing: -0.5px;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-}
-
-.clan-header h2 {
-    font-size: 19px;
-    font-weight: 500;
-    color: #ffffff;
+.wanguijeong-card h4 {{
     margin: 0 0 8px 0;
-    letter-spacing: -0.3px;
-}
+    font-size: 16px;
+    color: #1a365d;
+    font-weight: 700;
+}}
 
-.clan-header p {
-    font-size: 13px;
-    color: #d1d8e6;
+.wanguijeong-card ul {{
     margin: 0;
-}
+    padding-left: 20px;
+    font-size: 13.5px;
+    color: #334155;
+    line-height: 1.65;
+}}
 
-/* 족보 검색창 타이틀 및 안내문 카드 */
-.search-guide-box {
-    background-color: #f8fafc;
-    border-left: 5px solid #1a2e5a;
-    padding: 12px 18px;
+/* 제4장 4항: 족보 검색창 타이틀 박스 */
+.search-header-box {{
+    background: #f1f5f9;
+    border-left: 5px solid #0f2b5c;
+    padding: 10px 16px;
     border-radius: 6px;
-    margin-bottom: 15px;
-    border-top: 1px solid #e2e8f0;
-    border-right: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
-}
+    margin-bottom: 14px;
+}}
 
-.search-guide-box h3 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
+.search-header-box h3 {{
+    margin: 0;
+    font-size: 17px;
     color: #0f172a;
     font-weight: 700;
-}
+}}
 
-.search-guide-box p {
-    margin: 0;
-    font-size: 14px;
-    color: #475569;
-    font-weight: 500;
-}
+/* 제4장 4항 ③: 검색창 우측 안내문구 */
+.search-hint-text {{
+    padding-top: 8px;
+    font-size: 13.5px;
+    color: #334155;
+    font-weight: 600;
+    line-height: 1.5;
+}}
 
-/* 약력 카드 스타일 */
-.bio-card {
+/* 제4장 5항: 상세 결과창 카드 */
+.result-card {{
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 10px;
     padding: 18px 22px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
     margin-top: 15px;
-}
+}}
 
-.bio-card-title {
+.result-card-title {{
     font-family: 'Noto Serif KR', serif;
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 700;
-    color: #1e3a8a;
+    color: #0f2b5c;
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 8px;
-    margin-bottom: 14px;
-}
+    margin-bottom: 12px;
+}}
 
-/* 핵심 약력 요약 배지 */
-.fact-badge {
-    display: inline-block;
-    background: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #bfdbfe;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-right: 6px;
-    margin-bottom: 8px;
-}
-
-/* 한문 본문 폰트 */
-.hanja-text {
-    font-family: 'Noto Serif KR', 'Batang', serif;
-    color: #1f2937;
-    line-height: 1.8;
-}
-
-/* 맞춤형 테이블 */
-.custom-genealogy-table {
+.bilingual-table {{
     width: 100%;
     border-collapse: collapse;
     font-size: 13.5px;
-    margin-top: 10px;
-}
-.custom-genealogy-table th {
-    background-color: #1e3a8a;
-    color: #ffffff;
-    font-weight: 600;
+    margin-bottom: 16px;
+}}
+
+.bilingual-table th {{
+    background: #f8fafc;
+    color: #1e3a8a;
+    font-weight: 700;
     text-align: center;
-    padding: 10px 8px;
+    padding: 7px 10px;
     border: 1px solid #cbd5e1;
-    white-space: nowrap;
-}
-.custom-genealogy-table td {
-    padding: 9px 8px;
+    width: 18%;
+}}
+
+.bilingual-table td {{
+    padding: 7px 12px;
     border: 1px solid #e2e8f0;
-    vertical-align: top;
-    line-height: 1.6;
-    word-break: break-all;
-}
-.custom-genealogy-table tr:hover {
-    background-color: #f8fafc;
-}
+    color: #1f2937;
+    font-weight: 500;
+}}
+
+.hanja-box {{
+    font-family: 'Noto Serif KR', 'Batang', serif;
+    background: #fafaf9;
+    border: 1px solid #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    line-height: 1.85;
+    font-size: 15px;
+    color: #18181b;
+}}
+
+.hangul-box {{
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    line-height: 1.8;
+    font-size: 14.5px;
+    color: #1e293b;
+}}
+
+{bg_style}
 </style>
 """
-
-# 제3장 2항: 배경 이미지 삽입 (background.jpg 또는 background.png가 존재하면 배경으로 삽입)
-bg_css = ""
-for bg_name in ["background.jpg", "background.png"]:
-    if os.path.exists(bg_name):
-        try:
-            with open(bg_name, "rb") as f_bg:
-                b64_bg = base64.b64encode(f_bg.read()).decode()
-            bg_css = f"""
-            <style>
-            .stApp {{
-                background: linear-gradient(rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.96)),
-                            url("data:image/jpeg;base64,{b64_bg}");
-                background-size: cover;
-                background-attachment: fixed;
-            }}
-            </style>
-            """
-            break
-        except Exception:
-            pass
-
-st.markdown(custom_css + bg_css, unsafe_allow_html=True)
+st.markdown(custom_css, unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -236,15 +252,12 @@ def load_data():
         return pd.DataFrame()
 
     try:
-        # sheet_name='족보전사결과' 우선 확인
         xl = pd.ExcelFile(target_path)
         sheet = "족보전사결과" if "족보전사결과" in xl.sheet_names else xl.sheet_names[0]
         df = xl.parse(sheet)
 
-        # 열 이름 정리
         df.columns = [str(col).replace("\ufeff", "").strip() for col in df.columns]
 
-        # 표준 열 이름 매핑
         aliases = {
             "인명": "선조",
             "한글 약력 정렬": "한글 프로필 정렬",
@@ -254,13 +267,11 @@ def load_data():
         }
         df = df.rename(columns=aliases)
 
-        # 결측값 및 문자열 정리
         df = df.fillna("")
         for col in df.columns:
             df[col] = df[col].astype(str).str.strip()
             df[col] = df[col].replace({"nan": "", "NaN": "", "None": ""})
 
-        # 세수(世數) 및 분파(派) 열 자동 계산 (없는 경우 고유ID 및 계보 기반 자동 추출)
         if "세수" not in df.columns:
             def extract_gen(uid):
                 parts = str(uid).split("-")
@@ -281,62 +292,64 @@ if df.empty:
 
 
 # =============================================================================
-# 제3장 1항: 종중 상징 아이콘 및 메인 헤더
+# 제4장 1항 & 2항: 페이지 타이틀(함초롱돋움 22/20pt) 및 참고 글
 # =============================================================================
 header_col1, header_col2 = st.columns([1, 11])
 with header_col1:
     if os.path.exists(ICON_FILE):
-        st.image(ICON_FILE, width=82)
+        st.image(ICON_FILE, width=95)
     else:
-        st.markdown("<div style='font-size: 50px; text-align:center;'>📜</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size: 55px; text-align:center;'>📜</div>", unsafe_allow_html=True)
 with header_col2:
     st.markdown("""
-    <div style='margin-top: 3px;'>
-        <div style='font-family: \"Noto Serif KR\", serif; font-size: 18px; font-weight: 700; color: #1e3a8a; letter-spacing: -0.5px;'>
-            廣州安氏 玩龜公派 宗中 족보 검색 시스템
-        </div>
-        <div style='font-size: 10px; color: #475569; font-weight: 500;'>
-            광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 정밀 전사 데이터 기반 공식 계보·약력 검색 포털
-        </div>
+    <div class="clan-title-box">
+        <span class="clan-title-main">광주안씨 완귀공파 종중</span><br>
+        <span class="clan-title-sub">족보 검색 시스템</span>
+    </div>
+    <div class="clan-title-ref">
+        광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)
     </div>
     """, unsafe_allow_html=True)
 
-st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
-# 제3장 3항: 동영상 삽입 (문중 소개 / 완귀정 문화재 영상)
-with st.expander("🎥 문중 소개 및 완귀정(玩龜亭) 역사 영상 안내", expanded=False):
-    v_col1, v_col2 = st.columns([7, 5])
-    with v_col1:
+# =============================================================================
+# 제4장 3항: 완귀정 소개 글 (제목, 건립자, 위치, 유래, 제향) & 제3장 3항 동영상 삽입
+# =============================================================================
+with st.expander("🏛️ 완귀정(玩龜亭) 유래 및 문중 영상 안내", expanded=False):
+    col_intro, col_vid = st.columns([7, 5])
+    with col_intro:
+        st.markdown("""
+        <div class="wanguijeong-card">
+            <h4>영천 완귀정 (경상북도 민속문화재 제20호)</h4>
+            <ul>
+                <li><b>건립자</b> : 완귀 안증(1494~1553)</li>
+                <li><b>위치</b> : 경상북도 영천시 도남동</li>
+                <li><b>유래</b> : 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</li>
+                <li><b>제향</b> : 매년 양력 4월 2째주 일요일 구암리 상로재(霜露齋)에서 봉행</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_vid:
+        st.markdown("**🎥 완귀정 및 문중 역사 소개 영상**")
         if os.path.exists("intro.mp4"):
             st.video("intro.mp4")
         else:
-            # 영천 완귀정 및 문중 관련 대표 영상 임베드 (또는 사용자 커스텀 영상 입력 지원)
             st.video("https://www.youtube.com/watch?v=s5e_VjTqT64")
-    with v_col2:
-        st.markdown("""
-        **🏛️ 영천 완귀정 (경상북도 민속문화재 제20호)**
-        - **건립자**: 완귀공 안증(安嶒, 1494~1553, 성종 25년~명종 8년)
-        - **위치**: 경상북도 영천시 금호읍 청제내
-        - **유래**: 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 
-          거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.
-        - **제향**: 매년 음력 10월 첫째 일요일 호연사(虎淵祠) 및 청제 묘소에서 묘제 봉행
-        """)
 
 
 # =============================================================================
-# 제1장 2항 & 3항: 검색창 타이틀 및 검색 방식 선택
+# 제4장 4항: 족보 검색 창 (타이틀, 방식 선택, 너비 최소화 입력창 & 우측 문구 표시)
 # =============================================================================
 st.markdown("""
-<div class="search-guide-box">
-    <h3>🔍 족보 검색</h3>
-    <p>아래 검색 방식 중 하나를 선택하세요</p>
+<div class="search-header-box">
+    <h3>🔍 족보 검색(아래 검색 방식을 선택하세요)</h3>
 </div>
 """, unsafe_allow_html=True)
 
-# 검색 방식 선택 버튼 (제1장 3항 ①: 인명 검색, 단어 검색 / 제2장 1항: 계보 검색 / 제4장: 묘제일 메뉴)
+# 제4장 4항 ②: 검색 방식 : 인명, 단어, 계보 (+ 묘제일)
 search_mode = st.radio(
     "검색 방식 선택",
-    ["인명 검색", "단어 검색", "계보 검색", "묘제일 안내"],
+    ["인명", "단어", "계보", "묘제일"],
     horizontal=True,
     index=0,
     label_visibility="collapsed"
@@ -344,106 +357,184 @@ search_mode = st.radio(
 
 
 # =============================================================================
-# 핵심 약력 추출 보조 함수 (제1장 3항 ③: 핵심 약력 표시)
+# 제4장 5항 ①: 한글·한자 병기 세부 항목 파싱 함수 (오류 없는 안전한 정규식)
 # =============================================================================
-def extract_key_facts(row):
-    facts = {}
+def parse_detailed_facts(row):
     kp = str(row.get("한글 프로필 정렬", "") or row.get("한글 프로필", ""))
     hp = str(row.get("한문 프로필 정렬", "") or row.get("한문 프로필 원문", ""))
+    uid = str(row.get("고유ID", ""))
+    facts = {}
 
-    # 1. 생졸년월일 및 향년
-    m_birth = re.search(r"((?:[가-힣]{2}\s*)?[0-9]{4}년(?:생|\s*[0-9]+월(?:\s*[0-9]+일)?생(?:\([양음]\))?)|[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]\s*[一-龥]{2,8}生(?:\([陽陰]\))?)", kp + " " + hp)
-    facts["생년"] = m_birth.group(1).strip() if m_birth else "기록 없음"
+    # 1. 세수 (완귀공의 0대 손)
+    parts = uid.split("-")
+    gen_num = int(parts[-1]) if len(parts) >= 4 and parts[-1].isdigit() else 0
+    if gen_num == 24:
+        facts["세수"] = "24세손 (파조 완귀공)"
+    elif gen_num > 24:
+        facts["세수"] = f"{gen_num}세손 (완귀공의 {gen_num - 24}대손)"
+    elif gen_num > 0:
+        facts["세수"] = f"{gen_num}세손"
+    else:
+        facts["세수"] = "-"
 
-    m_death = re.search(r"((?:[가-힣]{2}\s*)?[0-9]{4}년\s*[0-9]+월\s*[0-9]+일졸|[0-9]{4}년졸|忌\s*[0-9]+월\s*[0-9]+일|[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]\s*[一-龥]{2,8}卒)", kp + " " + hp)
-    facts["몰년"] = m_death.group(1).strip() if m_death else "기록 없음"
+    # 2. 부, 조부
+    facts["부"] = str(row.get("부친", "")) or "-"
+    facts["조부"] = str(row.get("조부", "")) or "-"
 
-    m_age = re.search(r"향년\s*([0-9]+|六十|七十|八十|九十|百)[세]?", kp)
-    facts["향년"] = f"향년 {m_age.group(1)}세" if m_age else ""
+    # 配(배위) 이전 본인 구역만 분리하여 호/자 오인 매칭 방지
+    main_hp = hp.split("配")[0]
+    main_kp = kp.split("배위")[0]
 
-    # 2. 자(字), 호(號), 초명(初名), 초휘(初諱)
-    m_ja = re.search(r"(?:자는|자)\s*([가-힣]+)|字\s*([一-龥]+)", kp + " " + hp)
-    facts["자"] = (m_ja.group(1) or m_ja.group(2)).strip() if m_ja else ""
+    # 3. 자(字) 한글한자 병기
+    m_ja_h = re.search(r"字\s*([一-龥]+)", main_hp)
+    m_ja_k = re.search(r"(?:자는|자)\s*([가-힣]+)", main_kp)
+    if m_ja_h and m_ja_k:
+        facts["자"] = f"{m_ja_h.group(1)}({m_ja_k.group(1)})"
+    elif m_ja_h:
+        facts["자"] = m_ja_h.group(1)
+    elif m_ja_k:
+        facts["자"] = m_ja_k.group(1)
+    else:
+        facts["자"] = "-"
 
-    m_ho = re.search(r"(?:호는|호)\s*([가-힣]+)|號\s*([一-龥]+)", kp + " " + hp)
-    facts["호"] = (m_ho.group(1) or m_ho.group(2)).strip() if m_ho else ""
+    # 4. 호(號) 한글한자 병기
+    m_ho_h = re.search(r"號\s*([一-龥\(\)]+)", main_hp)
+    m_ho_k = re.search(r"(?:호는|호)\s*([가-힣\(\)]+)", main_kp)
+    if m_ho_h and m_ho_k:
+        facts["호"] = f"{m_ho_h.group(1)}({m_ho_k.group(1)})"
+    elif m_ho_h:
+        facts["호"] = m_ho_h.group(1)
+    elif m_ho_k:
+        facts["호"] = m_ho_k.group(1)
+    else:
+        facts["호"] = "-"
 
-    # 3. 주요 관직
+    # 5. 초휘(初諱) / 일휘(一諱)
+    m_ch_h = re.search(r"(?:初諱|一諱)\s*([一-龥]+)", main_hp)
+    m_ch_k = re.search(r"(?:초휘는|초휘|일휘는|일휘)\s*([가-힣]+)", main_kp)
+    if m_ch_h and m_ch_k:
+        facts["초휘_일휘"] = f"{m_ch_h.group(1)}({m_ch_k.group(1)})"
+    elif m_ch_h:
+        facts["초휘_일휘"] = m_ch_h.group(1)
+    elif m_ch_k:
+        facts["초휘_일휘"] = m_ch_k.group(1)
+    else:
+        facts["초휘_일휘"] = "-"
+
+    # 6. 초자(初字)
+    m_cj_h = re.search(r"初字\s*([一-龥]+)", main_hp)
+    m_cj_k = re.search(r"(?:초자는|초자)\s*([가-힣]+)", main_kp)
+    if m_cj_h and m_cj_k:
+        facts["초자"] = f"{m_cj_h.group(1)}({m_cj_k.group(1)})"
+    elif m_cj_h:
+        facts["초자"] = m_cj_h.group(1)
+    elif m_cj_k:
+        facts["초자"] = m_cj_k.group(1)
+    else:
+        facts["초자"] = "-"
+
+    # 7. 통명(通名) / 초명(初名) / 일명(一名) / 개명(改名)
+    m_tm_h = re.search(r"(?:通名|初名|一名|改名|官名)\s*([一-龥]+)", main_hp)
+    m_tm_k = re.search(r"(?:통명은|통명|초명은|초명|일명은|일명|개명은|개명|관명은|관명)\s*([가-힣]+)", main_kp)
+    if m_tm_h and m_tm_k:
+        facts["통명_초명"] = f"{m_tm_h.group(1)}({m_tm_k.group(1)})"
+    elif m_tm_h:
+        facts["통명_초명"] = m_tm_h.group(1)
+    elif m_tm_k:
+        facts["통명_초명"] = m_tm_k.group(1)
+    else:
+        facts["통명_초명"] = "-"
+
+    # 8. 과거·관직 (한글한자 병기)
     offices = []
-    career_kw = ["참봉", "주부", "감찰", "좌랑", "원외랑", "설서", "사서", "학유", "학록", "학정", "전적", "통덕랑", "통정대부", "판결사", "현감", "군수", "참판", "판서", "교수", "교장", "의관"]
-    for kw in career_kw:
-        if kw in kp or kw in hp:
-            offices.append(kw)
-    facts["관직"] = ", ".join(offices[:3]) if offices else "유학(幼學) / 미기재"
+    career_pairs = [
+        ("文科", "문과"), ("司馬", "사마"), ("生員", "생원"), ("進士", "진사"),
+        ("登第", "등제"), ("參奉", "참봉"), ("主簿", "주부"), ("司憲府監察", "사헌부감찰"),
+        ("刑曹員外郎", "형조원외랑"), ("佐郎", "좌랑"), ("司書", "사서"), ("說書", "설서"),
+        ("成均館學正", "성균관학정"), ("學諭", "학유"), ("學錄", "학록"), ("典籍", "전적"),
+        ("通德郎", "통덕랑"), ("通政大夫", "통정대부"), ("掌隷院判決事", "장례원판결사"),
+        ("縣監", "현감"), ("郡守", "군수"), ("都事", "도사"), ("洗馬", "세마"),
+        ("校長", "교장"), ("敎授", "교수"), ("專門醫", "전문의")
+    ]
+    for hj, hg in career_pairs:
+        if hj in hp or hg in kp:
+            offices.append(f"{hj}({hg})")
+    facts["과거_관직"] = ", ".join(offices[:3]) if offices else "유학(幼學) / 미기재"
 
-    # 4. 묘소 (지명, 묘좌)
-    m_tomb = re.search(r"(묘는\s*[^,\.]+|墓\s*[^,\.]+)", kp + " " + hp)
-    facts["묘소"] = m_tomb.group(1).strip() if m_tomb else "기록 없음"
-
-    # 5. 배위 본관
-    spouses = []
-    m_sp = re.findall(r"(?:배위\s*([가-힣]{2,4}씨)|配\s*([一-龥]{2,4}氏))", kp + " " + hp)
-    for sp_k, sp_h in m_sp:
-        sp_val = sp_k or sp_h
-        if sp_val and sp_val not in spouses:
-            spouses.append(sp_val)
-    facts["배위"] = ", ".join(spouses) if spouses else "미기재 / 무후"
+    # 9. 배위 한글한자 병기
+    sp_list = []
+    m_sp = re.findall(r"(?:配\s*(?:[一-龥]{2,4}\s+)?([一-龥]{2,4}氏)|배위\s*(?:[가-힣]{2,4}\s+)?([가-힣]{2,4}씨))", hp + " " + kp)
+    for sp_h, sp_k in m_sp:
+        s_val = sp_h or sp_k
+        if s_val and s_val not in sp_list:
+            sp_list.append(s_val)
+    facts["배위"] = ", ".join(sp_list) if sp_list else "미기재 / 무후"
 
     return facts
 
 
-def render_profile_card(row, title_prefix="선조 정렬 약력"):
+# =============================================================================
+# 제4장 5항: 검색 결과창 렌더링 함수
+# =============================================================================
+def render_search_result_view(row, title_prefix="검색 결과"):
     gid = row.get("고유ID", "")
     name = row.get("선조", "")
     rel = row.get("관계", "")
-    fa = row.get("부친", "")
-    gf = row.get("조부", "")
-    gen = row.get("세수", "")
     kp = row.get("한글 프로필 정렬", "") or row.get("한글 프로필", "") or "약력 없음"
     hp = row.get("한문 프로필 정렬", "") or row.get("한문 프로필 원문", "") or "약력 없음"
     kp_raw = row.get("한글 프로필", "")
     hp_raw = row.get("한문 프로필 원문", "")
 
-    facts = extract_key_facts(row)
+    facts = parse_detailed_facts(row)
 
-    # 상단 요약 카드 HTML
     st.markdown(f"""
-    <div class="bio-card">
-        <div class="bio-card-title">
-            📜 {name} ({rel}) — {title_prefix}
+    <div class="result-card">
+        <div class="result-card-title">
+            📜 {name} ({rel}) — {title_prefix} [고유ID: {gid}]
         </div>
-        <div style="margin-bottom: 12px;">
-            <span class="fact-badge">고유ID: {gid}</span>
-            <span class="fact-badge">세수: {gen}</span>
-            <span class="fact-badge">부: {fa}</span>
-            <span class="fact-badge">조부: {gf}</span>
-            {f'<span class="fact-badge">자: {facts["자"]}</span>' if facts["자"] else ''}
-            {f'<span class="fact-badge">호: {facts["호"]}</span>' if facts["호"] else ''}
-            <span class="fact-badge">관직: {facts["관직"]}</span>
-            <span class="fact-badge">배위: {facts["배위"]}</span>
-        </div>
+        <table class="bilingual-table">
+            <tr>
+                <th>세수(世數)</th>
+                <td>{facts['세수']}</td>
+                <th>부 / 조부</th>
+                <td>부: <b>{facts['부']}</b> / 조부: <b>{facts['조부']}</b></td>
+            </tr>
+            <tr>
+                <th>자(字)</th>
+                <td>{facts['자']}</td>
+                <th>호(號)</th>
+                <td>{facts['호']}</td>
+            </tr>
+            <tr>
+                <th>초휘(初諱) / 일휘(一諱)</th>
+                <td>{facts['초휘_일휘']}</td>
+                <th>초자(初字)</th>
+                <td>{facts['초자']}</td>
+            </tr>
+            <tr>
+                <th>통명(通名) / 초명(初名)</th>
+                <td>{facts['통명_초명']}</td>
+                <th>과거 · 관직</th>
+                <td>{facts['과거_관직']}</td>
+            </tr>
+            <tr>
+                <th>배위(配位)</th>
+                <td colspan="3">{facts['배위']}</td>
+            </tr>
+        </table>
     """, unsafe_allow_html=True)
 
-    # 2열 분할 약력 (한글 / 한문)
-    col_k, col_h = st.columns(2)
-    with col_k:
-        st.markdown("##### 🇰🇷 한글 정렬 약력")
-        st.markdown(f"""
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:14px; border-radius:8px; line-height:1.75; font-size:14.5px;">
-            {kp}
-        </div>
-        """, unsafe_allow_html=True)
+    # 제4장 5항 ②: 별도로 아래에 상세한 한문·한글 약력 (정리된 한문 한글 약력 표기)
+    st.markdown("##### 🇰🇷 정리된 한글 약력")
+    st.markdown(f"<div class='hangul-box'>{kp}</div>", unsafe_allow_html=True)
 
-    with col_h:
-        st.markdown("##### 漢 한문 정렬 약력")
-        st.markdown(f"""
-        <div class="hanja-text" style="background:#fbfbfb; border:1px solid #e2e8f0; padding:14px; border-radius:8px; line-height:1.8; font-size:15px;">
-            {hp}
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
-    # 원문 확인 드로어 (필요시 확인)
-    with st.expander("🔍 족보 수록 원문(原文字句) 보기", expanded=False):
+    st.markdown("##### 漢 정리된 한문 약력")
+    st.markdown(f"<div class='hanja-box'>{hp}</div>", unsafe_allow_html=True)
+
+    # 제4장 5항 ③: 마지막에 족보 수록 원문 보기 생성
+    with st.expander("📖 족보 수록 원문(原文字句) 보기", expanded=False):
         c1, c2 = st.columns(2)
         with c1:
             st.caption("한글 번역 원문")
@@ -456,25 +547,26 @@ def render_profile_card(row, title_prefix="선조 정렬 약력"):
 
 
 # =============================================================================
-# 제1장 3항 ②: 인명 검색 (인명, 자, 호, 초위, 초자, 통명, 초명 등 검색)
+# 검색 방식 1: 인명 검색 (제4장 4항 ③ 너비 최소화 & 우측 문구 표시)
 # =============================================================================
-if search_mode == "인명 검색":
-    st.markdown("##### 👤 인명(선조) 검색")
-    st.caption("선조의 성함(한글/한자), 자(字), 호(號), 초위(初諱), 초자(初字), 통명(通名), 초명(初名) 등으로 검색합니다.")
-
-    with st.form(key="person_search_form"):
-        col_in, col_btn = st.columns([8, 2])
-        with col_in:
+if search_mode == "인명":
+    with st.form(key="search_person_form"):
+        col_input, col_hint = st.columns([3, 7])
+        with col_input:
             person_query = st.text_input(
-                "선조 함자 또는 호·자 입력",
-                placeholder="예: 증, 사겸, 완귀, 후정, 구중, 심용와, 효방, 종식, 위준 등",
+                "인명 검색어 입력",
+                placeholder="예: 증, 사겸, 완귀, 후정, 구중, 효방 등",
                 label_visibility="collapsed"
             ).strip()
-        with col_btn:
-            p_submit = st.form_submit_button("🔍 인명 검색", use_container_width=True, type="primary")
+            p_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
+        with col_hint:
+            st.markdown("""
+            <div class="search-hint-text">
+                👉 <b>인물의 함자, 자(字), 호(號), 초휘(初諱), 일휘(一諱) 초자(初字), 통명(通名), 초명(初名) 등을 입력</b>
+            </div>
+            """, unsafe_allow_html=True)
 
     if person_query:
-        # 검색 대상: 인명 + 자/호/초위/초자/통명/초명 패턴 매칭
         kw = person_query
         m_name = df["선조"].astype(str).str.contains(kw, case=False, na=False)
 
@@ -497,53 +589,45 @@ if search_mode == "인명 검색":
         matched_df = df[m_name | m_bio_k | m_bio_h | m_bio_raw]
 
         if matched_df.empty:
-            st.warning(f"⚠️ '{person_query}' 조건과 일치하는 선조 기록이 존재하지 않습니다.")
+            st.warning(f"⚠️ '{person_query}' 조건과 일치하는 인물 기록이 없습니다.")
         else:
             # 제1장 3항 ②: 해당 인물이 여러 명일 경우에는 검색 결과 표시 전에 인물 선택 과정을 거친다.
             if len(matched_df) == 1:
                 selected_row = matched_df.iloc[0]
-                render_profile_card(selected_row, title_prefix="정렬된 약력")
+                render_search_result_view(selected_row, title_prefix="인명 검색 결과")
             else:
-                st.info(f"💡 '{person_query}' 검색 결과 총 {len(matched_df)}명이 조회되었습니다. 약력을 확인하실 선조 한 분을 선택하세요.")
-
-                options = []
-                for _, r in matched_df.iterrows():
-                    gid = r.get("고유ID", "")
-                    name = r.get("선조", "")
-                    gen = r.get("세수", "")
-                    rel = r.get("관계", "")
-                    fa = r.get("부친", "")
-                    gf = r.get("조부", "")
-                    label = f"[{gid}] {name} ({gen}, {rel}) | 부: {fa} / 조부: {gf}"
-                    options.append(label)
-
-                selected_opt = st.selectbox("조회할 선조 선택 (인물 선택 과정)", options)
-                sel_gid = selected_opt.split("]")[0].replace("[", "").strip()
+                st.info(f"💡 '{person_query}' 검색 결과 총 {len(matched_df)}명이 조회되었습니다. 조회할 선조를 선택하세요.")
+                opts = [
+                    f"[{r['고유ID']}] {r['선조']} ({r.get('세수', '')}, {r.get('관계', '')}) | 부: {r.get('부친', '')} / 조부: {r.get('조부', '')}"
+                    for _, r in matched_df.iterrows()
+                ]
+                sel_opt = st.selectbox("선조 선택 (인물 선택 과정)", opts)
+                sel_gid = sel_opt.split("]")[0].replace("[", "").strip()
                 selected_row = matched_df[matched_df["고유ID"] == sel_gid].iloc[0]
-
-                render_profile_card(selected_row, title_prefix="정렬된 약력")
+                render_search_result_view(selected_row, title_prefix="인명 검색 결과")
 
 
 # =============================================================================
-# 제1장 3항 ③: 단어 검색 (약력 포함 단어 검색 -> 핵심 약력 표시)
+# 검색 방식 2: 단어 검색 (제4장 4항 ③ 너비 최소화 & 우측 문구 표시)
 # =============================================================================
-elif search_mode == "단어 검색":
-    st.markdown("##### 📖 약력 단어 검색")
-    st.caption("약력에 포함된 관직, 과거, 지명, 묘소, 비문 찬술자, 특정 행적 단어를 입력하여 검색합니다.")
-
-    with st.form(key="word_search_form"):
-        col_w_in, col_w_btn = st.columns([8, 2])
-        with col_w_in:
+elif search_mode == "단어":
+    with st.form(key="search_word_form"):
+        col_input, col_hint = st.columns([3, 7])
+        with col_input:
             word_query = st.text_input(
-                "검색할 약력 단어 입력",
-                placeholder="예: 통정대부, 청도, 성균관, 진사, 신도비, 화장, 합분, 부계 등",
+                "단어 검색어 입력",
+                placeholder="예: 통정대부, 청도, 성균관, 진사, 신도비 등",
                 label_visibility="collapsed"
             ).strip()
-        with col_w_btn:
-            w_submit = st.form_submit_button("🔍 단어 검색", use_container_width=True, type="primary")
+            w_submit = st.form_submit_button("🔍 검색 실행", use_container_width=True, type="primary")
+        with col_hint:
+            st.markdown("""
+            <div class="search-hint-text">
+                👉 <b>약력에 포함된 단어(관직, 지명, 묘소, 비문 찬술자, 사적 등)를 입력</b>
+            </div>
+            """, unsafe_allow_html=True)
 
     if word_query:
-        # 약력 열 전체에서 해당 단어를 포함하고 있는 인물 모두 검색
         search_cols = ["한글 프로필 정렬", "한문 프로필 정렬", "한글 프로필", "한문 프로필 원문"]
         mask = df[search_cols].astype(str).apply(
             lambda col: col.str.contains(re.escape(word_query), case=False, na=False)
@@ -554,50 +638,43 @@ elif search_mode == "단어 검색":
             st.warning(f"⚠️ 단어 '{word_query}'(을)를 포함하고 있는 약력 기록이 없습니다.")
         else:
             st.success(f"총 {len(matched_df)}명의 약력에서 단어 '{word_query}'(이)가 검색되었습니다.")
-
-            # 제1장 3항 ③: 검색 결과 창에 나타난 해당 인물을 선택하면 핵심 약력이 표시된다.
-            options = []
-            for _, r in matched_df.iterrows():
-                gid = r.get("고유ID", "")
-                name = r.get("선조", "")
-                gen = r.get("세수", "")
-                rel = r.get("관계", "")
-                fa = r.get("부친", "")
-                options.append(f"[{gid}] {name} ({gen}, {rel}) | 부: {fa}")
-
-            sel_word_person = st.selectbox("핵심 약력을 조회할 선조 선택", options)
+            opts = [
+                f"[{r['고유ID']}] {r['선조']} ({r.get('세수', '')}, {r.get('관계', '')}) | 부: {r.get('부친', '')}"
+                for _, r in matched_df.iterrows()
+            ]
+            sel_word_person = st.selectbox("핵심 약력을 조회할 선조 선택", opts)
             sel_gid = sel_word_person.split("]")[0].replace("[", "").strip()
             selected_row = matched_df[matched_df["고유ID"] == sel_gid].iloc[0]
 
-            render_profile_card(selected_row, title_prefix=f"핵심 약력 ('{word_query}' 검색)")
+            render_search_result_view(selected_row, title_prefix=f"핵심 약력 ('{word_query}' 검색)")
 
-            # 전체 검색 목록 테이블 표시
             st.markdown("---")
-            st.markdown(f"###### 📋 '{word_query}' 검색 결과 인물 전체 목록 ({len(matched_df)}명)")
+            st.markdown(f"###### 📋 '{word_query}' 검색 결과 인물 목록 ({len(matched_df)}명)")
             show_cols = ["고유ID", "선조", "세수", "관계", "부친", "조부", "한글 프로필 정렬"]
             st.dataframe(matched_df[[c for c in show_cols if c in matched_df.columns]], use_container_width=True)
 
 
 # =============================================================================
-# 제2장 (계보 작성): 초기 화면 계보 검색 버튼 및 계보 작성 조건 창
+# 검색 방식 3: 계보 검색 (제2장 계보 작성 요령 전 조항 완벽 반영)
 # =============================================================================
-elif search_mode == "계보 검색":
-    st.markdown("##### 🌳 직계 및 방계 계보 검색")
-    st.caption("특정 인물의 선대(부·조부·선조) 및 후대(자·손)와의 관계를 계보도로 시각화합니다.")
-
-    with st.form(key="tree_search_form"):
-        col_t_in, col_t_btn = st.columns([8, 2])
-        with col_t_in:
+elif search_mode == "계보":
+    with st.form(key="search_tree_form"):
+        col_input, col_hint = st.columns([3, 7])
+        with col_input:
             tree_query = st.text_input(
-                "계보를 조회할 선조 함자 입력",
-                placeholder="예: 증, 구중, 시한, 효방, 후정, 태정, 처정 등",
+                "계보 검색어 입력",
+                placeholder="예: 증, 구중, 시한, 효방, 후정 등",
                 label_visibility="collapsed"
             ).strip()
-        with col_t_btn:
             t_submit = st.form_submit_button("🌳 계보 작성 및 검색", use_container_width=True, type="primary")
+        with col_hint:
+            st.markdown("""
+            <div class="search-hint-text">
+                👉 <b>인물의 함자, 자(字), 호(號) 입력 후 계보 작성 조건에 따라 계보도 생성</b>
+            </div>
+            """, unsafe_allow_html=True)
 
     if tree_query:
-        # 인명 검색과 동일한 로직으로 기준 인물 검색
         kw = tree_query
         m_name = df["선조"].astype(str).str.contains(kw, case=False, na=False)
         kw_esc = re.escape(kw)
@@ -619,7 +696,7 @@ elif search_mode == "계보 검색":
         else:
             if len(tree_matches) > 1:
                 t_opts = [f"[{r['고유ID']}] {r['선조']} (부: {r['부친']}, 조부: {r['조부']})" for _, r in tree_matches.iterrows()]
-                selected_t_opt = st.selectbox("계보도를 작성할 기준 선조를 선택하세요", t_opts)
+                selected_t_opt = st.selectbox("계보도를 작성할 기준 선조 선택", t_opts)
                 sel_gid = selected_t_opt.split("]")[0].replace("[", "").strip()
                 target_p = tree_matches[tree_matches["고유ID"] == sel_gid].iloc[0]
             else:
@@ -629,22 +706,21 @@ elif search_mode == "계보 검색":
             p_gid = target_p.get("고유ID", "")
             p_rel = target_p.get("관계", "")
 
-            # 제2장 3항: 계보 작성 조건 창 (설정 패널)
-            with st.expander("⚙️ 계보 작성 조건 설정 창 (지침 제2장 1항 ① 반영)", expanded=True):
+            # 제2장 3항 ①: 계보 작성 조건 창
+            with st.expander("⚙️ 계보 작성 조건 창 (제2장 1항 ① 규정)", expanded=True):
                 c_opt1, c_opt2, c_opt3 = st.columns(3)
                 with c_opt1:
                     tree_direction = st.radio("계보 전개 방향", ["수직 전개 (위→아래)", "수평 지그재그 전개 (좌→우)"], index=0)
                 with c_opt2:
                     sibling_rule = st.radio(
-                        "형제 표기 조건",
-                        ["원칙 적용 (부·조부 형제 전원 + 증조 이상/하대 축소)", "직계 위주 간략 표기", "전체 형제 포함"],
+                        "형제 표기 요령",
+                        ["원칙 적용 (부·조부 형제 전원 + 증조 이상/하대 축소)", "직계 위주 표기", "전체 형제 포함"],
                         index=0
                     )
                 with c_opt3:
                     up_gens = st.slider("상위 선대 표시 대수", min_value=1, max_value=8, value=4)
                     down_gens = st.slider("하위 자손 표시 대수", min_value=1, max_value=4, value=2)
 
-            # 계보 트리 노드 수집
             ancestor_chain = []
             curr = target_p
             for _ in range(up_gens):
@@ -664,25 +740,16 @@ elif search_mode == "계보 검색":
                 ancestor_chain.append(parent_row)
                 curr = parent_row
 
-            # 형제 정보 수집 (제2장 1항 ①)
-            # 1. 본인의 형제
             p_siblings = df[df["부친"] == target_p.get("부친", "")].copy()
-            # 2. 부친의 형제
             f_siblings = pd.DataFrame()
             if len(ancestor_chain) >= 1:
                 f_siblings = df[df["부친"] == ancestor_chain[0].get("부친", "")].copy()
-            # 3. 조부의 형제
             gf_siblings = pd.DataFrame()
             if len(ancestor_chain) >= 2:
                 gf_siblings = df[df["부친"] == ancestor_chain[1].get("부친", "")].copy()
 
-            # 4. 자녀 및 손자 수집
             children = df[df["부친"] == p_name].copy()
-            grandchildren = pd.DataFrame()
-            if not children.empty:
-                grandchildren = df[df["부친"].isin(children["선조"].tolist())].copy()
 
-            # Graphviz DOT 코드 작성
             rankdir = "TB" if "수직" in tree_direction else "LR"
             lines = [
                 'digraph GenealogyTree {',
@@ -692,19 +759,16 @@ elif search_mode == "계보 검색":
             ]
 
             all_tree_people = {}
-
-            # 본인 노드
             all_tree_people[p_name] = target_p
             lines.append(f'  "{p_name}" [label="★ {p_name}\\n({p_rel})", fillcolor="#FEF08A", color="#CA8A04", penwidth="2.5"];')
 
-            # 상위 선대 노드 생성 및 연결
             prev = p_name
             for idx, a_row in enumerate(ancestor_chain):
                 a_name = a_row.get("선조", "")
                 a_rel = a_row.get("관계", "")
                 all_tree_people[a_name] = a_row
 
-                # 제2장 1항 ①: 증조부(idx=2) 이상부터 형제가 있으면 '0자 중 0자' 표기
+                # 제2장 1항 ①: 증조부부터는 형제가 있는 경우 함자 외에 '0자 중 0자' 추가
                 sibs = df[df["부친"] == a_row.get("부친", "")]
                 label_extra = ""
                 if idx >= 2 and len(sibs) > 1 and a_rel:
@@ -716,9 +780,7 @@ elif search_mode == "계보 검색":
                 lines.append(f'  "{a_name}" -> "{prev}";')
                 prev = a_name
 
-            # 형제 노드 연결 (조건에 따라)
-            if sibling_rule != "직계 위주 간략 표기":
-                # 본인 형제들
+            if sibling_rule != "직계 위주 표기":
                 for _, sib in p_siblings.iterrows():
                     s_name = sib.get("선조", "")
                     s_rel = sib.get("관계", "")
@@ -728,7 +790,6 @@ elif search_mode == "계보 검색":
                         if len(ancestor_chain) >= 1:
                             lines.append(f'  "{ancestor_chain[0].get("선조", "")}" -> "{s_name}";')
 
-                # 부친 형제들
                 if len(ancestor_chain) >= 2 and not f_siblings.empty:
                     for _, sib in f_siblings.iterrows():
                         s_name = sib.get("선조", "")
@@ -738,7 +799,6 @@ elif search_mode == "계보 검색":
                             lines.append(f'  "{s_name}" [label="숙부: {s_name}\\n({s_rel})", fillcolor="#F1F5F9", color="#94A3B8"];')
                             lines.append(f'  "{ancestor_chain[1].get("선조", "")}" -> "{s_name}";')
 
-            # 자녀 및 손자 연결
             if not children.empty:
                 for _, c_row in children.iterrows():
                     c_name = c_row.get("선조", "")
@@ -759,31 +819,28 @@ elif search_mode == "계보 검색":
             lines.append('}')
             chart_dot = "\n".join(lines)
 
-            # 화면 2열 분할: 좌측 계보도, 우측 선택 인물 약력
             col_chart, col_person = st.columns([7, 5])
             with col_chart:
-                st.markdown(f"##### 🌳 [{p_name}] 선조 중심 계보도")
+                st.markdown(f"##### 🌳 [{p_name}] 선조 계보도")
                 st.graphviz_chart(chart_dot, use_container_width=True)
 
             with col_person:
-                # 제2장 2항: 표시되는 해당 인물의 박스를 클릭/선택했을 경우 그 인물의 약력을 표시한다.
-                st.markdown("##### 📜 계보도 내 인물 상세 약력 조회")
+                # 제2장 2항: 표시되는 해당 인물의 박스를 클릭했을 경우 그 인물의 약력을 표시한다.
+                st.markdown("##### 📜 계보 인물 상세 약력")
                 p_keys = list(all_tree_people.keys())
                 sel_p_in_tree = st.selectbox(
-                    "상세 약력을 확인할 인물을 선택하세요",
+                    "확인할 계보 인물을 선택하세요",
                     p_keys,
                     index=p_keys.index(p_name) if p_name in p_keys else 0
                 )
-                render_profile_card(all_tree_people[sel_p_in_tree], title_prefix="계보 연동 약력")
+                render_search_result_view(all_tree_people[sel_p_in_tree], title_prefix="계보 연동 약력")
 
 
 # =============================================================================
-# 제4장: 묘제일 메뉴 생성 (선조 묘제일·시제일·축일·장소 종합 안내)
+# 검색 방식 4: 제5장 묘제일 메뉴 생성
 # =============================================================================
-elif search_mode == "묘제일 안내":
+elif search_mode == "묘제일":
     st.markdown("##### 🕯️ 광주안씨 완귀공파 종중 묘제일(시제일) 종합 안내")
-    st.caption("선조님들의 묘제일(시제일), 기일, 제향 장소 및 묘역 위치 안내입니다.")
-
     tab_myo1, tab_myo2 = st.tabs(["주요 선조 시제일 종합 안내표", "족보 전체 기일(忌日)·묘소 검색"])
 
     with tab_myo1:
