@@ -292,10 +292,10 @@ with header_col1:
 with header_col2:
     st.markdown("""
     <div style='margin-top: 3px;'>
-        <div style='font-family: \"Noto Serif KR\", serif; font-size: 24px; font-weight: 700; color: #1e3a8a; letter-spacing: -0.5px;'>
+        <div style='font-family: \"Noto Serif KR\", serif; font-size: 18px; font-weight: 700; color: #1e3a8a; letter-spacing: -0.5px;'>
             廣州安氏 玩龜公派 宗中 족보 검색 시스템
         </div>
-        <div style='font-size: 14px; color: #475569; font-weight: 500;'>
+        <div style='font-size: 10px; color: #475569; font-weight: 500;'>
             광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 정밀 전사 데이터 기반 공식 계보·약력 검색 포털
         </div>
     </div>
