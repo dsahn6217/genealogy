@@ -448,30 +448,44 @@ div[data-testid="stAlert"] {
 }
 
 """ + bg_style + """
-/* 족보 검색창 테두리: 중앙/다층 테두리 삭제, 두께 1/4로 축소 (4px), 선명한 청색 적용 */
-div[data-testid="stVerticalBlockBorderWrapper"],
-div[data-testid="stVerticalBlock"]:has(> div:first-child .unified-search-title),
-div[data-testid="stVerticalBlockBorderWrapper"]:has(.unified-search-title),
-div[data-testid="stVerticalBlock"] > div:has(.unified-search-title) {
+/* 족보 검색창: 안쪽/바깥쪽 중복 테두리 삭제, 단일 테두리로 두께 1/3 축소 (1.3px 청색) */
+div[data-testid="stVerticalBlockBorderWrapper"] {
     margin-top: 25px !important; /* 아래로 살짝 하향 유지 */
     margin-bottom: 20px !important;
     background-color: #ffffff !important;
-    border-radius: 10px !important;
-    padding: 16px 20px !important;
+    border-radius: 8px !important;
+    padding: 14px 18px !important;
     
-    /* 테두리 두께 1/4로 축소 (16~18px -> 4px), 색상 청색 */
-    border: 4px solid #1e40af !important;
-    outline: none !important; /* 중앙/외곽 다층 테두리 삭제 */
-    box-shadow: 0 3px 12px rgba(30, 64, 175, 0.12) !important;
+    /* 테두리 두께 1/3로 축소 (4px -> 1.3px), 색상 청색 */
+    border: 1.3px solid #1e40af !important;
+    outline: none !important; /* 바깥 테두리 삭제 */
+    box-shadow: none !important; /* 바깥 중복선으로 보일 수 있는 그림자 삭제 */
 }
 
-div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
-    border: none !important;
-    background: transparent !important;
+/* 안쪽 테두리 완전 삭제: 내부 stVerticalBlock 및 form에 중복 생성되던 안쪽 테두리 제거 */
+div[data-testid="stVerticalBlockBorderWrapper"] > div[data-testid="stVerticalBlock"],
+div[data-testid="stVerticalBlockBorderWrapper"] div[data-testid="stVerticalBlock"],
+div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"],
+form[data-testid="stForm"] {
+    border: none !important; /* 안쪽 테두리 완전 제거 */
+    outline: none !important;
     box-shadow: none !important;
+    background: transparent !important;
     padding: 0px !important;
-    margin-top: 4px !important;
+    margin-top: 2px !important;
     margin-bottom: 2px !important;
+}
+
+/* stVerticalBlockBorderWrapper가 없는 환경 대비 단일 Fallback */
+div[data-testid="stVerticalBlock"]:not([data-testid="stVerticalBlockBorderWrapper"] *):has(> div:first-child .unified-search-title) {
+    margin-top: 25px !important;
+    margin-bottom: 20px !important;
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 14px 18px !important;
+    border: 1.3px solid #1e40af !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 /* 족보 검색 타이틀: 테두리 1/5로 축소 (1px 실선), 색상 검정색 (중앙 가로 분할선 삭제) */
