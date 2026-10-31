@@ -239,21 +239,33 @@ div[data-testid="stExpander"] div[data-testid="stExpanderDetails"] {
     line-height: 1.25 !important;
 }
 
-/* 라디오 버튼 간격 */
+/* 인명, 단어, 계보 라디오 버튼 선택 문구 중앙 정렬 */
 div[data-testid="stRadio"] {
-    margin-top: 0px !important;
-    margin-bottom: 3px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+    margin-bottom: 8px !important;
+    text-align: center !important;
 }
 
+div[data-testid="stRadio"] > div[role="radiogroup"],
 div[data-testid="stRadio"] > div {
-    gap: 8px !important;
-    padding: 0px !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 24px !important; /* 선택 문구 간 여유로운 간격 */
+    width: 100% !important;
+    margin: 0 auto !important;
 }
 
 div[data-testid="stRadio"] label {
-    font-size: 13.5px !important;
-    padding: 0px 4px !important;
-    margin: 0px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #0f2b5c !important;
+    cursor: pointer !important;
+    padding: 2px 8px !important;
 }
 
 /* 폼, 입력창, 버튼 뚜렷한 강조 스타일 */
@@ -436,14 +448,26 @@ div[data-testid="stAlert"] {
 }
 
 """ + bg_style + """
-/* 족보 검색 통합 창 스타일 */
+/* 족보 검색 통합 창 스타일: 아래로 하향 & 매우 두터운 청색 그라데이션 테두리 (안쪽 진함 -> 바깥쪽 엷음) */
 div[data-testid="stVerticalBlockBorderWrapper"] {
-    border: 2px solid #0f2b5c !important;
-    border-radius: 8px !important;
-    padding: 10px 14px !important;
-    background-color: rgba(255, 255, 255, 0.95) !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
-    margin-bottom: 8px !important;
+    margin-top: 22px !important; /* 족보 검색창을 아래로 살짝 하향 */
+    margin-bottom: 18px !important;
+    background-color: rgba(255, 255, 255, 0.98) !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    
+    /* 1. 안쪽 가장 진한 심해 청색 코어 테두리 (두께 4px) */
+    border: 4px solid #0a1e3f !important;
+    
+    /* 2. 테두리 그라데이션(다층 청색 링): 안쪽 짙은 네이비 -> 바깥쪽 연한 하늘색으로 점차 엷어짐 */
+    box-shadow: 
+        0 0 0 2.5px #153e75,   /* 안쪽 1단계: 짙은 감청색 */
+        0 0 0 5.5px #1d4ed8,   /* 2단계: 선명한 짙은 파랑 */
+        0 0 0 8.5px #3b82f6,   /* 3단계: 로열 블루 */
+        0 0 0 11.5px #60a5fa,  /* 4단계: 맑은 청색 */
+        0 0 0 14.5px #93c5fd,  /* 5단계: 부드러운 하늘색 */
+        0 0 0 17.5px #dbeafe,  /* 바깥쪽 6단계: 매우 엷은 파스텔 청색 */
+        0 8px 24px rgba(15, 43, 92, 0.22) !important; /* 바깥 은은한 섀도우 */
 }
 
 div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
@@ -456,12 +480,13 @@ div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
 }
 
 .unified-search-title {
-    font-size: 16px;
+    font-size: 16.5px;
     font-weight: 700;
     color: #0f2b5c;
     border-bottom: 1.5px solid #cbd5e1;
-    padding-bottom: 4px;
-    margin-bottom: 6px;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    text-align: center; /* 족보 검색 타이틀도 중앙 정렬 */
 }
 
 /* 결과 카드 외곽: 상단 창 테두리 중앙에 타이틀 배치 */
