@@ -270,30 +270,30 @@ div[data-testid="stRadio"] label {
 
 /* 폼, 입력창, 버튼 뚜렷한 강조 스타일 */
 form[data-testid="stForm"] {
-    border: 1.5px solid #cbd5e1 !important;
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
-    margin-top: 3px !important;
-    margin-bottom: 4px !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+    border: none !important; /* 중앙 테두리 삭제: 폼 자체의 내부 테두리 완전 제거 */
+    padding: 6px 4px !important;
+    border-radius: 0px !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
 }
 
 div[data-testid="stTextInput"] {
     margin-bottom: 0px !important;
 }
 
-/* 검색어 입력창: 두툼한 검은색 테두리 및 매우 희미한 입력 안내 글자 */
+/* 검색어 입력창: 테두리 3배 확대 (두께 3.5px), 색상 검정색 */
 div[data-testid="stTextInput"] input {
-    height: 38px !important;
+    height: 40px !important;
     padding: 4px 12px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
+    font-size: 14.5px !important;
+    font-weight: 600 !important;
     color: #000000 !important;
     background-color: #ffffff !important;
-    border: 2.8px solid #000000 !important; /* 두툼한 까만색 테두리 */
+    border: 3.5px solid #000000 !important; /* 3배 확대된 굵은 검정 테두리 */
     border-radius: 6px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06) !important;
     transition: all 0.2s ease-in-out !important;
 }
 
@@ -448,29 +448,21 @@ div[data-testid="stAlert"] {
 }
 
 """ + bg_style + """
-/* 족보 검색 통합 창: 강력하고 두터운 청색 다층 그라데이션 테두리 (안쪽 짙은 남색 -> 바깥쪽 엷은 하늘색, 총 두께 18px) */
+/* 족보 검색창 테두리: 중앙/다층 테두리 삭제, 두께 1/4로 축소 (4px), 선명한 청색 적용 */
 div[data-testid="stVerticalBlockBorderWrapper"],
 div[data-testid="stVerticalBlock"]:has(> div:first-child .unified-search-title),
 div[data-testid="stVerticalBlockBorderWrapper"]:has(.unified-search-title),
 div[data-testid="stVerticalBlock"] > div:has(.unified-search-title) {
-    margin-top: 25px !important; /* 아래로 확실하게 하향 */
-    margin-bottom: 22px !important;
+    margin-top: 25px !important; /* 아래로 살짝 하향 유지 */
+    margin-bottom: 20px !important;
     background-color: #ffffff !important;
-    border-radius: 14px !important;
+    border-radius: 10px !important;
     padding: 16px 20px !important;
     
-    /* 1. 바깥쪽 테두리: 엷고 부드러운 하늘색 (두께 6px) */
-    outline: 6px solid #bfdbfe !important;
-    outline-offset: 0px !important;
-    
-    /* 2. 중간 테두리: 선명하고 맑은 로열 블루 (두께 6px) */
-    border: 6px solid #2563eb !important;
-    
-    /* 3. 안쪽 테두리 그라데이션: 가장 진한 심해 네이비 청색 (두께 6px, 클리핑 방지 inset 적용) */
-    box-shadow: 
-        inset 0 0 0 3px #153e75,
-        inset 0 0 0 6px #0a1e3f,
-        0 8px 25px rgba(15, 43, 92, 0.25) !important;
+    /* 테두리 두께 1/4로 축소 (16~18px -> 4px), 색상 청색 */
+    border: 4px solid #1e40af !important;
+    outline: none !important; /* 중앙/외곽 다층 테두리 삭제 */
+    box-shadow: 0 3px 12px rgba(30, 64, 175, 0.12) !important;
 }
 
 div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
@@ -482,14 +474,17 @@ div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
     margin-bottom: 2px !important;
 }
 
+/* 족보 검색 타이틀: 테두리 1/5로 축소 (1px 실선), 색상 검정색 (중앙 가로 분할선 삭제) */
 .unified-search-title {
-    font-size: 16.5px;
+    font-size: 16px;
     font-weight: 700;
-    color: #0f2b5c;
-    border-bottom: 1.5px solid #cbd5e1;
-    padding-bottom: 6px;
-    margin-bottom: 8px;
-    text-align: center; /* 족보 검색 타이틀도 중앙 정렬 */
+    color: #000000 !important;
+    border: 1px solid #000000 !important; /* 1/5로 축소된 1px 검정 테두리 */
+    border-radius: 4px !important;
+    padding: 3px 14px !important;
+    background-color: #f8fafc !important;
+    display: inline-block !important;
+    margin: 0 auto !important;
 }
 
 /* 결과 카드 외곽: 상단 창 테두리 중앙에 타이틀 배치 */
@@ -913,7 +908,7 @@ def render_search_result_view(row, title_prefix="인명 검색결과"):
 # =============================================================================
 person_query, word_query, tree_query = "", "", ""
 with st.container(border=True):
-    st.markdown('<div class="unified-search-title">🔍 족보 검색 <span style="font-size: 13px; font-weight: normal; color: #4b5563;">(아래 검색 방식을 선택하세요)</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center; margin-bottom: 8px;"><div class="unified-search-title">🔍 족보 검색 <span style="font-size: 13px; font-weight: normal; color: #374151;">(아래 검색 방식을 선택하세요)</span></div></div>', unsafe_allow_html=True)
     
     search_mode = st.radio(
         "검색 방식 선택",
