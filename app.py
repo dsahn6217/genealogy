@@ -30,31 +30,49 @@ import pandas as pd
 import streamlit as st
 
 # =============================================================================
-# 제1장 1항: 페이지 기본 설정 및 아이콘(icon.png) 지정
+# 제1장 1항: 페이지 기본 설정 및 아이콘/배경 파일 자동 감지 (대소문자 및 확장자 무관)
 # =============================================================================
-ICON_FILE = "icon.png"
-BG_FILE = "background.png"
 PAGE_TITLE = "광주안씨 완귀공파 종중 족보 검색 시스템"
+
+# 아이콘 파일 후보군 탐색
+ICON_FILE = None
+for candidate_icon in ["icon.png", "Icon.png", "ICON.PNG", "icon.jpg", "Icon.jpg", "icon.ico"]:
+    if os.path.exists(candidate_icon):
+        ICON_FILE = candidate_icon
+        break
+
+# 배경 이미지 파일 후보군 탐색
+BG_FILE = None
+for candidate_bg in [
+    "background.png", "Background.png", "BACKGROUND.PNG",
+    "background.jpg", "Background.jpg", "BACKGROUND.JPG",
+    "background.jpeg", "Background.jpeg",
+    "bg.png", "bg.jpg", "Background"
+]:
+    if os.path.exists(candidate_bg):
+        BG_FILE = candidate_bg
+        break
 
 st.set_page_config(
     page_title=PAGE_TITLE,
-    page_icon=ICON_FILE if os.path.exists(ICON_FILE) else "📜",
+    page_icon=ICON_FILE if ICON_FILE else "📜",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
 # =============================================================================
-# 제3장 2항 & 제4장 1항: 스타일, 폰트(함초롱돋움), 배경 이미지(background.png)
+# 제3장 2항 & 제4장 1항: 스타일, 폰트(함초롱돋움), 배경 이미지 적용
 # =============================================================================
 bg_style = ""
-if os.path.exists(BG_FILE):
+if BG_FILE and os.path.exists(BG_FILE):
     try:
+        mime = "image/jpeg" if BG_FILE.lower().endswith((".jpg", ".jpeg")) else "image/png"
         with open(BG_FILE, "rb") as f_bg:
             b64_bg = base64.b64encode(f_bg.read()).decode()
         bg_style = f"""
         .stApp {{
             background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.95)),
-                        url("data:image/png;base64,{b64_bg}") no-repeat center center fixed !important;
+                        url("data:{mime};base64,{b64_bg}") no-repeat center center fixed !important;
             background-size: cover !important;
         }}
         """
@@ -697,7 +715,7 @@ if df.empty:
 # 제4장 1항 & 2항: 페이지 타이틀(함초롱돋움 22/20pt) 및 참고 글 (아이콘 옆 가로 배치)
 # =============================================================================
 b64_icon_html = ""
-if os.path.exists(ICON_FILE):
+if ICON_FILE and os.path.exists(ICON_FILE):
     try:
         from PIL import Image
         import io
