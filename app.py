@@ -448,26 +448,29 @@ div[data-testid="stAlert"] {
 }
 
 """ + bg_style + """
-/* 족보 검색 통합 창 스타일: 아래로 하향 & 매우 두터운 청색 그라데이션 테두리 (안쪽 진함 -> 바깥쪽 엷음) */
-div[data-testid="stVerticalBlockBorderWrapper"] {
-    margin-top: 22px !important; /* 족보 검색창을 아래로 살짝 하향 */
-    margin-bottom: 18px !important;
-    background-color: rgba(255, 255, 255, 0.98) !important;
-    border-radius: 12px !important;
-    padding: 14px 18px !important;
+/* 족보 검색 통합 창: 강력하고 두터운 청색 다층 그라데이션 테두리 (안쪽 짙은 남색 -> 바깥쪽 엷은 하늘색, 총 두께 18px) */
+div[data-testid="stVerticalBlockBorderWrapper"],
+div[data-testid="stVerticalBlock"]:has(> div:first-child .unified-search-title),
+div[data-testid="stVerticalBlockBorderWrapper"]:has(.unified-search-title),
+div[data-testid="stVerticalBlock"] > div:has(.unified-search-title) {
+    margin-top: 25px !important; /* 아래로 확실하게 하향 */
+    margin-bottom: 22px !important;
+    background-color: #ffffff !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
     
-    /* 1. 안쪽 가장 진한 심해 청색 코어 테두리 (두께 4px) */
-    border: 4px solid #0a1e3f !important;
+    /* 1. 바깥쪽 테두리: 엷고 부드러운 하늘색 (두께 6px) */
+    outline: 6px solid #bfdbfe !important;
+    outline-offset: 0px !important;
     
-    /* 2. 테두리 그라데이션(다층 청색 링): 안쪽 짙은 네이비 -> 바깥쪽 연한 하늘색으로 점차 엷어짐 */
+    /* 2. 중간 테두리: 선명하고 맑은 로열 블루 (두께 6px) */
+    border: 6px solid #2563eb !important;
+    
+    /* 3. 안쪽 테두리 그라데이션: 가장 진한 심해 네이비 청색 (두께 6px, 클리핑 방지 inset 적용) */
     box-shadow: 
-        0 0 0 2.5px #153e75,   /* 안쪽 1단계: 짙은 감청색 */
-        0 0 0 5.5px #1d4ed8,   /* 2단계: 선명한 짙은 파랑 */
-        0 0 0 8.5px #3b82f6,   /* 3단계: 로열 블루 */
-        0 0 0 11.5px #60a5fa,  /* 4단계: 맑은 청색 */
-        0 0 0 14.5px #93c5fd,  /* 5단계: 부드러운 하늘색 */
-        0 0 0 17.5px #dbeafe,  /* 바깥쪽 6단계: 매우 엷은 파스텔 청색 */
-        0 8px 24px rgba(15, 43, 92, 0.22) !important; /* 바깥 은은한 섀도우 */
+        inset 0 0 0 3px #153e75,
+        inset 0 0 0 6px #0a1e3f,
+        0 8px 25px rgba(15, 43, 92, 0.25) !important;
 }
 
 div[data-testid="stVerticalBlockBorderWrapper"] form[data-testid="stForm"] {
