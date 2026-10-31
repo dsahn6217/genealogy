@@ -61,7 +61,7 @@ if os.path.exists(BG_FILE):
     except Exception:
         pass
 
-custom_css = f"""
+custom_css = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
 
@@ -364,7 +364,7 @@ div[data-testid="stAlert"] {
     margin: 2px 0 !important;
 }
 
-{bg_style}
+""" + bg_style + """
 </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -433,7 +433,6 @@ if df.empty:
     st.stop()
 
 
-# =============================================================================
 # =============================================================================
 # 제4장 1항 & 2항: 페이지 타이틀(함초롱돋움 22/20pt) 및 참고 글 (아이콘 옆 가로 배치)
 # =============================================================================
@@ -1116,7 +1115,7 @@ elif search_mode == "묘제일":
             m_df = m_df[m_df["한글 프로필 정렬"].str.contains(myo_kw, na=False) | m_df["한문 프로필 정렬"].str.contains(myo_kw, na=False)]
         if gi_month != "전체":
             m_num = gi_month.split("월")[0]
-            m_df = m_df[m_df["한글 프로필 정렬"].str.contains(rf"기일은\s*{m_num}월|忌\s*{m_num}월|{m_num}월\s*[0-9]+일졸", na=False)]
+            m_df = m_df[m_df["한글 프로필 정렬"].str.contains(rf"기일은\s*{m_num}월|忌\s*{m_num}월|{m_num}월\s*[0-9]+일졸", regex=True, na=False)]
 
         st.caption(f"검색 결과: 총 {len(m_df)}위 선조")
         st.dataframe(
