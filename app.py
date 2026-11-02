@@ -35,6 +35,17 @@ def get_base64_image(image_path):
 
 icon_b64 = get_base64_image(ICON_FILE)
 
+def render_html(html_content):
+    """
+    마크다운 파서가 4칸 이상의 들여쓰기 공백을 코드 블록(<pre><code>)으로 오인하는 현상을
+    원천 방지하기 위해 모든 줄의 앞뒤 공백을 제거하고 순수 HTML로 안전하게 렌더링합니다.
+    """
+    if not html_content:
+        return
+    clean_lines = [line.strip() for line in str(html_content).splitlines() if line.strip()]
+    clean_html = chr(10).join(clean_lines)
+    st.markdown(clean_html, unsafe_allow_html=True)
+
 # =============================================================================
 # 1. 페이지 설정 및 전통 한옥/서책 스타일 CSS (제3장 디자인 & 제4장 폰트/크기)
 # =============================================================================
@@ -49,19 +60,16 @@ CUSTOM_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap');
 
-/* 전체 기본 폰트: 함초롱돋움 우선 지정 */
 html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* 배경 전통 한지 및 서책 질감 */
 .stApp {
     background-color: #faf8f5;
     background-image: radial-gradient(#e5dec9 0.75px, transparent 0.75px);
     background-size: 24px 24px;
 }
 
-/* 제4장 1항: 메인 페이지 타이틀 2줄 (함초롱돋움체, 위 22pt 짙은청색, 아래 20pt 검정) */
 .title-container {
     text-align: center;
     padding: 20px 10px 14px 10px;
@@ -91,7 +99,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     margin-bottom: 6px;
     letter-spacing: -0.5px;
 }
-/* 제4장 2항: 타이틀 아래 참고 글 */
 .title-reference-text {
     font-size: 13.5pt;
     color: #4a5568;
@@ -104,7 +111,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     border: 1px solid #e2e8f0;
 }
 
-/* 제4장 3항: 완귀정 소개 카드 */
 .wangwi-intro-box {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
@@ -136,19 +142,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     min-width: 65px;
 }
 
-/* 제4장 4항: 검색창 전용 가이드 문구 */
-.search-guide-banner {
-    background-color: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 10px 16px;
-    margin-bottom: 15px;
-    font-size: 11pt;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
 .search-guide-right-text {
     font-size: 10pt;
     color: #0369a1;
@@ -159,7 +152,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     line-height: 1.45;
 }
 
-/* 제4장 5항: 검색 결과 인물 카드 및 한글/한자 병기 표 */
 .result-card {
     background-color: #ffffff;
     border: 1px solid #e2e8f0;
@@ -196,7 +188,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     border: 1px solid #bfdbfe;
 }
 
-/* 한글한자 병기 요약 테이블 */
 .bilingual-table {
     width: 100%;
     border-collapse: collapse;
@@ -230,7 +221,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     width: 42.5%;
 }
 
-/* 5단락 상세 약력 박스 */
 .bio-detail-container {
     background-color: #fcfcfd;
     border: 1px solid #e2e8f0;
@@ -271,7 +261,6 @@ html, body, [class*="css"], .stMarkdown, p, div {
     border-bottom: 1px dashed #f87171;
 }
 
-/* 계보도 지그재그/수평 카드 */
 .tree-level-row {
     display: flex;
     align-items: center;
@@ -316,7 +305,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 </style>
 """
 
-st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+render_html(CUSTOM_CSS)
 
 # =============================================================================
 # 2. 데이터 로드 및 전처리 캐싱
@@ -341,13 +330,12 @@ def load_and_preprocess_genealogy():
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 세수, 인명 분리, 고증 빨간색 하이라이트, 약력 세부항목 파싱
+# 3. 보조 유틸리티 함수: 세수, 인명 분리, 고증 빨간색 하이라이트, 계보도 렌더링
 # =============================================================================
 def extract_generation_info(gid):
     m = re.search(r"-(\d+)$", str(gid).strip())
     if m:
         gen = int(m.group(1))
-        # 완귀공 안증(휘 嶒) 선생이 24세손
         wangwi_desc_gen = gen - 24
         desc_str = "완귀공 본인" if wangwi_desc_gen == 0 else f"완귀공의 {wangwi_desc_gen}대손"
         return gen, f"{gen}세손 ({desc_str})"
@@ -367,7 +355,6 @@ def split_name(name_raw):
 def highlight_corrections_html(text):
     if not text:
         return ""
-    # 고증 검증 및 전수조사 수정 키워드
     keywords = [
         "1699년", "1699", "一六九九", "1626년", "1626", "一六二六",
         "1558년", "1558", "一五五八", "1816년", "1816", "一八一六年",
@@ -389,7 +376,6 @@ def highlight_corrections_html(text):
     return formatted
 
 def parse_person_bilingual_details(row):
-    """제4장 5항 ① 세수, 부, 조부, 자, 호, 초휘, 일휘, 초자, 통명, 초명, 과거·관직, 배위 등을 한글한자 병기"""
     gid = row.get("고유ID", "")
     gen_num, gen_str = extract_generation_info(gid)
     
@@ -417,7 +403,7 @@ def parse_person_bilingual_details(row):
         "배위": {"ko": "", "cn": ""}
     }
     
-    # 한글 파싱 (첫 줄 신상)
+    # 한글 파싱
     m = re.search(r'자는\s*([^\.,\n]+)', first_ko)
     if m: details["자"]["ko"] = m.group(1).strip()
     m = re.search(r'호는\s*([^\.,\n]+)', first_ko)
@@ -433,7 +419,7 @@ def parse_person_bilingual_details(row):
     m = re.search(r'초명은?\s*([^\.,\n]+)', first_ko)
     if m: details["초명"]["ko"] = m.group(1).strip()
     
-    # 한자 파싱 (첫 줄 신상)
+    # 한자 파싱
     m = re.search(r'字\s*([^\.,\n]+)', first_cn)
     if m: details["자"]["cn"] = m.group(1).strip()
     m = re.search(r'號\s*([^\.,\n]+)', first_cn)
@@ -468,7 +454,6 @@ def parse_person_bilingual_details(row):
     return details
 
 def format_structured_bio(bio_text, is_hanmun=False):
-    """5단락 체계화 약력 줄바꿈 및 서식화"""
     if not bio_text:
         return '<div style="color:#94a3b8; font-style:italic;">수록된 정리 약력이 없습니다.</div>'
     lines = [ln.strip() for ln in str(bio_text).split("\n") if ln.strip()]
@@ -494,35 +479,156 @@ def format_structured_bio(bio_text, is_hanmun=False):
             html_items.append(f'<div><span class="bio-tag">👤 {lbl}</span> {hl}</div>')
     return "".join(html_items)
 
+def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2):
+    target_gid = target_row['고유ID']
+    target_name = target_row['인명']
+    
+    st.markdown(f"#### 🌳 [{target_name}] 기준 수평 지그재그 계보도")
+    
+    ancestors = []
+    curr = target_row
+    for up in range(1, max_up + 1):
+        f_name = str(curr.get('부친', '')).strip()
+        if not f_name or f_name == '覯구':
+            break
+        f_match = all_df[all_df['인명'] == f_name]
+        if f_match.empty:
+            break
+        f_row = f_match.iloc[0]
+        ff_name = str(f_row.get('부친', '')).strip()
+        sibs = all_df[all_df['부친'] == ff_name] if ff_name else pd.DataFrame([f_row])
+        ancestors.append({"level": up, "row": f_row, "siblings": sibs})
+        curr = f_row
+        
+    for anc in reversed(ancestors):
+        lvl = anc['level']
+        r = anc['row']
+        g_num, g_str = extract_generation_info(r['고유ID'])
+        sibs = anc['siblings']
+        
+        if lvl >= 3:
+            rel_str = f" ({len(sibs)}자 중 {r['관계']})" if len(sibs) > 1 else f" ({r['관계']})"
+            lbl_badge = "증조부" if lvl == 3 else f"{lvl}대조"
+            render_html(f"""
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">▲ {lbl_badge} ({g_num}세)</span>
+                <div class="tree-nodes-container">
+                    <span class="tree-node-box"><b>{r['인명']}</b>{rel_str}</span>
+                </div>
+            </div>
+            """)
+        else:
+            lbl_badge = "부친(父)" if lvl == 1 else "조부(祖)"
+            node_htmls = []
+            for _, s in sibs.iterrows():
+                is_direct = (s['고유ID'] == r['고유ID'])
+                cls = "tree-node-box tree-node-target" if is_direct else "tree-node-box"
+                s_name = s['인명']
+                s_rel = s['관계']
+                node_htmls.append(f'<span class="{cls}"><b>{s_name}</b> ({s_rel})</span>')
+            nodes_joined = ''.join(node_htmls)
+            render_html(f"""
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">▲ {lbl_badge} ({g_num}세)</span>
+                <div class="tree-nodes-container">{nodes_joined}</div>
+            </div>
+            """)
+            
+    t_f = str(target_row.get('부친', '')).strip()
+    t_sibs = all_df[all_df['부친'] == t_f] if t_f else pd.DataFrame([target_row])
+    tg_num, tg_str = extract_generation_info(target_row['고유ID'])
+    
+    t_nodes = []
+    for _, s in t_sibs.iterrows():
+        is_t = (s['고유ID'] == target_row['고유ID'])
+        cls = "tree-node-box tree-node-target" if is_t else "tree-node-box"
+        marker = " 🎯 [기준]" if is_t else ""
+        s_name = s['인명']
+        s_rel = s['관계']
+        t_nodes.append(f'<span class="{cls}"><b>{s_name}</b>{marker} ({s_rel})</span>')
+    t_joined = ''.join(t_nodes)
+    render_html(f"""
+    <div class="tree-level-row" style="background:#eff6ff; border:2px solid #3b82f6;">
+        <span class="tree-gen-badge" style="background:#2563eb; color:white;">● 본인 ({tg_num}세)</span>
+        <div class="tree-nodes-container">{t_joined}</div>
+    </div>
+    """)
+    
+    sons = all_df[all_df['부친'] == target_name]
+    if len(sons) > 0:
+        s_nodes = []
+        for _, s in sons.iterrows():
+            s_name = s['인명']
+            s_rel = s['관계']
+            s_nodes.append(f'<span class="tree-node-box"><b>{s_name}</b> ({s_rel})</span>')
+        s_joined = ''.join(s_nodes)
+        sg_num = tg_num + 1 if tg_num else 25
+        render_html(f"""
+        <div class="tree-level-row">
+            <span class="tree-gen-badge">▼ 자(子) ({sg_num}세)</span>
+            <div class="tree-nodes-container">{s_joined}</div>
+        </div>
+        """)
+        
+        if max_down >= 2:
+            grandsons = []
+            for _, s in sons.iterrows():
+                gs = all_df[all_df['부친'] == s['인명']]
+                for _, g in gs.iterrows():
+                    g_name = g['인명']
+                    s_name = s['인명']
+                    g_rel = g['관계']
+                    grandsons.append(f'<span class="tree-node-box"><b>{g_name}</b> ({s_name}의 {g_rel})</span>')
+            if grandsons:
+                g_joined = ''.join(grandsons)
+                render_html(f"""
+                <div class="tree-level-row">
+                    <span class="tree-gen-badge">▼ 손(孫) ({sg_num+1}세)</span>
+                    <div class="tree-nodes-container">{g_joined}</div>
+                </div>
+                """)
+                
+    st.write("")
+    st.markdown("##### 🔍 계보 인물 약력 바로보기")
+    related_people = [target_row] + [anc['row'] for anc in ancestors] + [s for _, s in sons.iterrows()]
+    p_opts = {f"{p['인명']} ({p['관계']}, ID: {p['고유ID']})": p for p in related_people}
+    selected_p_key = st.selectbox("약력을 열람할 계보 선조 선택", list(p_opts.keys()))
+    sel_p_row = p_opts[selected_p_key]
+    
+    render_html(f"""
+    <div class="bio-detail-container" style="margin-top:10px;">
+        <div class="bio-section-title">👤 [{sel_p_row['인명']}] 선조 핵심 약력</div>
+        {format_structured_bio(sel_p_row.get('한글 약력 정리', ''), is_hanmun=False)}
+    </div>
+    """)
+
 # =============================================================================
 # 4. 상단 헤더 및 완귀정 문화재 소개 (제3장 동영상 & 제4장 1, 2, 3항)
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:46px; height:46px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
-st.markdown(f"""
+render_html(f"""
 <div class="title-container">
     <div class="title-line-1">{icon_img_tag} 광주안씨 완귀공파 종중</div>
     <div class="title-line-2">족보 검색 시스템</div>
     <div class="title-reference-text">광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
-# 완귀정 문화재 소개 박스 (아코디언 토글 형식으로 깔끔하게 배치)
 with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개 및 문화재 영상 보기]", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
-        st.markdown("""
+        render_html("""
         <div class="wangwi-intro-box">
             <div class="wangwi-intro-title">영천 완귀정(경상북도 민속문화재 제20호)</div>
             <div class="wangwi-intro-item"><span class="wangwi-intro-label">건립자 :</span> 완귀 안증(1494~1553, 玩龜 安嶒) 선생</div>
-            <div class="wangwi-intro-item"><span class="wangwi-intro-label">위　치 :</span> 경상북도 영천시 도남동 (虎溪 정자)</div>
-            <div class="wangwi-intro-item"><span class="wangwi-intro-label">유　래 :</span> 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</div>
-            <div class="wangwi-intro-item"><span class="wangwi-intro-label">제　향 :</span> <b>매년 양력 4월 2째주 일요일</b> 구암리 상로재(霜露齋)에서 봉행.</div>
+            <div class="wangwi-intro-item"><span class="wangwi-intro-label">위 치 :</span> 경상북도 영천시 도남동 (虎溪 정자)</div>
+            <div class="wangwi-intro-item"><span class="wangwi-intro-label">유 래 :</span> 을사사화(1545)의 기미를 내다보고 벼슬에서 물러나 향리 호계(虎溪) 위에 정자를 짓고, 거북이 여섯 지체를 감추어 난을 피한다는 뜻을 취하여 '완귀(玩龜)'라 편액하였습니다.</div>
+            <div class="wangwi-intro-item"><span class="wangwi-intro-label">제 향 :</span> <b>매년 양력 4월 2째주 일요일</b> 구암리 상로재(霜露齋)에서 봉행.</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with col_intro_2:
         st.caption("🎥 영천 완귀정 문화재 탐방 영상 (YouTube)")
-        # 완귀정 수록 영상 임베드
         st.video("https://www.youtube.com/watch?v=XyfHLpZrrlo")
 
 # =============================================================================
@@ -540,30 +646,28 @@ if df is None:
 # =============================================================================
 with nav_tab1:
     st.markdown("### 족보 검색")
-    st.markdown("<div style='font-size:12pt; color:#4b5563; margin-bottom:10px;'>아래 검색 방식 중 하나를 선택하세요</div>", unsafe_allow_html=True)
+    render_html("<div style='font-size:12pt; color:#4b5563; margin-bottom:10px;'>아래 검색 방식 중 하나를 선택하세요</div>")
     
-    # 검색 방식 선택 (인명 검색, 단어 검색, 계보 검색)
     search_type = st.radio("검색 종류 선택", ["인명 검색", "단어 검색", "계보 검색"], horizontal=True, label_visibility="collapsed")
     
-    # 제4장 4항 ③: 검색창 너비 최소화 및 우측 안내 문구
     st.write("")
     c_input, c_guide = st.columns([1.1, 2.4])
     
     with c_input:
         if search_type == "인명 검색":
-            query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 嶒, 완귀", key="name_query", label_visibility="collapsed")
+            query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 嶒, 완귀, 만원", key="name_query", label_visibility="collapsed")
         elif search_type == "단어 검색":
             query_val = st.text_input("검색어 입력", placeholder="예: 시강원, 헌릉참봉, 1699", key="word_query", label_visibility="collapsed")
-        else: # 계보 검색
+        else:
             query_val = st.text_input("검색어 입력", placeholder="예: 嶒, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
             
     with c_guide:
-        st.markdown("""
+        render_html("""
         <div class="search-guide-right-text">
             💡 <b>검색어 입력 안내 :</b><br>
             인물의 함자(성씨 '안'을 넣어도 무방), 자(字), 호(號), 초휘(初諱), 일휘(一諱), 초자(初字), 통명(通名), 초명(初名) 등을 한글 또는 한자로 입력하세요.
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     # -------------------------------------------------------------------------
     # A. 인명 검색 처리 (제1장 ①, ② & 제4장 5항)
@@ -572,7 +676,6 @@ with nav_tab1:
         q = query_val.strip()
         q_alt = q[1:] if q.startswith("안") and len(q) > 1 else q
         
-        # 인명, 자, 호, 초휘, 일휘, 초자, 통명, 초명 등 검색
         mask = (
             df['인명'].astype(str).str.contains(q, case=False, na=False) |
             df['인명'].astype(str).str.contains(q_alt, case=False, na=False) |
@@ -584,7 +687,6 @@ with nav_tab1:
         if len(matched_df) == 0:
             st.warning(f"입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다. (성씨 '안'을 제외하거나 한자로 입력해 보세요.)")
         else:
-            # 제1장 ②: 단, 해당 인물이 여러 명일 경우에는 검색 결과 표시 전에 인물 선택 과정을 거친다.
             if len(matched_df) > 1:
                 st.info(f"검색 결과 총 {len(matched_df)}위의 인물이 검색되었습니다. 아래 목록에서 조회할 인물을 선택하세요.")
                 
@@ -601,14 +703,11 @@ with nav_tab1:
             else:
                 target_row = matched_df.iloc[0]
                 
-            # -----------------------------------------------------------------
-            # 제4장 5항: 상세 결과 카드 렌더링
-            # -----------------------------------------------------------------
             det = parse_person_bilingual_details(target_row)
             h_name, c_name = split_name(target_row['인명'])
             gen_num, gen_str = extract_generation_info(target_row['고유ID'])
             
-            st.markdown(f"""
+            render_html(f"""
             <div class="result-card">
                 <div class="result-card-header">
                     <div class="result-name-big">
@@ -619,7 +718,6 @@ with nav_tab1:
                     <div style="font-size:11pt; color:#6b7280; font-family:monospace;">고유ID: {target_row['고유ID']}</div>
                 </div>
                 
-                <!-- ① 세수, 부, 조부, 자, 호, 초휘, 일휘, 초자, 통명, 초명, 과거·관직, 배위 등을 한글한자 병기 -->
                 <div style="font-weight:700; color:#1e3c72; margin-bottom:8px; font-size:12.5pt;">
                     📌 인물 기본 신상 및 계통 정보 (한글·한자 병기)
                 </div>
@@ -671,7 +769,6 @@ with nav_tab1:
                     </tr>
                 </table>
                 
-                <!-- ② 별도로 아래에 상세한 한문·한글 약력 : 정리된 한문 한글 약력 표기 (수정사항 빨간색 표시) -->
                 <div style="font-weight:700; color:#1e3c72; margin-top:20px; margin-bottom:10px; font-size:12.5pt;">
                     📜 상세 표준 약력 (5단락 체계화 및 고증 보정)
                 </div>
@@ -687,16 +784,15 @@ with nav_tab1:
                     </div>
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
             
-            # ③ 마지막에 족보 수록 원문 보기 생성 (토글/아코디언)
             with st.expander("📖 [족보 수록 원문 보기 (한글 원문 / 한문 원문 대조)]", expanded=False):
                 c_won1, c_won2 = st.columns(2)
                 with c_won1:
-                    st.markdown("<b>[한글 약력 원문]</b>", unsafe_allow_html=True)
+                    render_html("<b>[한글 약력 원문]</b>")
                     st.text_area("한글 원문", target_row.get('한글 약력 원문', ''), height=180, disabled=True, label_visibility="collapsed")
                 with c_won2:
-                    st.markdown("<b>[한문 약력 원문 (漢文 原文)]</b>", unsafe_allow_html=True)
+                    render_html("<b>[한문 약력 원문 (漢文 原文)]</b>")
                     st.text_area("한문 원문", target_row.get('한문 약력 원문', ''), height=180, disabled=True, label_visibility="collapsed")
 
     # -------------------------------------------------------------------------
@@ -717,7 +813,6 @@ with nav_tab1:
         if len(word_matches) == 0:
             st.info("해당 단어를 포함하고 있는 약력 기록이 없습니다.")
         else:
-            # 인물 선택 라디오/셀렉트박스
             candidate_list = []
             for _, r in word_matches.iterrows():
                 gen_num, gen_str = extract_generation_info(r['고유ID'])
@@ -727,8 +822,7 @@ with nav_tab1:
             chosen_gid = chosen.split("고유ID: ")[-1].strip()
             chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
             
-            # 핵심 약력 카드 출력
-            st.markdown(f"""
+            render_html(f"""
             <div class="result-card">
                 <div class="result-card-header">
                     <div class="result-name-big">
@@ -742,12 +836,12 @@ with nav_tab1:
                     {format_structured_bio(chosen_row.get('한글 약력 정리', ''), is_hanmun=False)}
                 </div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
             
             with st.expander("📖 [상세 원문 및 한문 약력 대조 보기]"):
-                st.markdown("<b>한문 약력 정리</b>", unsafe_allow_html=True)
+                render_html("<b>한문 약력 정리</b>")
                 st.write(chosen_row.get('한문 약력 정리', ''))
-                st.markdown("<b>한글 약력 원문</b>", unsafe_allow_html=True)
+                render_html("<b>한글 약력 원문</b>")
                 st.write(chosen_row.get('한글 약력 원문', ''))
 
     # -------------------------------------------------------------------------
@@ -773,7 +867,6 @@ with nav_tab1:
             else:
                 tree_target = l_matches.iloc[0]
             
-            # 계보 작성 조건 창 띄우기 (제2장 3항)
             st.markdown("#### ⚙️ 계보 작성 조건 창")
             c_cond1, c_cond2 = st.columns(2)
             with c_cond1:
@@ -783,142 +876,11 @@ with nav_tab1:
                 
             st.caption("※ 규칙 적용: 본인·부·조부 및 자·손자는 형제 전원 표기, 증조부 이상 및 증손자 이하는 'O자 중 O자' 축소 수평 지그재그 표기")
             
-            # 계보 생성 및 박스 렌더링
             render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens)
 
 # =============================================================================
-# TAB 2: 계보도 전용 조회 및 클릭 약력 표기 (제2장)
+# TAB 2: 계보도 전용 조회 (제2장)
 # =============================================================================
-def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2):
-    target_gid = target_row['고유ID']
-    target_name = target_row['인명']
-    
-    st.markdown(f"#### 🌳 [{target_name}] 기준 수평 지그재그 계보도")
-    
-    # 1. 선대 조상 추적 (부, 조부, 증조부...)
-    ancestors = []
-    curr = target_row
-    for up in range(1, max_up + 1):
-        f_name = str(curr.get('부친', '')).strip()
-        if not f_name or f_name == '覯구':
-            break
-        f_match = all_df[all_df['인명'] == f_name]
-        if f_match.empty:
-            break
-        f_row = f_match.iloc[0]
-        ff_name = str(f_row.get('부친', '')).strip()
-        sibs = all_df[all_df['부친'] == ff_name] if ff_name else pd.DataFrame([f_row])
-        ancestors.append({"level": up, "row": f_row, "siblings": sibs})
-        curr = f_row
-        
-    # 역순 (최고 조상 -> 부친)
-    for anc in reversed(ancestors):
-        lvl = anc['level']
-        r = anc['row']
-        g_num, g_str = extract_generation_info(r['고유ID'])
-        sibs = anc['siblings']
-        
-        # 제2장 ① 증조부(lvl>=3)부터는 형제가 있는 경우 함자 외에 'O자 중 O자' 추가
-        if lvl >= 3:
-            rel_str = f" ({len(sibs)}자 중 {r['관계']})" if len(sibs) > 1 else f" ({r['관계']})"
-            lbl_badge = "증조부" if lvl == 3 else f"{lvl}대조"
-            st.markdown(f"""
-            <div class="tree-level-row">
-                <span class="tree-gen-badge">▲ {lbl_badge} ({g_num}세)</span>
-                <div class="tree-nodes-container">
-                    <span class="tree-node-box"><b>{r['인명']}</b>{rel_str}</span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        else: # 부(lvl=1), 조부(lvl=2) 형제 전원 표기
-            lbl_badge = "부친(父)" if lvl == 1 else "조부(祖)"
-            node_htmls = []
-            for _, s in sibs.iterrows():
-                is_direct = (s['고유ID'] == r['고유ID'])
-                cls = "tree-node-box tree-node-target" if is_direct else "tree-node-box"
-                s_name = s['인명']
-                s_rel = s['관계']
-                node_htmls.append(f'<span class="{cls}"><b>{s_name}</b> ({s_rel})</span>')
-            nodes_joined = ''.join(node_htmls)
-            st.markdown(f"""
-            <div class="tree-level-row">
-                <span class="tree-gen-badge">▲ {lbl_badge} ({g_num}세)</span>
-                <div class="tree-nodes-container">{nodes_joined}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-    # 2. 본인 및 본인 형제 (전원 표기)
-    t_f = str(target_row.get('부친', '')).strip()
-    t_sibs = all_df[all_df['부친'] == t_f] if t_f else pd.DataFrame([target_row])
-    tg_num, tg_str = extract_generation_info(target_row['고유ID'])
-    
-    t_nodes = []
-    for _, s in t_sibs.iterrows():
-        is_t = (s['고유ID'] == target_row['고유ID'])
-        cls = "tree-node-box tree-node-target" if is_t else "tree-node-box"
-        marker = " 🎯 [기준]" if is_t else ""
-        s_name = s['인명']
-        s_rel = s['관계']
-        t_nodes.append(f'<span class="{cls}"><b>{s_name}</b>{marker} ({s_rel})</span>')
-    t_joined = ''.join(t_nodes)
-    st.markdown(f"""
-    <div class="tree-level-row" style="background:#eff6ff; border:2px solid #3b82f6;">
-        <span class="tree-gen-badge" style="background:#2563eb; color:white;">● 본인 ({tg_num}세)</span>
-        <div class="tree-nodes-container">{t_joined}</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 3. 자 (Sons - 전원 표기)
-    sons = all_df[all_df['부친'] == target_name]
-    if len(sons) > 0:
-        s_nodes = []
-        for _, s in sons.iterrows():
-            s_name = s['인명']
-            s_rel = s['관계']
-            s_nodes.append(f'<span class="tree-node-box"><b>{s_name}</b> ({s_rel})</span>')
-        s_joined = ''.join(s_nodes)
-        sg_num = tg_num + 1 if tg_num else 25
-        st.markdown(f"""
-        <div class="tree-level-row">
-            <span class="tree-gen-badge">▼ 자(子) ({sg_num}세)</span>
-            <div class="tree-nodes-container">{s_joined}</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 4. 손자 (Grandsons - 전원 표기)
-        if max_down >= 2:
-            grandsons = []
-            for _, s in sons.iterrows():
-                gs = all_df[all_df['부친'] == s['인명']]
-                for _, g in gs.iterrows():
-                    g_name = g['인명']
-                    s_name = s['인명']
-                    g_rel = g['관계']
-                    grandsons.append(f'<span class="tree-node-box"><b>{g_name}</b> ({s_name}의 {g_rel})</span>')
-            if grandsons:
-                g_joined = ''.join(grandsons)
-                st.markdown(f"""
-                <div class="tree-level-row">
-                    <span class="tree-gen-badge">▼ 손(孫) ({sg_num+1}세)</span>
-                    <div class="tree-nodes-container">{g_joined}</div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-    st.write("")
-    # 제2장 ② 표시되는 해당 인물의 박스를 클릭했을 경우 그 인물의 약력을 표시
-    st.markdown("##### 🔍 계보 인물 약력 바로보기")
-    related_people = [target_row] + [anc['row'] for anc in ancestors] + [s for _, s in sons.iterrows()]
-    p_opts = {f"{p['인명']} ({p['관계']}, ID: {p['고유ID']})": p for p in related_people}
-    selected_p_key = st.selectbox("약력을 열람할 계보 선조 선택", list(p_opts.keys()))
-    sel_p_row = p_opts[selected_p_key]
-    
-    st.markdown(f"""
-    <div class="bio-detail-container" style="margin-top:10px;">
-        <div class="bio-section-title">👤 [{sel_p_row['인명']}] 선조 핵심 약력</div>
-        {format_structured_bio(sel_p_row.get('한글 약력 정리', ''), is_hanmun=False)}
-    </div>
-    """, unsafe_allow_html=True)
-
 with nav_tab2:
     st.markdown("### 🌳 완귀공파 계보도 직접 탐색")
     st.caption("특정 선조를 선택하여 직계 선대 및 후손의 혈통 계보를 계통적으로 열람할 수 있습니다.")
@@ -934,7 +896,7 @@ with nav_tab2:
 with nav_tab3:
     st.markdown("### 🕯️ 광주안씨 완귀공파 묘제일(향사 및 시제) 상세 안내")
     
-    st.markdown("""
+    render_html("""
     <div class="wangwi-intro-box" style="border-left-color: #8c2d19;">
         <div class="wangwi-intro-title" style="color:#8c2d19;">📅 완귀공 종중 정례 제향 및 시제 일정표</div>
         <table class="bilingual-table" style="margin-top:12px;">
@@ -985,13 +947,13 @@ with nav_tab3:
             <li><b>분축 및 음복(焚祝·飮福) :</b> 축문을 불사르고 선조께서 내려주신 제수와 제주를 나누어 먹으며 종중 간의 화목과 번영을 기원합니다.</li>
         </ol>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 # =============================================================================
 # 6. 하단 푸터 (Footer)
 # =============================================================================
-st.markdown("""
+render_html("""
 <div style="text-align:center; padding:25px 0 10px 0; color:#9ca3af; font-size:10pt; border-top:1px solid #e5e7eb; margin-top:35px;">
     광주안씨 완귀공파 종중 회의소 | 데이터 출처: 보정 족보 1~2권 통합본 (총 2,887위) | 연동 파일: genealogy.xlsx
 </div>
-""", unsafe_allow_html=True)
+""")
