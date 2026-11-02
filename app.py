@@ -210,10 +210,10 @@ div[data-testid="stElementContainer"],
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
+    margin-top: 3px !important;
+    margin-bottom: 0px !important;
     padding: 2px 2px !important;
-    line-height: 1.45 !important;
+    line-height: 1.35 !important;
 }
 .compact-search-subtitle {
     font-size: 12pt !important;
@@ -229,9 +229,9 @@ div[data-testid="stElementContainer"],
 
 /* ⭐ 검색 유형 선택 라인: 겹침 없이 적당한 상·하단 간격 유지 + 가로 중앙 정렬 */
 div[data-testid="stRadio"] {
-    margin-top: 4px !important;
+    margin-top: 0px !important;
     margin-bottom: 4px !important;
-    padding-top: 2px !important;
+    padding-top: 0px !important;
     padding-bottom: 2px !important;
 }
 div[role="radiogroup"] {
