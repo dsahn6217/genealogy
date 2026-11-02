@@ -121,8 +121,9 @@ html, body, [class*="css"], .stMarkdown, p, div {
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     line-height: 1.5;
 }
-/* 익스팬더 펼쳐지기 전 제목의 글자 크기와 굵기 제어 */
-.streamlit-expanderHeader p {
+/* 익스팬더 펼쳐지기 전 제목의 글자 크기와 굵기 제어 (최신 셀렉터 적용) */
+[data-testid="stExpander"] summary span, 
+[data-testid="stExpander"] summary p {
     font-size: 12pt !important;
     font-weight: 700 !important;
 }
