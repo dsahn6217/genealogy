@@ -61,6 +61,54 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
+def hide_manage_app_bar():
+    """Streamlit Cloud 하단 Manage app 바 및 배지 숨김 시도 (동일 출처 DOM 접근 시 제거)"""
+    components.html(
+        """
+        <script>
+            function removeManageApp() {
+                try {
+                    var docs = [document];
+                    if (window.parent && window.parent.document) {
+                        docs.push(window.parent.document);
+                    }
+                    if (window.top && window.top.document) {
+                        docs.push(window.top.document);
+                    }
+                    docs.forEach(function(doc) {
+                        var selectors = [
+                            '[data-testid="manage-app-button"]',
+                            '[data-testid="stToolbar"]',
+                            '[data-testid="stStatusWidget"]',
+                            '[data-testid="stDecoration"]',
+                            '.stAppDeployButton',
+                            'div[class*="viewerBadge"]',
+                            'div[class*="StatusWidget"]'
+                        ];
+                        selectors.forEach(function(sel) {
+                            doc.querySelectorAll(sel).forEach(function(el) {
+                                el.style.setProperty('display', 'none', 'important');
+                                el.style.setProperty('visibility', 'hidden', 'important');
+                            });
+                        });
+                        doc.querySelectorAll('button, a, div').forEach(function(el) {
+                            if (el.innerText && el.innerText.trim() === 'Manage app') {
+                                el.style.setProperty('display', 'none', 'important');
+                                if (el.parentElement) {
+                                    el.parentElement.style.setProperty('display', 'none', 'important');
+                                }
+                            }
+                        });
+                    });
+                } catch (e) {}
+            }
+            removeManageApp();
+            setInterval(removeManageApp, 800);
+        </script>
+        """,
+        height=0
+    )
+
 def scroll_to_result():
     """검색 완료 시 화면이 즉시 검색 결과창 위치로 자동 스크롤되도록 처리"""
     components.html(
@@ -78,7 +126,7 @@ def scroll_to_result():
     )
 
 # =============================================================================
-# 1. 페이지 설정 및 디자인 스타일 CSS (상단 여백 확보, 겹침 방지, 행간 확보)
+# 1. 페이지 설정 및 디자인 스타일 CSS (가로 중앙 정렬, 세밀한 간격 조정, Manage app 숨김)
 # =============================================================================
 st.set_page_config(
     page_title="광주안씨 완귀공파 종중 족보 검색 시스템",
@@ -95,29 +143,58 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* 기본 헤더 숨김 및 화면 최상단으로부터 타이틀 창 간격 확보 */
-header[data-testid="stHeader"] {
+/* ⭐ Manage app 바, 툴바, 헤더, 푸터, 배지 전체 숨김 처리 */
+header[data-testid="stHeader"],
+#MainMenu,
+footer,
+[data-testid="stToolbar"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+[data-testid="manage-app-button"],
+.stAppDeployButton,
+.viewerBadge_container__r5tak,
+.viewerBadge_link__qRIco,
+.styles_viewerBadge__CvC9N,
+div[class*="viewerBadge"],
+div[class*="StatusWidget"],
+button[title="Manage app"],
+a[href*="streamlit.io/cloud"] {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    pointer-events: none !important;
 }
+
+/* ⭐ 화면의 모든 창 가로 정렬은 중앙에 배치 */
 .main .block-container, 
 [data-testid="stAppViewBlockContainer"], 
 .block-container {
     max-width: 100% !important;
     width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding-top: 1.1rem !important;
     padding-bottom: 1.2rem !important;
-    padding-left: 0.6rem !important;
-    padding-right: 0.6rem !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+    box-sizing: border-box !important;
 }
 
-/* ⭐ 창들이 서로 겹치지 않도록 적절한 수직 간격 설정 */
 div[data-testid="stVerticalBlock"] {
-    gap: 0.42rem !important;
+    gap: 0.25rem !important;
+    align-items: center !important;
+    width: 100% !important;
 }
 div[data-testid="stElementContainer"],
-.element-container {
+.element-container,
+.stMarkdown {
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 0px !important;
 }
 
 /* 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
@@ -129,12 +206,14 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* ⭐ 화면 제일 위 타이틀 창: 상단으로부터 간격을 넓힘 */
+/* ⭐ 화면 제일 위 타이틀 창: 상단 간격 확보 및 가로 중앙 정렬 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
     margin-top: 10px !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 4px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     padding: 8px 12px 8px 12px;
     border-bottom: 3px solid #8c2d19;
     background: #ffffff !important;
@@ -188,52 +267,65 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력' 안내문 (겹침 방지를 위해 행간·여백 확보) */
+/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력' (가로 중앙 정렬 + 아래 검색 유형 라인과의 간격 살짝 좁힘) */
 .compact-search-header {
-    margin-top: 4px !important;
-    margin-bottom: 4px !important;
-    padding: 2px 2px !important;
-    line-height: 1.4 !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-top: 2px !important;
+    margin-bottom: -4px !important;
+    padding: 0px 2px !important;
+    line-height: 1.3 !important;
 }
 .compact-search-subtitle {
     font-size: 12pt !important;
     font-weight: 800 !important;
     color: #fef08a !important;
+    text-align: center !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
-    line-height: 1.4 !important;
+    margin-bottom: 0px !important;
+    line-height: 1.3 !important;
     letter-spacing: -0.4px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색 방식(인명 검색, 계보 검색, 단어 검색) 한 줄 표시 및 상하 간격 확보 */
+/* ⭐ 검색 유형 선택 라인: 위쪽 간격 살짝 좁히고 아래쪽 간격도 살짝 좁힘 + 가로 중앙 정렬 */
 div[data-testid="stRadio"] {
-    margin-top: 2px !important;
-    margin-bottom: 4px !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
+    width: 100% !important;
+    margin-top: -3px !important;
+    margin-bottom: -3px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+    display: flex !important;
+    justify-content: center !important;
+}
+div[data-testid="stRadio"] > div {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    margin: 0px !important;
+    padding: 0px !important;
 }
 div[role="radiogroup"] {
     display: flex !important;
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 12px !important;
+    justify-content: center !important;
+    gap: 14px !important;
     width: 100% !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
-    padding: 2px 2px !important;
+    margin-bottom: 0px !important;
+    padding: 0px 2px !important;
     overflow-x: auto !important;
 }
 div[role="radiogroup"] > label,
 div[role="radiogroup"] label[data-baseweb="radio"] {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
-    margin-right: 4px !important;
+    margin-right: 2px !important;
     margin-bottom: 0px !important;
-    padding: 2px 2px !important;
-    line-height: 1.4 !important;
+    padding: 1px 2px !important;
+    line-height: 1.3 !important;
 }
 div[role="radiogroup"] label p,
 div[role="radiogroup"] label span {
@@ -241,13 +333,17 @@ div[role="radiogroup"] label span {
     font-weight: 800 !important;
     color: #ffffff !important;
     white-space: nowrap !important;
-    line-height: 1.4 !important;
+    line-height: 1.3 !important;
     letter-spacing: -0.3px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색창 위의 입력 검색 안내 창: 글자를 가늘게(font-weight: 400) 표시하고 행간·간격 확보 */
+/* ⭐ 입력 검색 안내 창: 위쪽(검색 유형 라인)과는 살짝 좁히고, 아래쪽(검색어 입력 창)과는 살짝 넓힘 */
 .search-guide-box {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     font-size: 10pt !important;
     font-weight: 400 !important;
     color: #0f172a !important;
@@ -256,12 +352,15 @@ div[role="radiogroup"] label span {
     border-radius: 6px;
     border: 2px solid #eab308;
     line-height: 1.48 !important;
-    margin-top: 4px !important;
-    margin-bottom: 6px !important;
+    margin-top: 0px !important;
+    margin-bottom: 10px !important;
 }
 
-/* ⭐ 검색 안내 창 아래의 검색어 입력창 (겹침 방지 여백 + 굵은 테두리 + 회색 글씨) */
+/* ⭐ 검색어 입력 창: 안내 창과의 간격을 살짝 넓히고 가로 중앙 정렬 */
 div[data-testid="stTextInput"] {
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     margin-top: 4px !important;
     margin-bottom: 6px !important;
 }
@@ -294,8 +393,12 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     opacity: 1 !important;
 }
 
-/* ⭐ 검색어 입력창 하단에 생성되는 결과창 안내문: 파란색 글씨 + 비볼딕체(가늘게) + 행간 확보 */
+/* ⭐ 검색어 입력창 하단에 생성되는 결과창 안내문: 파란색 글씨 + 비볼딕체(가늘게) + 가로 중앙 정렬 */
 .multi-ancestor-banner {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     background-color: #eff6ff !important;
     border: 1.5px solid #3b82f6 !important;
     color: #1d4ed8 !important;
@@ -304,13 +407,16 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     font-size: 11pt !important;
     font-weight: 400 !important;
     margin-top: 4px !important;
-    margin-bottom: 6px !important;
+    margin-bottom: 8px !important;
     line-height: 1.48 !important;
 }
 
-/* ⭐ 검색창 명부(선택 드롭다운): 글자체를 볼딕체(굵은 글씨)로 지정 및 겹침 방지 */
+/* ⭐ 검색창 명부(선택 드롭다운): 글자체를 볼딕체(굵은 글씨)로 지정 및 가로 중앙 정렬 */
 div[data-testid="stSelectbox"] {
-    margin-top: 4px !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    margin-top: 2px !important;
     margin-bottom: 6px !important;
 }
 div[data-testid="stSelectbox"] *,
@@ -334,8 +440,12 @@ div[role="option"] * {
     line-height: 1.45 !important;
 }
 
-/* 검색 결과 인물 카드 (간격 및 행간 확보) */
+/* 검색 결과 인물 카드 (가로 중앙 정렬 및 행간 확보) */
 .result-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     background-color: #ffffff;
     border: 2px solid #1e3c72;
     border-top: 4px solid #1e3c72;
@@ -372,8 +482,10 @@ div[role="option"] * {
     border: 1px solid #bfdbfe;
 }
 
-/* 신상 및 계보 정보 (문장이 겹치지 않도록 행간을 넉넉히 확보) */
+/* 신상 및 계보 정보 (문장이 겹치지 않도록 행간 확보) */
 .meta-para-container {
+    width: 100% !important;
+    box-sizing: border-box !important;
     background: #f8fafc;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
@@ -398,7 +510,7 @@ div[role="option"] * {
     color: #1e293b;
 }
 
-/* ⭐ 한문 약력 원문 전용 컨테이너 (상세·한글·한문 약력 창을 모두 없애고 한문 약력 원문만 표시) */
+/* ⭐ 한문 약력 원문 전용 컨테이너 */
 .hanmun-raw-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -435,6 +547,10 @@ div[role="option"] * {
 
 /* 계보도 도형 간 간격 및 연결선 표시 */
 .tree-diagram-wrapper {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     background: #ffffff;
     border: 2px solid #1e3c72;
     border-radius: 8px;
@@ -500,8 +616,12 @@ div[role="option"] * {
     margin: 0 1px;
 }
 
-/* 종중 주요 유적 및 문화재 안내 (항상 검색 결과창 아래에 위치) */
+/* 종중 주요 유적 및 문화재 안내 (항상 검색 결과창 아래에 위치, 가로 중앙 정렬) */
 .heritage-sub-container {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     background-color: #ffffff;
     border: 2px solid #cbd5e1;
     border-radius: 8px;
@@ -552,6 +672,7 @@ div[role="option"] * {
 """
 
 render_html(CUSTOM_CSS)
+hide_manage_app_bar()
 
 # =============================================================================
 # 2. 데이터 로드 및 전처리 캐싱
@@ -1005,7 +1126,7 @@ if df is None:
     st.info("파일 이름이 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
     st.stop()
 
-# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 한 줄로 표시)
+# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 한 줄 중앙 정렬)
 search_type = st.radio(
     "검색 종류 선택",
     ["인명 검색", "계보 검색", "단어 검색"],
@@ -1013,7 +1134,7 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# ⭐ 3. 검색 방식 라인 아래에 안내 창(가는 글씨) 배치, 그 아래에 검색어 입력 창 배치
+# ⭐ 3. 검색 방식 라인 아래에 안내 창(가는 글씨) 배치, 그 아래에 간격을 살짝 넓혀 검색어 입력 창 배치
 if search_type == "인명 검색":
     render_html("""
     <div class="search-guide-box">
