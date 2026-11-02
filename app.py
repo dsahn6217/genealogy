@@ -84,7 +84,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-size: 16pt;
     font-weight: 700;
     color: #1e3c72;
-    margin-bottom: -4px;
+    margin-bottom: 10px;
     letter-spacing: -0.5px;
     display: flex;
     align-items: center;
