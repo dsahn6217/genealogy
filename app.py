@@ -73,7 +73,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 .title-container {
     text-align: center;
     padding: 10px 5px 10px 5px;
-    margin-bottom: 8px;
+    margin-bottom: 2px;
     border-bottom: 2px solid #8c2d19;
     background: #ffffff;
     border-radius: 10px;
@@ -96,7 +96,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-size: 14pt;
     font-weight: 600;
     color: #1a202c;
-    margin-bottom: 6px;
+    margin-bottom: 3px;
     letter-spacing: -0.5px;
 }
 .title-reference-text {
