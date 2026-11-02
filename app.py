@@ -70,6 +70,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     background-size: 24px 24px;
 }
 
+/* 상단 타이틀 배너 */
 .title-container {
     text-align: center;
     padding: 5px 5px 5px 5px;
@@ -99,19 +100,20 @@ html, body, [class*="css"], .stMarkdown, p, div {
     margin-bottom: 10px;
     letter-spacing: -0.5px;
 }
+
+/* ⭐ 타이틀 하단 참고사항 (작은 박스 테두리 제거 및 순수 텍스트 서식) */
 .title-reference-text {
-    font-size: 12pt;
-    color: #4a5568;
-    font-weight: 600;
-    margin-top: 2px;
-    background: #f7fafc;
-    display: inline-block;
-    padding: 4px 18px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
+    font-size: 11.5pt;
+    color: #4b5563;
+    font-weight: 500;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    line-height: 1.5;
+    letter-spacing: -0.3px;
 }
 
-/* 펼치기(Expander) 토글 버튼 글자 크기 및 배경 스타일 */
+/* ⭐ 펼치기(Expander) 토글 버튼 글자 크기 및 배경 스타일 */
 [data-testid="stExpander"] {
     border: 1px solid #cbd5e1 !important;
     border-radius: 8px !important;
@@ -119,19 +121,19 @@ html, body, [class*="css"], .stMarkdown, p, div {
     background: #ffffff !important;
 }
 [data-testid="stExpander"] summary {
-    font-size: 12pt !important;       /* 👈 펼치기 헤더 글자 크기 (조절 가능) */
+    font-size: 12pt !important;       /* 펼치기 헤더 글자 크기 */
     font-weight: 700 !important;
     color: #1e3c72 !important;
     padding: 8px 14px !important;
 }
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span {
-    font-size: 12pt !important;       /* 👈 펼치기 헤더 텍스트 글자 크기 */
+    font-size: 12pt !important;       /* 펼치기 헤더 텍스트 글자 크기 */
     font-weight: 700 !important;
     color: #1e3c72 !important;
 }
 
-/* 완귀정 소개 카드 상자 */
+/* ⭐ 완귀정 소개 카드 상자 */
 .wangwi-intro-box {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -146,7 +148,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 /* 소개 상자 안 제목 글자 크기 */
 .wangwi-intro-title {
-    font-size: 14pt;                  /* 👈 소개 상자 안 제목 글자 크기 */
+    font-size: 14pt;                  /* 소개 상자 안 제목 글자 크기 */
     font-weight: 800;
     color: #1e3c72;
     margin-bottom: 10px;
@@ -156,7 +158,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 /* 소개 상자 안 항목 본문 글자 크기 */
 .wangwi-intro-item {
-    font-size: 11pt;                  /* 👈 소개 상자 본문 글자 크기 */
+    font-size: 11pt;                  /* 소개 상자 본문 글자 크기 */
     color: #2d3748;
     margin-bottom: 6px;
     line-height: 1.65;
@@ -164,7 +166,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 /* 소개 상자 안 라벨(건립자, 위치, 유래, 제향) 글자 크기 */
 .wangwi-intro-label {
-    font-size: 11pt;                  /* 👈 항목 라벨 글자 크기 */
+    font-size: 11pt;                  /* 항목 라벨 글자 크기 */
     font-weight: 700;
     color: #1e3c72;
     display: inline-block;
@@ -393,7 +395,7 @@ def highlight_corrections_html(text):
         "1910년", "1910", "一九一〇", "1863년", "1863", "一八六三",
         "1850년", "1850", "一八五〇", "1870년", "1870", "一八七〇",
         "순종", "純宗", "헌종", "憲宗", "철종", "哲宗", "고종", "高宗",
-        "기해", "己亥", "무신", "戊申", "자좌 오향", "子坐 午向",
+        "기해", "己亥", "무신", "戊申", "자좌 오향", "자좌 오", "子坐 午向", "子坐 午",
         "내등말", "內嶝末", "오보허", "五步許", "북록 묘좌", "北麓 卯坐",
         "신재 주세붕", "慎齋 周世鵬", "병와 이형상", "瓶窩 李衡祥",
         "정헌 이종상", "定軒 李種祥", "순암 정복", "順庵 鼎福", "척암 김도화", "拓庵 金道和"
@@ -636,11 +638,12 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2):
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
+# ⭐ 작은 박스(border/background) 없이 자연스러운 참고사항 텍스트로 표기
 render_html(f"""
 <div class="title-container">
     <div class="title-line-1">{icon_img_tag} 광주안씨 완귀공파 종중</div>
     <div class="title-line-2">족보 검색 시스템</div>
-    <div class="title-reference-text">광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
+    <div class="title-reference-text">※ 참고사항 : 광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
 </div>
 """)
 
