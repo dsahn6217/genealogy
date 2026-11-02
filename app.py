@@ -121,10 +121,10 @@ html, body, [class*="css"], .stMarkdown, p, div {
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     line-height: 1.5;
 }
-/* 익스팬더 펼쳐지기 전 제목의 폰트 크기 및 굵기 제어 */
+/* 익스팬더 펼쳐지기 전 제목의 글자 크기와 굵기 제어 */
 .streamlit-expanderHeader p {
-    font-size: 16pt !important;
-    font-weight: 600 !important;
+    font-size: 12pt !important;
+    font-weight: 700 !important;
 }
 .wangwi-intro-title {
     font-size: 16pt;
@@ -620,7 +620,7 @@ render_html(f"""
 </div>
 """)
 
-with st.expander("🏯 <영천 완귀정(경상북도 민속문화재 제20호)> 소개>", expanded=False):
+with st.expander("🏯 <영천 완귀정(경상북도 민속문화재 제20호) 소개>", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
         render_html("""
