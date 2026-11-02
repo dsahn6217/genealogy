@@ -275,12 +275,12 @@ div[role="radiogroup"] label span {
     font-weight: 400 !important;
     color: #0f172a !important;
     background-color: #fef9c3;
-    padding: 7px 10px;
+    padding: 5px 7px;
     border-radius: 6px;
     border: 2px solid #eab308;
     line-height: 1.48 !important;
-    margin-top: 2px !important;
-    margin-bottom: 12px !important;
+    margin-top: -4px !important;
+    margin-bottom: 4px !important;
 }
 
 /* ⭐ 검색어 입력 창: 테두리를 까만색(#000000)으로 변경하고 위쪽 안내 창과의 간격 확보 */
