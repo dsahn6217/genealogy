@@ -133,4 +133,47 @@ html, body, [class*="css"], .stMarkdown, p, div {
 .wangwi-intro-item {
     font-size: 11pt;
     color: #2d3748;
-    margin-bottom: 4px
+    margin-bottom: 4px;
+}
+.wangwi-intro-label {
+    font-weight: 700;
+    color: #1a202c;
+    display: inline-block;
+    min-width: 65px;
+}
+
+.search-guide-right-text {
+    font-size: 10pt;
+    color: #0369a1;
+    background-color: #f0f9ff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #bae6fd;
+    line-height: 1.45;
+}
+
+.result-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #1e3c72;
+    border-radius: 10px;
+    padding: 22px;
+    margin-top: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.result-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
+.result-name-big {
+    font-size: 20pt;
+    font-weight: 800;
+    color: #1e3c72;
+    display: flex;
+    align-items: center;
+    gap
