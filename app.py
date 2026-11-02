@@ -6,10 +6,21 @@ import os
 import base64
 
 # =============================================================================
-# 0. 기본 설정 및 아이콘 / 데이터 파일 경로
+# 0. 기본 설정 및 아이콘 / 데이터 / 배경 파일 경로
 # =============================================================================
 ICON_FILE = "icon.png"
 DATA_FILE = "genealogy.xlsx"
+
+# 저장소 업로드 배경 이미지 파일 탐색 (background.png, bg.png 등)
+BG_PATHS = [
+    "background.png",
+    "background.jpg",
+    "bg.png",
+    "bg.jpg",
+    "artifacts/file_generation/ttl=63d/output/background.png",
+    "artifacts/file_generation/ttl=63d/output/bg.png"
+]
+bg_file = next((p for p in BG_PATHS if os.path.exists(p)), None)
 
 # 폴백 경로 탐색
 if not os.path.exists(ICON_FILE):
@@ -34,6 +45,7 @@ def get_base64_image(image_path):
     return None
 
 icon_b64 = get_base64_image(ICON_FILE)
+bg_b64 = get_base64_image(bg_file) if bg_file else None
 
 def render_html(html_content):
     """
@@ -64,56 +76,86 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
+/* 1. 최상단 네모 상자 배치를 위한 상단 여백 제거 */
+header[data-testid="stHeader"] {
+    display: none !important;
+}
+.main .block-container, 
+[data-testid="stAppViewBlockContainer"], 
+.block-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding-top: 0rem !important;  /* 👈 최상단 밀착 */
+    padding-bottom: 2rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* 2. 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
 .stApp {
     background-color: #faf8f5;
     background-image: radial-gradient(#e5dec9 0.75px, transparent 0.75px);
     background-size: 24px 24px;
+    opacity: 1 !important;         /* 👈 투명도 제로 */
 }
 
-/* 상단 타이틀 배너 */
+/* ⭐ 최상단 네모 상자 (불투명, 테두리, 그림자) */
 .title-container {
-    text-align: center;
-    padding: 5px 5px 5px 5px;
-    margin-bottom: 2px;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 0px !important;    /* 👈 최상단 밀착 */
+    margin-bottom: 8px !important;
+    padding: 10px 14px 10px 14px;
     border-bottom: 2px solid #8c2d19;
-    background: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    background: #ffffff !important;
+    opacity: 1 !important;         /* 👈 투명도 제로 */
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
 }
-.title-line-1 {
-    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    font-size: 16pt;
-    font-weight: 700;
-    color: #1e3c72;
-    margin-bottom: -10px;
-    letter-spacing: -0.5px;
+
+/* 1. 좌측 상단: 아이콘 + 광주안씨 완귀공파 종중 */
+.title-top-left {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-bottom: 2px;
 }
-.title-line-2 {
+.title-clan-name {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    font-size: 14pt;
-    font-weight: 600;
-    color: #1a202c;
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
-}
-
-/* ⭐ 타이틀 하단 참고사항 (작은 박스 테두리 제거 및 순수 텍스트 서식) */
-.title-reference-text {
-    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    font-size: 11.5pt;
-    color: #4b5563;
-    font-weight: 500;
-    margin-top: 6px;
-    margin-bottom: 4px;
-    line-height: 1.5;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #1e3c72;
     letter-spacing: -0.3px;
 }
 
-/* ⭐ 펼치기(Expander) 토글 버튼 글자 크기 및 배경 스타일 */
+/* 2. 사각형의 가로 중앙 (오른쪽 약간 하단): 족보 검색 시스템 */
+.title-main-center {
+    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
+    font-size: 17pt;
+    font-weight: 800;
+    color: #1a202c;
+    text-align: center;
+    width: 100%;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+}
+
+/* 3. 그 아래 하단: 완귀공 휘 정, 24세에서 44세 총 2,887인, 고위 기준 */
+.title-sub-bottom {
+    font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
+    font-size: 11pt;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+    width: 100%;
+    margin-top: 2px;
+    line-height: 1.4;
+    letter-spacing: -0.2px;
+}
+
+/* 펼치기(Expander) 토글 버튼 글자 크기 및 배경 스타일 */
 [data-testid="stExpander"] {
     border: 1px solid #cbd5e1 !important;
     border-radius: 8px !important;
@@ -121,19 +163,19 @@ html, body, [class*="css"], .stMarkdown, p, div {
     background: #ffffff !important;
 }
 [data-testid="stExpander"] summary {
-    font-size: 12pt !important;       /* 펼치기 헤더 글자 크기 */
+    font-size: 12pt !important;
     font-weight: 700 !important;
     color: #1e3c72 !important;
     padding: 8px 14px !important;
 }
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span {
-    font-size: 12pt !important;       /* 펼치기 헤더 텍스트 글자 크기 */
+    font-size: 12pt !important;
     font-weight: 700 !important;
     color: #1e3c72 !important;
 }
 
-/* ⭐ 완귀정 소개 카드 상자 */
+/* 완귀정 소개 카드 상자 */
 .wangwi-intro-box {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -146,9 +188,8 @@ html, body, [class*="css"], .stMarkdown, p, div {
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     line-height: 1.6;
 }
-/* 소개 상자 안 제목 글자 크기 */
 .wangwi-intro-title {
-    font-size: 14pt;                  /* 소개 상자 안 제목 글자 크기 */
+    font-size: 14pt;
     font-weight: 800;
     color: #1e3c72;
     margin-bottom: 10px;
@@ -156,17 +197,15 @@ html, body, [class*="css"], .stMarkdown, p, div {
     align-items: center;
     gap: 8px;
 }
-/* 소개 상자 안 항목 본문 글자 크기 */
 .wangwi-intro-item {
-    font-size: 11pt;                  /* 소개 상자 본문 글자 크기 */
+    font-size: 11pt;
     color: #2d3748;
     margin-bottom: 6px;
     line-height: 1.65;
     word-break: keep-all;
 }
-/* 소개 상자 안 라벨(건립자, 위치, 유래, 제향) 글자 크기 */
 .wangwi-intro-label {
-    font-size: 11pt;                  /* 항목 라벨 글자 크기 */
+    font-size: 11pt;
     font-weight: 700;
     color: #1e3c72;
     display: inline-block;
@@ -434,7 +473,6 @@ def parse_person_bilingual_details(row):
         "배위": {"ko": "", "cn": ""}
     }
     
-    # 한글 파싱
     m = re.search(r'자는\s*([^\.,\n]+)', first_ko)
     if m: details["자"]["ko"] = m.group(1).strip()
     m = re.search(r'호는\s*([^\.,\n]+)', first_ko)
@@ -450,7 +488,6 @@ def parse_person_bilingual_details(row):
     m = re.search(r'초명은?\s*([^\.,\n]+)', first_ko)
     if m: details["초명"]["ko"] = m.group(1).strip()
     
-    # 한자 파싱
     m = re.search(r'字\s*([^\.,\n]+)', first_cn)
     if m: details["자"]["cn"] = m.group(1).strip()
     m = re.search(r'號\s*([^\.,\n]+)', first_cn)
@@ -466,7 +503,6 @@ def parse_person_bilingual_details(row):
     m = re.search(r'初名\s*([^\.,\n]+)', first_cn)
     if m: details["초명"]["cn"] = m.group(1).strip()
     
-    # 과거·관직
     for line in ko_bio.split("\n"):
         if line.startswith("과거·관직 :"):
             details["과거_관직"]["ko"] = line.replace("과거·관직 :", "").strip()
@@ -474,7 +510,6 @@ def parse_person_bilingual_details(row):
         if line.startswith("科·官 :"):
             details["과거_관직"]["cn"] = line.replace("科·官 :", "").strip()
             
-    # 배위
     for line in ko_bio.split("\n"):
         if line.startswith("배 :") or line.startswith("배위 :"):
             details["배위"]["ko"] = re.sub(r'^(배|배위)\s*:\s*', '', line).strip()
@@ -636,18 +671,34 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2):
 # =============================================================================
 # 4. 상단 헤더 및 완귀정 문화재 소개 (제3장 동영상 & 제4장 1, 2, 3항)
 # =============================================================================
-icon_img_tag = f'<img src="{icon_b64}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
+icon_img_tag = f'<img src="{icon_b64}" style="width:30px; height:30px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
-# ⭐ 작은 박스(border/background) 없이 자연스러운 참고사항 텍스트로 표기
+# 저장소 배경 이미지가 있을 경우 주입
+bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-attachment: fixed !important; }}</style>" if bg_b64 else ""
+if bg_style_tag:
+    render_html(bg_style_tag)
+
+# ⭐ 최상단 네모 상자 레이아웃:
+# 1. 좌측 상단: 아이콘 + 광주안씨 완귀공파 종중
+# 2. 사각형의 가로 중앙(오른쪽 약간 하단): 족보 검색 시스템
+# 3. 그 아래: 완귀공 휘 정, 24세에서 44세 총 2,887인, 고위 기준
 render_html(f"""
 <div class="title-container">
-    <div class="title-line-1">{icon_img_tag} 족보 검색 시스템</div>
-    <div class="title-line-2">-광주안씨 완귀공파 종중-</div>
-    <div class="title-reference-text">완귀공(휘 嶒,24세) ~ <br> 44세 총 2,887인(고위 기준)</div>
+    <div class="title-top-left">
+        {icon_img_tag}
+        <span class="title-clan-name">광주안씨 완귀공파 종중</span>
+    </div>
+    <div class="title-main-center">
+        족보 검색 시스템
+    </div>
+    <div class="title-sub-bottom">
+        완귀공(휘 嶒) 24세에서 44세 총 2,887인 (고위 기준)
+    </div>
 </div>
 """)
 
-with st.expander("🏯 <영천 완귀정(경상북도 민속문화재 제20호) 소개>", expanded=False):
+# 아래 완귀정 소개 펼치기 영역 (내용 수정 없음)
+with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개 및 문화재 영상 보기]", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
         render_html("""
