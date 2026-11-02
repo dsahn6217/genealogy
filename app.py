@@ -123,7 +123,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 /* 익스팬더 펼쳐지기 전 제목의 폰트 크기 및 굵기 제어 */
 .streamlit-expanderHeader p {
-    font-size: 12pt !important;
+    font-size: 16pt !important;
     font-weight: 600 !important;
 }
 .wangwi-intro-title {
