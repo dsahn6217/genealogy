@@ -100,9 +100,9 @@ html, body, [class*="css"], .stMarkdown, p, div {
     letter-spacing: -0.5px;
 }
 .title-reference-text {
-    font-size: 10pt;
+    font-size: 12pt;
     color: #4a5568;
-    font-weight: 500;
+    font-weight: 700;
     margin-top: 2px;
     background: #f7fafc;
     display: inline-block;
@@ -615,7 +615,7 @@ render_html(f"""
 </div>
 """)
 
-with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개 및 문화재 영상 보기]", expanded=False):
+with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개]", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
         render_html("""
