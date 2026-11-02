@@ -585,9 +585,20 @@ div[role="option"] * {
 /* 모바일에서는 바깥 래퍼를 여백 없이 두고, 실제 콘텐츠 컨테이너에만
    동일한 좌우 거터를 한 번 적용합니다. 데스크톱 기본 레이아웃은 유지합니다. */
 @media (max-width: 768px) {
+    html,
+    body,
+    #root {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
     .stApp,
     [data-testid="stAppViewContainer"],
     section.main,
+    [data-testid="stAppViewBlockContainer"],
     [data-testid="stMain"] {
         width: 100% !important;
         max-width: 100% !important;
