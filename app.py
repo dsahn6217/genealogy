@@ -100,7 +100,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     letter-spacing: -0.5px;
 }
 .title-reference-text {
-    font-size: 13.5pt;
+    font-size: 12pt;
     color: #4a5568;
     font-weight: 500;
     margin-top: 2px;
