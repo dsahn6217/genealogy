@@ -81,8 +81,8 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 .title-line-1 {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    font-size: 22pt;
-    font-weight: 800;
+    font-size: 20pt;
+    font-weight: 700;
     color: #1e3c72;
     margin-bottom: 4px;
     letter-spacing: -0.5px;
@@ -93,8 +93,8 @@ html, body, [class*="css"], .stMarkdown, p, div {
 }
 .title-line-2 {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
-    font-size: 20pt;
-    font-weight: 700;
+    font-size: 18pt;
+    font-weight: 600;
     color: #1a202c;
     margin-bottom: 6px;
     letter-spacing: -0.5px;
