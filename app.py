@@ -6,20 +6,13 @@ import os
 import base64
 
 # =============================================================================
-# 0. 기본 설정 및 아이콘 / 데이터 / 배경 파일 경로
+# 0. 기본 설정 및 아이콘 / 데이터 파일 경로
 # =============================================================================
 ICON_FILE = "icon.png"
 DATA_FILE = "genealogy.xlsx"
 
 # 저장소 업로드 배경 이미지 파일 탐색 (background.png, bg.png 등)
-BG_PATHS = [
-    "background.png",
-    "background.jpg",
-    "bg.png",
-    "bg.jpg",
-    "artifacts/file_generation/ttl=63d/output/background.png",
-    "artifacts/file_generation/ttl=63d/output/bg.png"
-]
+BG_PATHS = ["background.png", "background.jpg", "bg.png", "bg.jpg", "artifacts/file_generation/ttl=63d/output/background.png", "artifacts/file_generation/ttl=63d/output/bg.png"]
 bg_file = next((p for p in BG_PATHS if os.path.exists(p)), None)
 
 # 폴백 경로 탐색
@@ -76,34 +69,17 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* 1. 최상단 네모 상자 배치를 위한 상단 여백 제거 */
-header[data-testid="stHeader"] {
-    display: none !important;
-}
-.main .block-container, 
-[data-testid="stAppViewBlockContainer"], 
-.block-container {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding-top: 0rem !important;  /* 👈 최상단 밀착 */
-    padding-bottom: 2rem !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-}
-
-/* 2. 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
 .stApp {
     background-color: #faf8f5;
     background-image: radial-gradient(#e5dec9 0.75px, transparent 0.75px);
     background-size: 24px 24px;
-    opacity: 1 !important;         /* 👈 투명도 제로 */
 }
 
-/* ⭐ 최상단 네모 상자 (불투명, 테두리, 그림자) */
+/* 최상단 네모 상자 (불투명, 테두리, 그림자) */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
-    margin-top: 0px !important;    /* 👈 최상단 밀착 */
+    margin-top: 0px !important;    /* 👈 최상단 배치 */
     margin-bottom: 8px !important;
     padding: 10px 14px 10px 14px;
     border-bottom: 2px solid #8c2d19;
@@ -163,14 +139,14 @@ header[data-testid="stHeader"] {
     background: #ffffff !important;
 }
 [data-testid="stExpander"] summary {
-    font-size: 12pt !important;
+    font-size: 12pt !important;       /* 👈 펼치기 헤더 글자 크기 (조절 가능) */
     font-weight: 700 !important;
     color: #1e3c72 !important;
     padding: 8px 14px !important;
 }
 [data-testid="stExpander"] summary p,
 [data-testid="stExpander"] summary span {
-    font-size: 12pt !important;
+    font-size: 12pt !important;       /* 👈 펼치기 헤더 텍스트 글자 크기 */
     font-weight: 700 !important;
     color: #1e3c72 !important;
 }
@@ -188,8 +164,9 @@ header[data-testid="stHeader"] {
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     line-height: 1.6;
 }
+/* 소개 상자 안 제목 글자 크기 */
 .wangwi-intro-title {
-    font-size: 14pt;
+    font-size: 14pt;                  /* 👈 소개 상자 안 제목 글자 크기 */
     font-weight: 800;
     color: #1e3c72;
     margin-bottom: 10px;
@@ -197,15 +174,17 @@ header[data-testid="stHeader"] {
     align-items: center;
     gap: 8px;
 }
+/* 소개 상자 안 항목 본문 글자 크기 */
 .wangwi-intro-item {
-    font-size: 11pt;
+    font-size: 11pt;                  /* 👈 소개 상자 본문 글자 크기 */
     color: #2d3748;
     margin-bottom: 6px;
     line-height: 1.65;
     word-break: keep-all;
 }
+/* 소개 상자 안 라벨(건립자, 위치, 유래, 제향) 글자 크기 */
 .wangwi-intro-label {
-    font-size: 11pt;
+    font-size: 11pt;                  /* 👈 항목 라벨 글자 크기 */
     font-weight: 700;
     color: #1e3c72;
     display: inline-block;
@@ -434,7 +413,7 @@ def highlight_corrections_html(text):
         "1910년", "1910", "一九一〇", "1863년", "1863", "一八六三",
         "1850년", "1850", "一八五〇", "1870년", "1870", "一八七〇",
         "순종", "純宗", "헌종", "憲宗", "철종", "哲宗", "고종", "高宗",
-        "기해", "己亥", "무신", "戊申", "자좌 오향", "자좌 오", "子坐 午向", "子坐 午",
+        "기해", "己亥", "무신", "戊申", "자좌 오향", "子坐 午向",
         "내등말", "內嶝末", "오보허", "五步許", "북록 묘좌", "北麓 卯坐",
         "신재 주세붕", "慎齋 周世鵬", "병와 이형상", "瓶窩 李衡祥",
         "정헌 이종상", "定軒 李種祥", "순암 정복", "順庵 鼎福", "척암 김도화", "拓庵 金道和"
@@ -473,6 +452,7 @@ def parse_person_bilingual_details(row):
         "배위": {"ko": "", "cn": ""}
     }
     
+    # 한글 파싱
     m = re.search(r'자는\s*([^\.,\n]+)', first_ko)
     if m: details["자"]["ko"] = m.group(1).strip()
     m = re.search(r'호는\s*([^\.,\n]+)', first_ko)
@@ -488,6 +468,7 @@ def parse_person_bilingual_details(row):
     m = re.search(r'초명은?\s*([^\.,\n]+)', first_ko)
     if m: details["초명"]["ko"] = m.group(1).strip()
     
+    # 한자 파싱
     m = re.search(r'字\s*([^\.,\n]+)', first_cn)
     if m: details["자"]["cn"] = m.group(1).strip()
     m = re.search(r'號\s*([^\.,\n]+)', first_cn)
@@ -503,6 +484,7 @@ def parse_person_bilingual_details(row):
     m = re.search(r'初名\s*([^\.,\n]+)', first_cn)
     if m: details["초명"]["cn"] = m.group(1).strip()
     
+    # 과거·관직
     for line in ko_bio.split("\n"):
         if line.startswith("과거·관직 :"):
             details["과거_관직"]["ko"] = line.replace("과거·관직 :", "").strip()
@@ -510,6 +492,7 @@ def parse_person_bilingual_details(row):
         if line.startswith("科·官 :"):
             details["과거_관직"]["cn"] = line.replace("科·官 :", "").strip()
             
+    # 배위
     for line in ko_bio.split("\n"):
         if line.startswith("배 :") or line.startswith("배위 :"):
             details["배위"]["ko"] = re.sub(r'^(배|배위)\s*:\s*', '', line).strip()
@@ -671,16 +654,16 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2):
 # =============================================================================
 # 4. 상단 헤더 및 완귀정 문화재 소개 (제3장 동영상 & 제4장 1, 2, 3항)
 # =============================================================================
-icon_img_tag = f'<img src="{icon_b64}" style="width:30px; height:30px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
+icon_img_tag = f'<img src="{icon_b64}" style="width:32px; height:32px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
 # 저장소 배경 이미지가 있을 경우 주입
 bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-attachment: fixed !important; }}</style>" if bg_b64 else ""
 if bg_style_tag:
     render_html(bg_style_tag)
 
-# ⭐ 최상단 네모 상자 레이아웃:
+# 최상단 네모 상자 레이아웃:
 # 1. 좌측 상단: 아이콘 + 광주안씨 완귀공파 종중
-# 2. 사각형의 가로 중앙(오른쪽 약간 하단): 족보 검색 시스템
+# 2. 사각형의 가로 중앙: 족보 검색 시스템
 # 3. 그 아래: 완귀공 휘 정, 24세에서 44세 총 2,887인, 고위 기준
 render_html(f"""
 <div class="title-container">
@@ -697,7 +680,6 @@ render_html(f"""
 </div>
 """)
 
-# 아래 완귀정 소개 펼치기 영역 (내용 수정 없음)
 with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개 및 문화재 영상 보기]", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
