@@ -643,7 +643,7 @@ render_html(f"""
 <div class="title-container">
     <div class="title-line-1">{icon_img_tag} 족보 검색 시스템</div>
     <div class="title-line-2">-광주안씨 완귀공파 종중-</div>
-    <div class="title-reference-text">완귀공(휘 嶒,24세) ~ <br> 44세 총 2,887위 (고위 기준)</div>
+    <div class="title-reference-text">완귀공(휘 嶒,24세) ~ <br> 44세 총 2,887인(고위 기준)</div>
 </div>
 """)
 
