@@ -582,6 +582,14 @@ div[role="option"] * {
     color: #475569;
     line-height: 1.35;
 }
+/* 전체 화면 좌우 여백 통일 */
+.stApp [data-testid="stMainBlockContainer"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    box-sizing: border-box !important;
+}
 </style>
 """
 
