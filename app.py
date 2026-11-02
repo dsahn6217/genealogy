@@ -102,7 +102,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 .title-reference-text {
     font-size: 12pt;
     color: #4a5568;
-    font-weight: 700;
+    font-weight: 600;
     margin-top: 2px;
     background: #f7fafc;
     display: inline-block;
