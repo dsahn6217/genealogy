@@ -18,7 +18,7 @@ if not os.path.exists(ICON_FILE):
         ICON_FILE = alt_icon
 
 if not os.path.exists(DATA_FILE):
-    alt_data = "완귀공파 족보 검색 시스템.xlsx"
+    alt_data = "genealogy.xlsx"
     if os.path.exists(alt_data):
         DATA_FILE = alt_data
     elif os.path.exists("artifacts/file_generation/ttl=63d/output/genealogy.xlsx"):
@@ -103,7 +103,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-size: 13.5pt;
     color: #4a5568;
     font-weight: 500;
-    margin-top: 6px;
+    margin-top: 2px;
     background: #f7fafc;
     display: inline-block;
     padding: 4px 18px;
@@ -119,7 +119,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     padding: 16px 20px;
     margin-bottom: 22px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-    line-height: 1.75;
+    line-height: 1.5;
 }
 .wangwi-intro-title {
     font-size: 16pt;
