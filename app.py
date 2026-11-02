@@ -641,13 +641,13 @@ icon_img_tag = f'<img src="{icon_b64}" style="width:32px; height:32px; border-ra
 # ⭐ 작은 박스(border/background) 없이 자연스러운 참고사항 텍스트로 표기
 render_html(f"""
 <div class="title-container">
-    <div class="title-line-1">{icon_img_tag} 광주안씨 완귀공파 종중</div>
-    <div class="title-line-2">족보 검색 시스템</div>
-    <div class="title-reference-text">※ 참고사항 : 광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
+    <div class="title-line-1">{icon_img_tag} 족보 검색 시스템</div>
+    <div class="title-line-2">-광주안씨 완귀공파 종중-</div>
+    <div class="title-reference-text">완귀공(휘 嶒,24세) ~ <br> 44세 총 2,887위 (고위 기준)</div>
 </div>
 """)
 
-with st.expander("🏯 [영천 완귀정(경상북도 민속문화재 제20호) 소개 및 문화재 영상 보기]", expanded=False):
+with st.expander("🏯 <영천 완귀정(경상북도 민속문화재 제20호) 소개>", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
         render_html("""
