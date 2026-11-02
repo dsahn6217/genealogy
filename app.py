@@ -3,20 +3,37 @@ import pandas as pd
 import openpyxl
 import re
 import os
+import base64
 
 # -----------------------------------------------------------------------------
-# 1. 페이지 기본 설정 및 스타일 (CSS)
+# 0. 아이콘(icon.png) 설정 및 Base64 인코딩
+# -----------------------------------------------------------------------------
+ICON_PATHS = ["icon.png", "artifacts/file_generation/ttl=63d/output/icon.png"]
+icon_file = next((p for p in ICON_PATHS if os.path.exists(p)), None)
+
+def get_base64_icon():
+    if icon_file and os.path.exists(icon_file):
+        try:
+            with open(icon_file, "rb") as f:
+                return f"data:image/png;base64,{base64.b64encode(f.read()).decode()}"
+        except Exception:
+            return None
+    return None
+
+icon_b64 = get_base64_icon()
+
+# -----------------------------------------------------------------------------
+# 1. 페이지 기본 설정 및 반응형 카드 CSS 스타일링
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="광주안씨 완귀공파 족보 검색 시스템",
-    page_icon="📜",
+    page_icon=icon_file if icon_file else "📜",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 CUSTOM_CSS = """
 <style>
-/* 전체 폰트 및 배경 스타일 */
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap');
 
 html, body, [class*="css"] {
@@ -27,18 +44,18 @@ html, body, [class*="css"] {
 .main-header-banner {
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
-    padding: 24px 30px;
+    padding: 22px 28px;
     border-radius: 12px;
     margin-bottom: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 .main-header-title {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 .main-header-sub {
     font-size: 14px;
@@ -52,7 +69,7 @@ html, body, [class*="css"] {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.04);
     transition: all 0.2s ease-in-out;
 }
@@ -67,12 +84,11 @@ html, body, [class*="css"] {
     align-items: center;
     flex-wrap: wrap;
     gap: 10px;
-    padding-bottom: 14px;
+    padding-bottom: 12px;
     border-bottom: 2px solid #f1f5f9;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 .person-icon-badge {
-    font-size: 22px;
     background: #eff6ff;
     width: 38px;
     height: 38px;
@@ -81,6 +97,7 @@ html, body, [class*="css"] {
     justify-content: center;
     border-radius: 8px;
     border: 1px solid #dbeafe;
+    overflow: hidden;
 }
 .person-name-hangul {
     font-size: 20px;
@@ -117,7 +134,7 @@ html, body, [class*="css"] {
     gap: 15px;
     flex-wrap: wrap;
     background-color: #f8fafc;
-    padding: 10px 14px;
+    padding: 9px 14px;
     border-radius: 8px;
     font-size: 13.5px;
     margin-bottom: 14px;
@@ -137,7 +154,7 @@ html, body, [class*="css"] {
     background-color: #fcfcfd;
     border: 1px solid #edf2f7;
     border-radius: 8px;
-    padding: 15px 18px;
+    padding: 14px 16px;
 }
 .bio-summary-header {
     font-size: 14px;
@@ -181,14 +198,13 @@ html, body, [class*="css"] {
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 2. 엑셀 데이터 로드 함수 (캐싱 적용)
+# 2. 엑셀 데이터 로드 함수 (genealogy.xlsx 우선 로드)
 # -----------------------------------------------------------------------------
 EXCEL_PATHS = [
+    "genealogy.xlsx",
+    "artifacts/file_generation/ttl=63d/output/genealogy.xlsx",
     "완귀공파 족보 검색 시스템.xlsx",
-    "artifacts/file_generation/ttl=63d/output/완귀공파 족보 검색 시스템.xlsx",
-    "완귀공파 족보 통합.xlsx",
-    "artifacts/file_generation/ttl=63d/output/완귀공파 족보 통합.xlsx",
-    "보정 족보A_B_C_D_통합_전사결과.xlsx"
+    "artifacts/file_generation/ttl=63d/output/완귀공파 족보 검색 시스템.xlsx"
 ]
 
 @st.cache_data
@@ -200,7 +216,7 @@ def load_genealogy_data():
             break
             
     if target_path is None:
-        return None, "엑셀 파일을 찾을 수 없습니다."
+        return None, "엑셀 파일(genealogy.xlsx)을 찾을 수 없습니다."
         
     try:
         wb = openpyxl.load_workbook(target_path, read_only=True)
@@ -221,37 +237,29 @@ def load_genealogy_data():
         return None, str(e)
 
 # -----------------------------------------------------------------------------
-# 3. 유틸리티 함수: 세수 계산 및 텍스트 파싱
+# 3. 유틸리티 함수: 세수 계산 및 5단락 파싱
 # -----------------------------------------------------------------------------
 def extract_generation_from_gid(gid):
-    # 고유ID 예시: B-93-4-1-32 -> 32세손
     m = re.search(r"-(\d+)$", str(gid).strip())
     if m:
         gen = int(m.group(1))
-        offset = gen - 23  # 완귀공(安嶒)이 23세손 또는 24세손
         return gen, f"{gen}세손 (완귀공 {gen-23}대손)"
     return None, "세수 미상"
 
 def split_name_hangul_hanja(name_raw):
     name_str = str(name_raw).strip()
-    # 예: 景時경시 -> 景時 (한문), 경시 (한글)
     m = re.match(r"^([一-龥]+)?([가-힣]+)?$", name_str)
     if m and m.group(1) and m.group(2):
         return m.group(2), m.group(1)
-    
-    # 한글만 있는 경우
     if re.fullmatch(r"^[가-힣]+$", name_str):
         return name_str, ""
-    # 한자만 있는 경우
     if re.fullmatch(r"^[一-龥]+$", name_str):
         return "", name_str
-        
     return name_str, ""
 
 def highlight_red_corrections(text):
     if not text:
         return ""
-    # 왕대/간지/연대 보정 키워드 강조 처리
     keywords = [
         "1699년", "1699", "一六九九", "1626년", "1626", "一六二六",
         "1558년", "1558", "一五五八", "1816년", "1816", "一八一六年",
@@ -275,10 +283,9 @@ def format_bio_html(bio_raw):
     lines = [line.strip() for line in str(bio_raw).split("\n") if line.strip()]
     html_paragraphs = []
     
-    for idx, line in enumerate(lines):
+    for line in lines:
         line_hl = highlight_red_corrections(line)
         
-        # 5단락 헤더 태그 디자인 분기
         if line_hl.startswith("묘 :") or line_hl.startswith("墓 :"):
             content = line_hl[3:].strip()
             label = "묘소" if line_hl.startswith("묘") else "墓所"
@@ -299,21 +306,24 @@ def format_bio_html(bio_raw):
             content = line_hl[4:].strip() if line_hl.startswith("남편") else line_hl[3:].strip()
             html_paragraphs.append(f'<div class="bio-para-line"><span class="bio-label-tag">👔 남편</span>{content}</div>')
         else:
-            # 1단락 (기본 신상)
             html_paragraphs.append(f'<div class="bio-para-line"><span class="bio-label-tag">👤 신상</span>{line_hl}</div>')
             
     return "".join(html_paragraphs)
 
 # -----------------------------------------------------------------------------
-# 4. 사이드바 검색 및 필터 옵션
+# 4. 사이드바 검색 및 필터 UI
 # -----------------------------------------------------------------------------
 df, source_info = load_genealogy_data()
+
+# 사이드바 상단 아이콘 표시
+if icon_file and os.path.exists(icon_file):
+    st.sidebar.image(icon_file, width=80)
 
 st.sidebar.header("🔍 선조 인명 검색")
 
 if df is None:
     st.error(f"데이터 로드 실패: {source_info}")
-    uploaded_file = st.sidebar.file_uploader("족보 엑셀 파일 직접 업로드", type=["xlsx", "xlsm"])
+    uploaded_file = st.sidebar.file_uploader("족보 엑셀 파일 직접 업로드 (genealogy.xlsx)", type=["xlsx", "xlsm"])
     if uploaded_file:
         wb = openpyxl.load_workbook(uploaded_file, read_only=True)
         sheet_name = "족보전사결과" if "족보전사결과" in wb.sheetnames else wb.sheetnames[0]
@@ -324,19 +334,16 @@ if df is None:
         st.rerun()
     st.stop()
 
-# 검색어 입력
 search_query = st.sidebar.text_input("인명 (한글 또는 한자)", placeholder="예: 경시, 景時, 완귀, 안증").strip()
 gid_query = st.sidebar.text_input("고유ID 검색", placeholder="예: B-93-4-1-32, A-24").strip()
 
-# 세수 필터
 gen_list = sorted(list(set([extract_generation_from_gid(g)[0] for g in df['고유ID'] if extract_generation_from_gid(g)[0] is not None])))
 selected_gen = st.sidebar.selectbox("세수(世代) 선택", ["전체 세수"] + [f"{g}세손" for g in gen_list])
 
-# 약력 언어 모드 선택
 bio_mode = st.sidebar.radio("약력 표시 모드", ["한글 약력 정리", "한문 약력 정리", "원문·정리 대조"], index=0)
 
 # -----------------------------------------------------------------------------
-# 5. 검색 로직 실행
+# 5. 검색 로직 필터링
 # -----------------------------------------------------------------------------
 filtered_df = df.copy()
 
@@ -355,32 +362,31 @@ if selected_gen != "전체 세수":
     filtered_df = filtered_df[filtered_df['고유ID'].apply(lambda x: extract_generation_from_gid(x)[0] == target_gen)]
 
 # -----------------------------------------------------------------------------
-# 6. 메인 화면 렌더링
+# 6. 상단 헤더 및 통계 요약
 # -----------------------------------------------------------------------------
-# 배너
-st.markdown("""
+banner_icon_tag = f'<img src="{icon_b64}" style="width:36px; height:36px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
+
+st.markdown(f"""
 <div class="main-header-banner">
-    <div class="main-header-title">📜 광주안씨 완귀공파 족보 검색 시스템</div>
+    <div class="main-header-title">{banner_icon_tag} 광주안씨 완귀공파 족보 검색 시스템</div>
     <div class="main-header-sub">선조 인명·세계도 계통·5단락 표준 약력 및 고증 보정(빨간색) 통합 검색 포털</div>
 </div>
 """, unsafe_allow_html=True)
 
-# 검색 결과 통계 요약
 total_count = len(filtered_df)
 c1, c2, c3 = st.columns([2, 2, 6])
 c1.metric("검색 결과 인원", f"{total_count:,} 명")
 c2.metric("전체 등록 인원", f"{len(df):,} 명")
-c3.caption(f"📁 데이터 소스: `{os.path.basename(source_info)}` (족보전사결과 시트)")
+c3.caption(f"📁 연동 데이터: `{os.path.basename(source_info)}` (족보전사결과 시트)")
 
 st.write("")
 
 # -----------------------------------------------------------------------------
-# 7. 인명 검색 결과 카드 출력 (반드시 unsafe_allow_html=True 사용)
+# 7. 인명 검색 결과 카드 출력 (unsafe_allow_html=True 적용)
 # -----------------------------------------------------------------------------
 if total_count == 0:
     st.info("검색 조건에 일치하는 선조 기록이 없습니다. 검색어를 다시 확인해 주세요.")
 else:
-    # 페이지네이션 (1페이지당 10명씩 표시)
     PAGE_SIZE = 10
     total_pages = (total_count - 1) // PAGE_SIZE + 1
     
@@ -393,6 +399,8 @@ else:
     end_idx = min(start_idx + PAGE_SIZE, total_count)
     page_df = filtered_df.iloc[start_idx:end_idx]
 
+    card_icon_tag = f'<img src="{icon_b64}" style="width:28px; height:28px; border-radius:4px;">' if icon_b64 else '📜'
+
     for _, row in page_df.iterrows():
         gid = row.get('고유ID', '')
         name_raw = row.get('인명', '')
@@ -403,13 +411,11 @@ else:
         name_hangul, name_hanja = split_name_hangul_hanja(name_raw)
         gen_num, gen_str = extract_generation_from_gid(gid)
         
-        # 선택된 모드에 따른 약력 텍스트 추출
         if bio_mode == "한글 약력 정리":
             bio_content_html = format_bio_html(row.get('한글 약력 정리', ''))
         elif bio_mode == "한문 약력 정리":
             bio_content_html = format_bio_html(row.get('한문 약력 정리', ''))
         else:
-            # 원문 대조 모드
             bio_content_html = f"""
             <div style="margin-bottom:12px;">
                 <div style="font-weight:700; color:#1e3a8a; margin-bottom:5px;">[한글 약력 정리]</div>
@@ -424,7 +430,7 @@ else:
         card_html = f"""
         <div class="person-card-container">
             <div class="result-person-row">
-                <span class="person-icon-badge">📜</span>
+                <span class="person-icon-badge">{card_icon_tag}</span>
                 <span class="person-name-hangul">{name_hangul if name_hangul else name_raw}</span>
                 <span class="person-name-hanja">{name_hanja}</span>
                 <span class="person-rel-badge">{rel}</span>
@@ -444,5 +450,4 @@ else:
         </div>
         """
         
-        # [핵심] st.markdown 에 unsafe_allow_html=True 를 적용하여 카드로 렌더링
         st.markdown(card_html, unsafe_allow_html=True)
