@@ -582,10 +582,19 @@ div[role="option"] * {
     color: #475569;
     line-height: 1.35;
 }
-/* 전체 화면 좌우 여백 통일 */
-.stApp [data-testid="stMainBlockContainer"] {
+/* 모바일 화면 좌우 여백 완전 통일 */
+.stApp,
+.stApp section.main {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.stApp [data-testid="stMainBlockContainer"],
+.stApp .block-container {
     width: 100% !important;
     max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
     box-sizing: border-box !important;
