@@ -78,7 +78,7 @@ def scroll_to_result():
     )
 
 # =============================================================================
-# 1. 페이지 설정 및 디자인 스타일 CSS (여백 초밀착, 한 줄 라디오, 입력창 굵은 테두리)
+# 1. 페이지 설정 및 디자인 스타일 CSS (창과 라인 사이 간격 최소화, 복수 후보 글자 확대)
 # =============================================================================
 st.set_page_config(
     page_title="광주안씨 완귀공파 종중 족보 검색 시스템",
@@ -105,18 +105,27 @@ header[data-testid="stHeader"] {
     max-width: 100% !important;
     width: 100% !important;
     padding-top: 0rem !important;
-    padding-bottom: 1rem !important;
+    padding-bottom: 0.8rem !important;
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
 }
 
-/* 창 별로 간격이 벌어져 있는 것을 최대한 좁힘 */
+/* ⭐ 창과 라인 사이에 간격이 크지 않도록 초밀착 조정 */
+div[data-testid="stVerticalBlock"],
 div[data-testid="stVerticalBlock"] > div {
-    gap: 0.1rem !important;
+    gap: 2px !important;
+    margin-top: 0px !important;
     margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
-.element-container {
+div[data-testid="stElementContainer"],
+.element-container,
+.stMarkdown {
+    margin-top: 0px !important;
     margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
 
 /* 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
@@ -133,7 +142,7 @@ div[data-testid="stVerticalBlock"] > div {
     width: 100% !important;
     box-sizing: border-box !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 1px !important;
     padding: 6px 10px 6px 10px;
     border-bottom: 3px solid #8c2d19;
     background: #ffffff !important;
@@ -187,24 +196,36 @@ div[data-testid="stVerticalBlock"] > div {
     letter-spacing: -0.2px;
 }
 
-/* ⭐ '족보 검색' 단어 삭제 후 안내문을 상단 창 바로 아래에 밀착 표시 */
+/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력' 안내문 (상하 간격 초밀착) */
 .compact-search-header {
-    margin-top: 2px !important;
-    margin-bottom: 1px !important;
+    margin-top: 1px !important;
+    margin-bottom: 0px !important;
     padding: 0px 2px !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
 }
 .compact-search-subtitle {
     font-size: 12pt !important;
     font-weight: 800 !important;
     color: #fef08a !important;
     margin-top: 0px !important;
-    margin-bottom: 1px !important;
+    margin-bottom: 0px !important;
     letter-spacing: -0.4px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색 방식(인명 검색, 계보 검색, 단어 검색) 모바일에서도 무조건 한 줄로 표시 */
+/* ⭐ 검색 방식(인명 검색, 계보 검색, 단어 검색) 모바일에서도 한 줄로 표시 및 하단 여백 제거 */
+div[data-testid="stRadio"] {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+div[data-testid="stRadio"] > div {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
 div[role="radiogroup"] {
     display: flex !important;
     flex-direction: row !important;
@@ -214,8 +235,8 @@ div[role="radiogroup"] {
     gap: 10px !important;
     width: 100% !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
-    padding: 2px 2px !important;
+    margin-bottom: 0px !important;
+    padding: 0px 2px !important;
     overflow-x: auto !important;
 }
 div[role="radiogroup"] > label,
@@ -223,7 +244,8 @@ div[role="radiogroup"] label[data-baseweb="radio"] {
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     margin-right: 4px !important;
-    padding: 2px 2px !important;
+    margin-bottom: 0px !important;
+    padding: 1px 2px !important;
 }
 div[role="radiogroup"] label p,
 div[role="radiogroup"] label span {
@@ -235,10 +257,26 @@ div[role="radiogroup"] label span {
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색어 입력창 테두리를 굵게 표시 및 예시 글씨 색상 회색 지정 */
+/* ⭐ 검색 방식 라인 바로 아래에 배치되는 검색 안내 창 (상하 간격 최소화) */
+.search-guide-box {
+    font-size: 10pt;
+    color: #0f172a;
+    background-color: #fef9c3;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 2px solid #eab308;
+    line-height: 1.25;
+    font-weight: 600;
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
+}
+
+/* ⭐ 검색 안내 창 바로 아래에 배치되는 검색어 입력창 (굵은 테두리 + 회색 글씨 + 간격 최소화) */
 div[data-testid="stTextInput"] {
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 1px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
 div[data-testid="stTextInputRootElement"],
 div[data-testid="stTextInput"] > div > div,
@@ -247,14 +285,14 @@ div[data-testid="stTextInput"] div[data-baseweb="input"] {
     border: 3.5px solid #f59e0b !important;
     border-radius: 8px !important;
     background-color: #ffffff !important;
-    box-shadow: 0 0 0 2px #0f172a, 0 3px 8px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 0 0 2px #0f172a, 0 2px 6px rgba(0,0,0,0.28) !important;
     box-sizing: border-box !important;
 }
 div[data-testid="stTextInput"] input {
     color: #4b5563 !important;
     font-weight: 700 !important;
     font-size: 12pt !important;
-    padding: 7px 10px !important;
+    padding: 6px 10px !important;
     background-color: #ffffff !important;
 }
 div[data-testid="stTextInput"] input::placeholder {
@@ -268,18 +306,36 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     opacity: 1 !important;
 }
 
-/* 검색 방식별 동적 안내문 상자 (간격 최소화) */
-.search-guide-right-text {
-    font-size: 10pt;
-    color: #0f172a;
-    background-color: #fef9c3;
-    padding: 5px 10px;
+/* ⭐ 검색 인물이 복수일 경우에 표시하는 안내 배너 및 선택창(명부) 글자 크기 확대 */
+.multi-ancestor-banner {
+    background-color: #fff1f2;
+    border: 2px solid #e11d48;
+    color: #9f1239;
+    padding: 6px 10px;
     border-radius: 6px;
-    border: 2px solid #eab308;
+    font-size: 11.5pt !important;
+    font-weight: 800 !important;
+    margin-top: 1px !important;
+    margin-bottom: 1px !important;
     line-height: 1.25;
-    font-weight: 600;
+}
+div[data-testid="stSelectbox"] {
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 1px !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"],
+div[data-testid="stSelectbox"] div[data-baseweb="select"] div,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] span {
+    font-size: 11.8pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+}
+ul[data-testid="stSelectboxVirtualDropdown"] li,
+div[role="listbox"] li,
+div[role="option"] {
+    font-size: 11.5pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
 }
 
 /* 검색 결과 인물 카드 (간격 최소화) */
@@ -288,9 +344,9 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border: 2px solid #1e3c72;
     border-top: 4px solid #1e3c72;
     border-radius: 8px;
-    padding: 10px 12px;
-    margin-top: 4px !important;
-    margin-bottom: 6px !important;
+    padding: 9px 11px;
+    margin-top: 2px !important;
+    margin-bottom: 4px !important;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 .result-card-header {
@@ -299,10 +355,10 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     justify-content: space-between;
     border-bottom: 2px solid #e2e8f0;
     padding-bottom: 4px;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 .result-name-big {
-    font-size: 16pt;
+    font-size: 15.5pt;
     font-weight: 800;
     color: #1e3c72;
     display: flex;
@@ -310,8 +366,8 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     gap: 8px;
 }
 .result-badge {
-    font-size: 10pt;
-    font-weight: 700;
+    font-size: 10.5pt;
+    font-weight: 800;
     background: #eff6ff;
     color: #1d4ed8;
     padding: 2px 8px;
@@ -319,14 +375,14 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border: 1px solid #bfdbfe;
 }
 
-/* 인물 기본 신상 및 계보 정보 (한글 전용 문단 형식, 간격 최소화) */
+/* 신상 및 계보 정보 (한글 전용 문단 형식, 간격 최소화) */
 .meta-para-container {
     background: #f8fafc;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    line-height: 1.38;
+    padding: 7px 10px;
+    margin-bottom: 6px;
+    line-height: 1.35;
     font-size: 10.5pt;
     color: #0f172a;
 }
@@ -344,11 +400,11 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     color: #1e293b;
 }
 
-/* ⭐ 상세 한글·한문 약력 박스 가로(상하 풀와이드) 배치: 한글 약력 먼저, 그 뒤에 정리된 한문 약력 배치 */
+/* ⭐ 상세 한글·한문 약력 박스 가로(상하 풀와이드) 배치: 한글 약력 먼저, 다음에는 '한문 약력 원문'만 표시 */
 .bio-horizontal-stack {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     width: 100%;
 }
 .bio-detail-container {
@@ -358,9 +414,9 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border: 1px solid #cbd5e1;
     border-left: 4px solid #1e3c72;
     border-radius: 6px;
-    padding: 8px 12px;
+    padding: 7px 11px;
     margin-bottom: 0px !important;
-    line-height: 1.45;
+    line-height: 1.42;
     font-size: 10.5pt;
     color: #1e293b;
 }
@@ -373,14 +429,14 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border-bottom: 1px solid #cbd5e1;
 }
 .bio-raw-subbox {
-    margin-top: 6px;
-    padding-top: 5px;
+    margin-top: 5px;
+    padding-top: 4px;
     border-top: 1px dashed #94a3b8;
     font-size: 10pt;
     color: #334155;
-    line-height: 1.4;
+    line-height: 1.38;
     background-color: #f8fafc;
-    padding: 6px 8px;
+    padding: 5px 8px;
     border-radius: 4px;
 }
 .bio-tag {
@@ -402,7 +458,7 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border-bottom: 1px dashed #f87171;
 }
 
-/* 단어 검색어 빨간색 강조 및 다수 선조 안내 배너 */
+/* 단어 검색어 빨간색 강조 */
 .search-word-red {
     color: #ff0000 !important;
     font-weight: 800 !important;
@@ -411,18 +467,6 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border-radius: 3px;
     border: 1px solid #f87171;
 }
-.multi-ancestor-banner {
-    background-color: #fff1f2;
-    border: 2px solid #e11d48;
-    color: #9f1239;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 10.5pt;
-    font-weight: 700;
-    margin-top: 3px;
-    margin-bottom: 4px;
-    line-height: 1.3;
-}
 
 /* 계보도 도형 간 간격 최소화 및 도형 간 연결선 표시 */
 .tree-diagram-wrapper {
@@ -430,8 +474,8 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border: 2px solid #1e3c72;
     border-radius: 8px;
     padding: 8px 10px;
-    margin-top: 4px;
-    margin-bottom: 6px;
+    margin-top: 2px;
+    margin-bottom: 4px;
 }
 .tree-level-row {
     display: flex;
@@ -496,8 +540,8 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     border: 2px solid #cbd5e1;
     border-radius: 8px;
     padding: 8px 12px;
-    margin-top: 6px;
-    margin-bottom: 6px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 .heritage-sub-header {
     font-size: 11pt;
@@ -564,15 +608,18 @@ def load_and_preprocess_genealogy():
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 세수, 인명 분리, 한글 전용 신상 문단 생성, 계보도
+# 3. 보조 유틸리티 함수: 세수 표기, 입계/출계 판별, 한글 신상 문단 생성, 계보도
 # =============================================================================
 def extract_generation_info(gid):
+    """
+    ⭐ '[0세  완귀공의 00대손]' 형식으로 표기하기 위한 세수 문자열 생성
+    """
     m = re.search(r"-(\d+)$", str(gid).strip())
     if m:
         gen = int(m.group(1))
         wangwi_desc_gen = gen - 24
         desc_str = "완귀공 본인" if wangwi_desc_gen == 0 else f"완귀공의 {wangwi_desc_gen}대손"
-        return gen, f"{gen}세손 ({desc_str})"
+        return gen, f"{gen}세  {desc_str}"
     return None, "세수 미상"
 
 def split_name(name_raw):
@@ -585,6 +632,67 @@ def split_name(name_raw):
     if re.fullmatch(r"^[一-龥]+$", s):
         return "", s
     return s, ""
+
+def clean_ko_name(raw_val):
+    """한문을 제거하고 순수 한글 인명만 추출"""
+    s = str(raw_val).strip()
+    ko, _ = split_name(s)
+    if ko:
+        return ko
+    cleaned = re.sub(r"[一-龥]+", "", s).strip()
+    return cleaned if cleaned else s
+
+def get_adoption_info(row):
+    """
+    ⭐ 입계자 / 출계자 / 일반 판별 및 계부·생부·양부 한글 성명 추출
+    - 입계자: 관계 == '계자' 또는 한글 약력 정리에 '생부 00의' 포함 -> ('입계', 계부(부친컬럼), 생부)
+    - 출계자: 한글 약력 정리에 '양부 00의 계자' 또는 원문에 '출계'/'出系' 포함 -> ('출계', 생부(부친컬럼), 양부)
+    - 일반: ('일반', 부친, '')
+    """
+    rel = str(row.get("관계", "")).strip()
+    ko_bio = str(row.get("한글 약력 정리", "")).strip()
+    ko_raw = str(row.get("한글 약력 원문", "")).strip()
+    cn_raw = str(row.get("한문 약력 원문", "")).strip()
+    father_ko = clean_ko_name(row.get("부친", ""))
+
+    # 1. 입계자 판별
+    if rel == "계자" or "생부 " in ko_bio:
+        m = re.search(r"생부\s*([^\s의\.]+)의?", ko_bio)
+        saengbu_ko = clean_ko_name(m.group(1)) if m else ""
+        return "입계", father_ko, saengbu_ko
+
+    # 2. 출계자 판별
+    if "양부" in ko_bio or "출계" in ko_raw or "出系" in cn_raw:
+        m = re.search(r"양부\s*(.+?)의\s*계자", ko_bio)
+        yangbu_ko = clean_ko_name(m.group(1)) if (m and m.group(1).strip()) else ""
+        if not yangbu_ko:
+            m2 = re.search(r"([^\s]+)의\s*후사로\s*출계|출계\s*([^\s]+)", ko_raw)
+            if m2:
+                yangbu_ko = clean_ko_name(m2.group(1) or m2.group(2))
+        return "출계", father_ko, yangbu_ko
+
+    return "일반", father_ko, ""
+
+def format_candidate_label(row):
+    """
+    ⭐ 검색 결과 창 명부(선택 목록) 표기 형식:
+    - '[0세  완귀공의 00대손]' 표기
+    - 입계자인 경우: '[0세  완귀공의 00대손] 함자  계자 (계부:00, 조부:00)'
+    - 출계자인 경우: '[0세  완귀공의 00대손] 함자  0자 (출계) (생부:00, 조부:00)'
+    - 일반인 경우:   '[0세  완귀공의 00대손] 함자  0자 (부:00, 조부:00)'
+    """
+    _, gen_str = extract_generation_info(row.get("고유ID", ""))
+    person_ko = clean_ko_name(row.get("인명", ""))
+    gfather_ko = clean_ko_name(row.get("조부", ""))
+    rel = str(row.get("관계", "")).strip()
+    adopt_type, father_ko, _ = get_adoption_info(row)
+
+    if adopt_type == "입계":
+        return f"[{gen_str}] {person_ko}  {rel} (계부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+    elif adopt_type == "출계":
+        return f"[{gen_str}] {person_ko}  {rel} (출계) (생부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+    else:
+        return f"[{gen_str}] {person_ko}  {rel} (부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
 
 def highlight_corrections_html(text, search_term=None):
     if not text:
@@ -619,23 +727,31 @@ def highlight_corrections_html(text, search_term=None):
 
 def parse_person_hangul_details(row):
     """
-    ⭐ 인물 기본 신상 및 계보 정보에서 한글로만 표시하고 한문은 기재하지 않음
+    ⭐ '신상 및 계보 정보' 한글 전용 항목 생성:
+    - 입계자인 경우: 부 : 00(생부00) 로 표시
+    - 출계자인 경우: 부 : 00(양부00) 로 표시
     """
     gid = row.get("고유ID", "")
-    gen_num, gen_str = extract_generation_info(gid)
-    
-    father_ko, _ = split_name(row.get("부친", ""))
-    gfather_ko, _ = split_name(row.get("조부", ""))
-    
+    _, gen_str = extract_generation_info(gid)
+    gfather_ko = clean_ko_name(row.get("조부", ""))
+    adopt_type, father_ko, other_father_ko = get_adoption_info(row)
+
+    if adopt_type == "입계" and other_father_ko:
+        father_display = f"{father_ko}(생부{other_father_ko})"
+    elif adopt_type == "출계" and other_father_ko:
+        father_display = f"{father_ko}(양부{other_father_ko})"
+    else:
+        father_display = father_ko
+
     ko_bio = str(row.get("한글 약력 정리", ""))
     first_ko = ko_bio.split("\n")[0] if ko_bio else ""
-    
+
     details = [
         ("세수", gen_str),
-        ("부", father_ko if father_ko else re.sub(r"[一-龥]+", "", str(row.get("부친", ""))).strip()),
-        ("조부", gfather_ko if gfather_ko else re.sub(r"[一-龥]+", "", str(row.get("조부", ""))).strip()),
+        ("부", father_display),
+        ("조부", gfather_ko),
     ]
-    
+
     m = re.search(r'자는\s*([^\.,\n]+)', first_ko)
     if m: details.append(("자", m.group(1).strip()))
     m = re.search(r'초자는?\s*([^\.,\n]+)', first_ko)
@@ -650,7 +766,7 @@ def parse_person_hangul_details(row):
     if m: details.append(("통명", m.group(1).strip()))
     m = re.search(r'초명은?\s*([^\.,\n]+)', first_ko)
     if m: details.append(("초명", m.group(1).strip()))
-    
+
     for line in ko_bio.split("\n"):
         if line.startswith("과거·관직 :"):
             details.append(("과거·관직", line.replace("과거·관직 :", "").strip()))
@@ -658,16 +774,13 @@ def parse_person_hangul_details(row):
             details.append(("학력·인품·업적", line.replace("학문·인품·업적 :", "").strip()))
         elif line.startswith("배 :") or line.startswith("배위 :"):
             details.append(("배위", re.sub(r'^(배|배위)\s*:\s*', '', line).strip()))
-            
+
     return details
 
 def format_hangul_only_paragraph_html(row, search_term=None):
-    """
-    ⭐ 인물 기본 신상 및 계보 정보를 한글로만 표시 (내용이 없는 항목은 생략)
-    """
     details = parse_person_hangul_details(row)
     lines_html = []
-    
+
     for lbl, ko_val in details:
         val = str(ko_val).strip()
         if not val or val == "-":
@@ -677,7 +790,7 @@ def format_hangul_only_paragraph_html(row, search_term=None):
         lines_html.append(
             f"<div class='meta-para-item'><span class='meta-para-label'>• {lbl} :</span> <span class='meta-para-value'>{val}</span></div>"
         )
-        
+
     return "".join(lines_html)
 
 def format_structured_bio(bio_text, is_hanmun=False, search_term=None):
@@ -709,34 +822,37 @@ def format_structured_bio(bio_text, is_hanmun=False, search_term=None):
 def render_person_result_card(target_row, search_term=None):
     """
     ⭐ 인물 검색 결과 카드 통합 출력:
-    1. 인물 기본 신상 및 계보 정보: 한글로만 표시 (한문 미기재)
-    2. 상세 한글·한문 약력란: 박스를 가로형(위아래 순차 배치)으로 하여
-       한글 약력(정리+원문)을 먼저 배치하고, 그 뒤에 한문 약력 창은 '정리된 한문 약력'만 기재
+    1. 상단 타이틀: 출계자인 경우 '함자 00  0자 (출계)'로 표시
+    2. '신상 및 계보 정보': 입계자인 경우 '부 : 00(생부00)', 출계자인 경우 '부 : 00(양부00)' 표시
+    3. 약력 영역: 한글 약력 먼저 배치하고, 다음에는 '한문 약력 원문'만 표시
     """
-    h_name, _ = split_name(target_row['인명'])
+    h_name = clean_ko_name(target_row['인명'])
+    adopt_type, _, _ = get_adoption_info(target_row)
+    rel_badge_text = f"{target_row['관계']} (출계)" if adopt_type == "출계" else str(target_row['관계'])
+
     meta_paragraphs_html = format_hangul_only_paragraph_html(target_row, search_term=search_term)
-    
     ko_raw = highlight_corrections_html(target_row.get('한글 약력 원문', ''), search_term=search_term)
-    
+    cn_raw = highlight_corrections_html(target_row.get('한문 약력 원문', ''), search_term=search_term)
+
     render_html(f"""
     <div id="search-result-anchor"></div>
     <div class="result-card">
         <div class="result-card-header">
             <div class="result-name-big">
                 <span>{h_name if h_name else target_row['인명']}</span>
-                <span class="result-badge">{target_row['관계']}</span>
+                <span class="result-badge">{rel_badge_text}</span>
             </div>
             <div style="font-size:10pt; color:#6b7280; font-family:monospace;">고유ID: {target_row['고유ID']}</div>
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-bottom:3px; font-size:11pt;">
-            📌 인물 기본 신상 및 계보 정보
+            📌 신상 및 계보 정보
         </div>
         <div class="meta-para-container">
             {meta_paragraphs_html}
         </div>
         
-        <div style="font-weight:800; color:#1e3c72; margin-top:6px; margin-bottom:4px; font-size:11pt;">
+        <div style="font-weight:800; color:#1e3c72; margin-top:5px; margin-bottom:3px; font-size:11pt;">
             📜 상세 한글·한문 약력
         </div>
         
@@ -749,8 +865,10 @@ def render_person_result_card(target_row, search_term=None):
                 </div>
             </div>
             <div class="bio-detail-container">
-                <div class="bio-section-title">2. 한문 약력 (정리된 한문 약력)</div>
-                {format_structured_bio(target_row.get('한문 약력 정리', ''), is_hanmun=True, search_term=search_term)}
+                <div class="bio-section-title">2. 한문 약력 원문</div>
+                <div style="font-size:10.5pt; color:#1e293b; line-height:1.45;">
+                    {cn_raw if cn_raw else '수록된 한문 약력 원문이 없습니다.'}
+                </div>
             </div>
         </div>
     </div>
@@ -775,12 +893,12 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
-    diagram_parts = [f'<div id="search-result-anchor"></div><div class="tree-diagram-wrapper"><div style="font-weight:800; color:#1e3c72; font-size:11.5pt; margin-bottom:4px;">🌳 [{target_name}] 기준 혈통 계보도</div>']
+    diagram_parts = [f'<div id="search-result-anchor"></div><div class="tree-diagram-wrapper"><div style="font-weight:800; color:#1e3c72; font-size:11.5pt; margin-bottom:4px;">🌳 [{clean_ko_name(target_name)}] 기준 혈통 계보도</div>']
     
     for idx_a, anc in enumerate(reversed(ancestors)):
         lvl = anc['level']
         r = anc['row']
-        g_num, g_str = extract_generation_info(r['고유ID'])
+        g_num, _ = extract_generation_info(r['고유ID'])
         sibs = anc['siblings']
         
         if idx_a > 0:
@@ -821,7 +939,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
 
     t_f = str(target_row.get('부친', '')).strip()
     t_sibs = all_df[all_df['부친'] == t_f] if t_f else pd.DataFrame([target_row])
-    tg_num, tg_str = extract_generation_info(target_row['고유ID'])
+    tg_num, _ = extract_generation_info(target_row['고유ID'])
     
     t_nodes = []
     for s_i, (_, s) in enumerate(t_sibs.iterrows()):
@@ -924,7 +1042,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더 및 직결된 족보 검색 인터페이스 ('족보 검색' 단어 삭제)
+# 4. 최상단 헤더 및 직결된 족보 검색 인터페이스
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:26px; height:26px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
@@ -933,7 +1051,7 @@ bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; 
 if bg_style_tag:
     render_html(bg_style_tag)
 
-# ⭐ 1. 최상단 족보 검색 시스템 상자 + 바로 아래 안내문 표시 ('족보 검색' 단어 삭제)
+# ⭐ 1. 최상단 족보 검색 시스템 상자 + 바로 아래 '다음 중 하나를 선택하고 검색어를 한글로 입력' 표시
 render_html(f"""
 <div class="title-container">
     <div class="title-top-left">
@@ -948,7 +1066,7 @@ render_html(f"""
     </div>
 </div>
 <div class="compact-search-header">
-    <div class="compact-search-subtitle">아래 방식 중 하나를 선택하고 검색어를 한글로 입력하세요</div>
+    <div class="compact-search-subtitle">다음 중 하나를 선택하고 검색어를 한글로 입력</div>
 </div>
 """)
 
@@ -965,36 +1083,28 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# ⭐ 3. 굵은 테두리 검색어 입력창 (예시 중 한문 삭제 및 회색 글씨) 및 동적 안내문
-c_input, c_guide = st.columns([1.1, 2.4])
-
-with c_input:
-    if search_type == "인명 검색":
-        query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 증, 완귀", key="name_query", label_visibility="collapsed")
-    elif search_type == "계보 검색":
-        query_val = st.text_input("검색어 입력", placeholder="예: 증, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
-    else:
-        query_val = st.text_input("검색어 입력", placeholder="예: 시강원, 헌릉참봉, 1699", key="word_query", label_visibility="collapsed")
-
-with c_guide:
-    if search_type == "인명 검색":
-        render_html("""
-        <div class="search-guide-right-text">
-            💡 <b>[인명 검색 안내]</b> 인물의 함자(성씨 안을 넣어도 무방), 자(字), 초자(初字), 호(號), 초휘(初諱), 일휘(一諱) 통명(通名), 초명(初名) 등을 한글로 입력
-        </div>
-        """)
-    elif search_type == "계보 검색":
-        render_html("""
-        <div class="search-guide-right-text">
-            🌳 <b>[계보 검색 안내]</b> 계보를 조회할 인물의 함자(성씨 안 포함 가능), 자(字), 호(號), 초휘(初諱) 등을 한글로 입력 (생성된 계보도 도형 클릭 시 즉시 새 계보 생성)
-        </div>
-        """)
-    else:
-        render_html("""
-        <div class="search-guide-right-text">
-            🔍 <b>[단어 검색 안내]</b> 약력에 포함된 관직명, 과거 급제, 지명, 묘소 좌향, 시호, 연대 등의 단어를 한글로 입력 (검색어는 <span style="color:#dc2626;">빨간색</span>으로 표시됨)
-        </div>
-        """)
+# ⭐ 3. 검색 방식 라인 바로 아래에 안내 창 배치, 그 아래에 검색어 입력 창 배치 (간격 최소화)
+if search_type == "인명 검색":
+    render_html("""
+    <div class="search-guide-box">
+        💡 <b>[인명 검색 안내]</b> 인물의 함자(성씨 안을 넣어도 무방), 자(字), 초자(初字), 호(號), 초휘(初諱), 일휘(一諱) 통명(通名), 초명(初名) 등을 한글로 입력
+    </div>
+    """)
+    query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 증, 완귀", key="name_query", label_visibility="collapsed")
+elif search_type == "계보 검색":
+    render_html("""
+    <div class="search-guide-box">
+        🌳 <b>[계보 검색 안내]</b> 계보를 조회할 인물의 함자(성씨 안 포함 가능), 자(字), 호(號), 초휘(初諱) 등을 한글로 입력 (생성된 계보도 도형 클릭 시 즉시 새 계보 생성)
+    </div>
+    """)
+    query_val = st.text_input("검색어 입력", placeholder="예: 증, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
+else:
+    render_html("""
+    <div class="search-guide-box">
+        🔍 <b>[단어 검색 안내]</b> 약력에 포함된 관직명, 과거 급제, 지명, 묘소 좌향, 시호, 연대 등의 단어를 한글로 입력 (검색어는 <span style="color:#dc2626;">빨간색</span>으로 표시됨)
+    </div>
+    """)
+    query_val = st.text_input("검색어 입력", placeholder="예: 시강원, 헌릉참봉, 1699", key="word_query", label_visibility="collapsed")
 
 # =============================================================================
 # ⭐ 4. 검색 결과 창 (항상 '종중 주요 유적 및 문화재 안내' 창 위에 뜨도록 고정 + 즉시 스크롤)
@@ -1020,12 +1130,7 @@ if search_type == "인명 검색" and query_val.strip():
                 📢 동명이인 또는 복수 후보가 총 {len(matched_df)}위 검색되었습니다. 아래에서 조회할 인물을 선택하세요.
             </div>
             """)
-            candidate_labels = []
-            for idx, row in matched_df.iterrows():
-                gen_num, gen_str = extract_generation_info(row['고유ID'])
-                lbl = f"[{gen_str}] {row['인명']} (부: {row['부친']}, 조부: {row['조부']}, 관계: {row['관계']}) - 고유ID: {row['고유ID']}"
-                candidate_labels.append(lbl)
-            
+            candidate_labels = [format_candidate_label(row) for _, row in matched_df.iterrows()]
             selected_label = st.selectbox("선조 선택", candidate_labels, label_visibility="collapsed")
             selected_gid = selected_label.split("고유ID: ")[-1].strip()
             target_row = matched_df[matched_df['고유ID'] == selected_gid].iloc[0]
@@ -1058,9 +1163,14 @@ elif search_type == "계보 검색":
         if len(l_matches) == 0:
             st.warning("계보를 작성할 선조 인명을 찾을 수 없습니다.")
         elif len(l_matches) > 1:
-            cand_opts = [f"{r['인명']} (세수: {extract_generation_info(r['고유ID'])[1]}, 부: {r['부친']}) - {r['고유ID']}" for _, r in l_matches.iterrows()]
+            render_html(f"""
+            <div class="multi-ancestor-banner">
+                📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
+            </div>
+            """)
+            cand_opts = [format_candidate_label(r) for _, r in l_matches.iterrows()]
             sel_cand = st.selectbox("계보 기준 인물 선택", cand_opts, label_visibility="collapsed")
-            target_gid = sel_cand.split(" - ")[-1].strip()
+            target_gid = sel_cand.split("고유ID: ")[-1].strip()
             tree_target = l_matches[l_matches['고유ID'] == target_gid].iloc[0]
         else:
             tree_target = l_matches.iloc[0]
@@ -1097,11 +1207,7 @@ elif search_type == "단어 검색" and query_val.strip():
             📢 검색어 <span class="search-word-red">'{term}'</span>을(를) 포함하는 약력을 가진 선조가 총 <b>{len(word_matches):,}위(다수)</b> 검색되었습니다. 아래 목록에서 선조를 선택하세요.
         </div>
         """)
-        candidate_list = []
-        for _, r in word_matches.iterrows():
-            gen_num, gen_str = extract_generation_info(r['고유ID'])
-            candidate_list.append(f"[{gen_str}] {r['인명']} (부: {r['부친']}, 관계: {r['관계']}) - 고유ID: {r['고유ID']}")
-            
+        candidate_list = [format_candidate_label(r) for _, r in word_matches.iterrows()]
         chosen = st.selectbox("조회할 선조를 선택하세요", candidate_list, label_visibility="collapsed")
         chosen_gid = chosen.split("고유ID: ")[-1].strip()
         chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
