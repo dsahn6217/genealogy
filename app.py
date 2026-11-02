@@ -88,7 +88,7 @@ def scroll_to_result():
     )
 
 # =============================================================================
-# 1. 디자인 스타일 CSS (타이틀 좌측 대형 아이콘, 줄 겹침 해소, 검은색 테두리)
+# 1. 디자인 스타일 CSS (검색 안내 창 제거, 청색 배경·흰색 큰 글씨·굵은 검은 테두리 입력창)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -117,7 +117,6 @@ header[data-testid="stHeader"] {
     box-sizing: border-box !important;
 }
 
-/* 창들이 겹치지 않도록 적절한 수직 간격 유지 (주의: align-items:center를 주면 내부 박스가 0px로 축소되므로 금지) */
 div[data-testid="stVerticalBlock"] {
     gap: 0.42rem !important;
 }
@@ -206,14 +205,14 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력'과 아래 '인명 검색' 라인이 겹치지 않도록 적당한 간격 확보 */
+/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력'과 아래 '인명 검색' 라인 간격 확보 */
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
-    margin-top: 3px !important;
-    margin-bottom: 0px !important;
+    margin-top: 6px !important;
+    margin-bottom: 6px !important;
     padding: 2px 2px !important;
-    line-height: 1.35 !important;
+    line-height: 1.45 !important;
 }
 .compact-search-subtitle {
     font-size: 12pt !important;
@@ -227,12 +226,12 @@ div[data-testid="stElementContainer"],
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색 유형 선택 라인: 겹침 없이 적당한 상·하단 간격 유지 + 가로 중앙 정렬 */
+/* ⭐ 검색 유형 선택 라인: 한 줄 중앙 정렬 */
 div[data-testid="stRadio"] {
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
+    margin-top: 2px !important;
+    margin-bottom: 4px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
 }
 div[role="radiogroup"] {
     display: flex !important;
@@ -267,53 +266,46 @@ div[role="radiogroup"] label span {
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 입력 검색 안내 창: 아래에 있는 검색어 입력 창과의 간격을 넓힘 */
-.search-guide-box {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    font-size: 10pt !important;
-    font-weight: 400 !important;
-    color: #0f172a !important;
-    background-color: #fef9c3;
-    padding: 5px 7px;
-    border-radius: 6px;
-    border: 2px solid #eab308;
-    line-height: 1.48 !important;
-    margin-top: -4px !important;
-    margin-bottom: 4px !important;
-}
-
-/* ⭐ 검색어 입력 창: 테두리를 까만색(#000000)으로 변경하고 위쪽 안내 창과의 간격 확보 */
+/* ⭐ 검색어 입력창: 배경 청색(#1d4ed8), 입력 글자 흰색·크게(14.5pt), 안내문구 회색·작게(9.2pt), 테두리 굵은 검은색(4px solid #000000) */
 div[data-testid="stTextInput"] {
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
+    margin-top: 4px !important;
+    margin-bottom: 8px !important;
 }
-div[data-testid="stTextInput"] div[data-baseweb="input"] {
-    border: 3.5px solid #000000 !important;
+div[data-testid="stTextInputRootElement"] {
+    border: 4px solid #000000 !important;
     border-radius: 8px !important;
-    background-color: #ffffff !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+    background-color: #1d4ed8 !important;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.35) !important;
     box-sizing: border-box !important;
+    overflow: hidden !important;
 }
+div[data-testid="stTextInput"] div[data-baseweb="input"],
 div[data-testid="stTextInput"] div[data-baseweb="base-input"] {
+    background-color: #1d4ed8 !important;
     border: none !important;
-    background-color: transparent !important;
+    box-shadow: none !important;
 }
 div[data-testid="stTextInput"] input {
-    color: #4b5563 !important;
-    font-weight: 700 !important;
-    font-size: 12pt !important;
-    padding: 7px 10px !important;
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 14.5pt !important;
+    padding: 9px 12px !important;
     line-height: 1.4 !important;
-    background-color: #ffffff !important;
 }
 div[data-testid="stTextInput"] input::placeholder {
-    color: #888888 !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    font-size: 9.2pt !important;
     font-weight: 400 !important;
     opacity: 1 !important;
 }
 div[data-testid="stTextInput"] input::-webkit-input-placeholder {
-    color: #888888 !important;
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    font-size: 9.2pt !important;
     font-weight: 400 !important;
     opacity: 1 !important;
 }
@@ -582,56 +574,6 @@ div[role="option"] * {
     color: #475569;
     line-height: 1.35;
 }
-/* 모바일에서는 바깥 래퍼를 여백 없이 두고, 실제 콘텐츠 컨테이너에만
-   동일한 좌우 거터를 한 번 적용합니다. 데스크톱 기본 레이아웃은 유지합니다. */
-@media (max-width: 768px) {
-    html,
-    body,
-    #root {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    .stApp,
-    [data-testid="stAppViewContainer"],
-    section.main,
-    [data-testid="stAppViewBlockContainer"],
-    [data-testid="stMain"] {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    [data-testid="stMainBlockContainer"],
-    .main .block-container,
-    .block-container {
-        position: relative !important;
-        left: calc((100vw - 100%) / 2) !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: auto !important;
-        margin-right: auto !important;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
-        box-sizing: border-box !important;
-    }
-
-    /* render_html()는 st.markdown으로 출력하므로 그 래퍼가 콘텐츠 폭을
-       따로 좁히거나 넓히지 않게 합니다. */
-    [data-testid="stMarkdownContainer"],
-    .stMarkdown {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-    }
-}
 </style>
 """
 
@@ -754,9 +696,9 @@ def highlight_corrections_html(text, search_term=None):
         "1558년", "1558", "一五五八", "1816년", "1816", "一八一六年",
         "1814년", "1814", "一八一四", "1771년", "1771", "一七七一",
         "1740년", "1740", "一七四〇", "1750년", "1750", "一七五〇",
-        "1775년", "1775", "一七七五", "1898년", "1898", "一八九八",
+        "1775년", "1775", "一七七5", "1898년", "1898", "一八九八",
         "1910년", "1910", "一九一〇", "1863년", "1863", "一八六三",
-        "1850년", "1850", "一八五〇", "1870년", "1870", "一八七〇",
+        "1850년", "1850", "一八五〇", "1870년", "1870", "一八7〇",
         "순종", "純宗", "헌종", "憲宗", "철종", "哲宗", "고종", "高宗",
         "기해", "己亥", "무신", "戊申", "자좌 오향", "자좌 오", "子坐 午向", "子坐 午",
         "내등말", "內嶝末", "오보허", "五步許", "북록 묘좌", "北麓 卯坐",
@@ -1087,7 +1029,7 @@ if df is None:
     st.info("파일 이름이 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
     st.stop()
 
-# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 겹침 없이 적당한 간격으로 한 줄 배치)
+# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 한 줄 배치)
 search_type = st.radio(
     "검색 종류 선택",
     ["인명 검색", "계보 검색", "단어 검색"],
@@ -1095,31 +1037,29 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# ⭐ 3. 검색 안내 창 ('인물의 성명을 넣어도 무방' 반영) + 아래 검색어 입력 창과 간격 확보 (물리적 여백 포함)
+# ⭐ 3. 검색 안내 창은 제거하고, 검색어 입력창 안에 회색 작은 글씨로 안내 문구 표시
+#       입력창 배경은 청색, 입력 글자는 흰색·크게, 테두리는 굵은 검은색 적용
 if search_type == "인명 검색":
-    render_html("""
-    <div class="search-guide-box">
-        💡 [인명 검색 안내] 인물의 함자 혹은 성명, 자(字), 초자(初字), 호(號), 초휘(初諱), 일휘(一諱) 통명(通名), 초명(初名) 등을 한글로 입력
-    </div>
-    <div style="height: 6px;"></div>
-    """)
-    query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 증, 완귀", key="name_query", label_visibility="collapsed")
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="인물의 함자 혹은 성명, 호, 별명을 한글로 입력",
+        key="name_query",
+        label_visibility="collapsed"
+    )
 elif search_type == "계보 검색":
-    render_html("""
-    <div class="search-guide-box">
-        🌳 [계보 검색 안내] 계보를 조회할 인물의 함자(성명을 넣어도 무방), 자(字), 호(號), 초휘(初諱) 등을 한글로 입력 (생성된 계보도 도형 클릭 시 즉시 새 계보 생성)
-    </div>
-    <div style="height: 6px;"></div>
-    """)
-    query_val = st.text_input("검색어 입력", placeholder="예: 증, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="인물의 함자 혹은 성명, 호, 별명을 한글로 입력(생성된 계보 도형 클릭시 새 계보 생성)",
+        key="lineage_query",
+        label_visibility="collapsed"
+    )
 else:
-    render_html("""
-    <div class="search-guide-box">
-        🔍 [단어 검색 안내] 약력에 포함된 관직명, 과거 급제, 지명, 묘소 좌향, 시호, 연대 등의 단어를 한글로 입력 (검색어는 빨간색으로 표시됨)
-    </div>
-    <div style="height: 6px;"></div>
-    """)
-    query_val = st.text_input("검색어 입력", placeholder="예: 시강원, 헌릉참봉, 1699", key="word_query", label_visibility="collapsed")
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="관직명, 과거, 지명, 묘관련,연대 등 단어 입력",
+        key="word_query",
+        label_visibility="collapsed"
+    )
 
 # =============================================================================
 # ⭐ 4. 검색 결과 창 (항상 '종중 주요 유적 및 문화재 안내' 창 위에 뜨도록 고정 + 즉시 스크롤)
