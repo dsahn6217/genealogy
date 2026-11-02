@@ -38,6 +38,7 @@ if not os.path.exists(DATA_FILE):
     elif os.path.exists("artifacts/file_generation/ttl=63d/output/genealogy.xlsx"):
         DATA_FILE = "artifacts/file_generation/ttl=63d/output/genealogy.xlsx"
 
+@st.cache_data
 def get_base64_image(image_path):
     if image_path and os.path.exists(image_path):
         try:
@@ -61,72 +62,26 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
-def hide_manage_app_bar():
-    """Streamlit Cloud 하단 Manage app 바 및 배지 숨김 시도 (동일 출처 DOM 접근 시 제거)"""
-    components.html(
-        """
-        <script>
-            function removeManageApp() {
-                try {
-                    var docs = [document];
-                    if (window.parent && window.parent.document) {
-                        docs.push(window.parent.document);
-                    }
-                    if (window.top && window.top.document) {
-                        docs.push(window.top.document);
-                    }
-                    docs.forEach(function(doc) {
-                        var selectors = [
-                            '[data-testid="manage-app-button"]',
-                            '[data-testid="stToolbar"]',
-                            '[data-testid="stStatusWidget"]',
-                            '[data-testid="stDecoration"]',
-                            '.stAppDeployButton',
-                            'div[class*="viewerBadge"]',
-                            'div[class*="StatusWidget"]'
-                        ];
-                        selectors.forEach(function(sel) {
-                            doc.querySelectorAll(sel).forEach(function(el) {
-                                el.style.setProperty('display', 'none', 'important');
-                                el.style.setProperty('visibility', 'hidden', 'important');
-                            });
-                        });
-                        doc.querySelectorAll('button, a, div').forEach(function(el) {
-                            if (el.innerText && el.innerText.trim() === 'Manage app') {
-                                el.style.setProperty('display', 'none', 'important');
-                                if (el.parentElement) {
-                                    el.parentElement.style.setProperty('display', 'none', 'important');
-                                }
-                            }
-                        });
-                    });
-                } catch (e) {}
-            }
-            removeManageApp();
-            setInterval(removeManageApp, 800);
-        </script>
-        """,
-        height=0
-    )
-
 def scroll_to_result():
-    """검색 완료 시 화면이 즉시 검색 결과창 위치로 자동 스크롤되도록 처리"""
+    """검색 완료 시 화면이 즉시 검색 결과창 위치로 1회 스크롤되도록 처리 (모바일 부하 없음)"""
     components.html(
         """
         <script>
             setTimeout(function() {
-                var target = window.parent.document.getElementById('search-result-anchor');
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 120);
+                try {
+                    var target = window.parent.document.getElementById('search-result-anchor');
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                } catch (e) {}
+            }, 100);
         </script>
         """,
         height=0
     )
 
 # =============================================================================
-# 1. 페이지 설정 및 디자인 스타일 CSS (가로 중앙 정렬, 세밀한 간격 조정, Manage app 숨김)
+# 1. 페이지 설정 및 디자인 스타일 CSS (가로 중앙 정렬, 세밀한 간격 조정, 모바일 경량화)
 # =============================================================================
 st.set_page_config(
     page_title="광주안씨 완귀공파 종중 족보 검색 시스템",
@@ -143,7 +98,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* ⭐ Manage app 바, 툴바, 헤더, 푸터, 배지 전체 숨김 처리 */
+/* ⭐ 모바일 부하를 유발하는 JS 루프 없이 순수 CSS로만 상단 헤더·푸터·툴바 숨김 */
 header[data-testid="stHeader"],
 #MainMenu,
 footer,
@@ -154,17 +109,9 @@ footer,
 .stAppDeployButton,
 .viewerBadge_container__r5tak,
 .viewerBadge_link__qRIco,
-.styles_viewerBadge__CvC9N,
-div[class*="viewerBadge"],
-div[class*="StatusWidget"],
-button[title="Manage app"],
-a[href*="streamlit.io/cloud"] {
+.styles_viewerBadge__CvC9N {
     display: none !important;
     visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    width: 0 !important;
-    pointer-events: none !important;
 }
 
 /* ⭐ 화면의 모든 창 가로 정렬은 중앙에 배치 */
@@ -202,7 +149,7 @@ div[data-testid="stElementContainer"],
     background-color: #162b52;
     background-size: cover !important;
     background-position: center top !important;
-    background-attachment: fixed !important;
+    background-attachment: scroll !important;
     opacity: 1 !important;
 }
 
@@ -672,7 +619,6 @@ div[role="option"] * {
 """
 
 render_html(CUSTOM_CSS)
-hide_manage_app_bar()
 
 # =============================================================================
 # 2. 데이터 로드 및 전처리 캐싱
@@ -1097,8 +1043,8 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:26px; height:26px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
-# 저장소 배경 이미지가 있을 경우 주입 (투명율 0)
-bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-attachment: fixed !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
+# 저장소 배경 이미지가 있을 경우 주입 (모바일 스크롤 부하 방지를 위해 scroll 적용)
+bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
 if bg_style_tag:
     render_html(bg_style_tag)
 
