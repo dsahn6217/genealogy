@@ -595,12 +595,6 @@ div[role="option"] * {
         box-sizing: border-box !important;
     }
 
-    /* 모바일 브라우저가 세로 스크롤바 공간을 오른쪽에만 확보하는 경우,
-       화면 중심이 그만큼 왼쪽으로 밀리는 것을 양쪽 거터로 상쇄합니다. */
-    html {
-        scrollbar-gutter: stable both-edges !important;
-    }
-
     .stApp,
     [data-testid="stAppViewContainer"],
     section.main,
@@ -618,6 +612,8 @@ div[role="option"] * {
     [data-testid="stMainBlockContainer"],
     .main .block-container,
     .block-container {
+        position: relative !important;
+        left: calc((100vw - 100%) / 2) !important;
         width: 100% !important;
         max-width: 100% !important;
         margin-left: auto !important;
