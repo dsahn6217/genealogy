@@ -96,7 +96,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-size: 14pt;
     font-weight: 600;
     color: #1a202c;
-    margin-bottom: 3px;
+    margin-bottom: 1px;
     letter-spacing: -0.5px;
 }
 .title-reference-text {
