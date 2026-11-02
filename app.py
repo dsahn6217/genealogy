@@ -582,22 +582,39 @@ div[role="option"] * {
     color: #475569;
     line-height: 1.35;
 }
-/* 모바일 화면 좌우 여백 완전 통일 */
-.stApp,
-.stApp section.main {
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
+/* 모바일 화면 전체 좌우 여백 통일 */
+@media (max-width: 768px) {
+    html, body {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
 
-.stApp [data-testid="stMainBlockContainer"],
-.stApp .block-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    box-sizing: border-box !important;
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stAppViewBlockContainer"],
+    section.main {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .main .block-container,
+    [data-testid="stMainBlockContainer"],
+    .block-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        box-sizing: border-box !important;
+    }
 }
 </style>
 """
