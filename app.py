@@ -72,7 +72,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
 
 .title-container {
     text-align: center;
-    padding: 10px 5px 10px 5px;
+    padding: 5px 5px 5px 5px;
     margin-bottom: 2px;
     border-bottom: 2px solid #8c2d19;
     background: #ffffff;
