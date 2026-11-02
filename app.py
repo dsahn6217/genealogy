@@ -320,4 +320,220 @@ for c_idx, h_text in enumerate(det_headers, 1):
     cell.alignment = align_center
     cell.border = border_hdr
 
-major_rows = [item for item in all_diff_rows if not item["cat
+major_rows = [item for item in all_diff_rows if not item["cat_label"].startswith("⑥")]
+cur_r = 16
+for idx, item in enumerate(major_rows, start=1):
+    f1_lines = []
+    f2_lines = []
+    for h, v1, v2 in item["diff_cols"]:
+        f1_lines.append(f"[{h}]\n{v1}")
+        f2_lines.append(f"[{h}]\n{v2}")
+    f1_text = "\n\n".join(f1_lines)
+    f2_text = "\n\n".join(f2_lines)
+
+    vals = [
+        idx, item["r_num"], item["uid"], item["name"], item["rel"],
+        item["cat_label"], item["diff_col_names"], f1_text, f2_text, item["summary_note"]
+    ]
+    max_len = max(len(f1_text), len(f2_text), len(item["summary_note"]))
+    lines_est = max(2, int(max_len / 42) + len(item["diff_cols"]))
+    ws_sum.row_dimensions[cur_r].height = min(180, max(32, lines_est * 15))
+
+    row_fill = fill_alert_red if item["cat_label"].startswith("①") else (
+        fill_alert_amber if item["cat_label"].startswith("②") else (
+            fill_zebra if idx % 2 == 0 else fill_white
+        )
+    )
+    for c_idx, val in enumerate(vals, 1):
+        cell = ws_sum.cell(row=cur_r, column=c_idx, value=val)
+        cell.border = border_data
+        cell.fill = row_fill
+        if c_idx in (1, 2, 3, 4, 5):
+            cell.alignment = align_center
+            cell.font = font_data_bold if c_idx in (2, 3, 4) else font_data
+        elif c_idx in (6, 7):
+            cell.alignment = align_center
+            cell.font = font_diff_red if item["cat_label"].startswith("①") else (
+                font_diff_amber if item["cat_label"].startswith("②") else font_data
+            )
+        else:
+            cell.alignment = align_left
+            cell.font = font_data
+    cur_r += 1
+
+ws_sum.freeze_panes = "A16"
+
+s1_widths = {1: 10, 2: 13, 3: 16, 4: 15, 5: 10, 6: 32, 7: 24, 8: 52, 9: 52, 10: 48}
+for c_idx, w in s1_widths.items():
+    ws_sum.column_dimensions[get_column_letter(c_idx)].width = w
+
+ws_sum.page_setup.orientation = ws_sum.ORIENTATION_LANDSCAPE
+ws_sum.page_setup.paperSize = ws_sum.PAPERSIZE_A4
+ws_sum.sheet_properties.pageSetUpPr.fitToPage = True
+ws_sum.page_setup.fitToWidth = 1
+ws_sum.page_setup.fitToHeight = 0
+
+
+# ==============================================================================
+# SHEET 2: 전체_상이행_행별비교(620행)
+# ==============================================================================
+ws_all = wb_out.create_sheet(title="2_전체_상이행_행별비교(620행)")
+ws_all.views.sheetView[0].showGridLines = True
+
+ws_all["A1"] = "족보전사결과 시트 상이 행 전체 행별 비교 목록 (총 620개 행)"
+ws_all["A1"].font = font_title
+ws_all["A2"] = "두 파일에서 하나 이상의 열이라도 차이가 있는 620개 행 전체를 행 번호 순서대로 기록한 시트입니다. 값이 다른 약력 셀은 배경색(중요 차이: 연분홍/연노랑, 서식 차이: 연파랑)으로 강조되어 있습니다."
+ws_all["A2"].font = font_subtitle
+ws_all.row_dimensions[1].height = 28
+ws_all.row_dimensions[2].height = 20
+
+all_headers = [
+    "연번", "엑셀 행번호", "고유ID", "인명", "관계", "부친", "조부",
+    "차이 유형 분류", "상이 열 목록", "행별 차이 핵심 요약",
+    "[파일1] 한문 약력 원문\n(보정 족보A_B_C_D_통합)", "[파일2] 한문 약력 원문\n(완귀공파 족보 통합)",
+    "[파일1] 한문 약력 정렬\n(보정 족보A_B_C_D_통합)", "[파일2] 한문 약력 정렬\n(완귀공파 족보 통합)",
+    "[파일1] 한글 약력 원문\n(보정 족보A_B_C_D_통합)", "[파일2] 한글 약력 원문\n(완귀공파 족보 통합)",
+    "[파일1] 한글 약력 정렬\n(보정 족보A_B_C_D_통합)", "[파일2] 한글 약력 정렬\n(완귀공파 족보 통합)",
+]
+
+ws_all.row_dimensions[4].height = 32
+for c_idx, h_text in enumerate(all_headers, 1):
+    cell = ws_all.cell(row=4, column=c_idx, value=h_text)
+    cell.font = font_tbl_hdr
+    cell.fill = fill_navy if c_idx <= 10 else fill_slate_hdr
+    cell.alignment = align_center
+    cell.border = border_hdr
+
+for idx, item in enumerate(all_diff_rows, start=1):
+    r_out = idx + 4
+    r1 = item["r1"]
+    r2 = item["r2"]
+    diff_col_set = set(h for h, _, _ in item["diff_cols"])
+
+    row_vals = [
+        idx, item["r_num"], item["uid"], item["name"], item["rel"], item["father"], item["grandpa"],
+        item["cat_label"], item["diff_col_names"], item["summary_note"],
+        r1[5], r2[5],
+        r1[6], r2[6],
+        r1[7], r2[7],
+        r1[8], r2[8],
+    ]
+
+    max_bio_len = max(len(str(r1[6] or "")), len(str(r2[6] or "")), len(str(r1[8] or "")), len(str(r2[8] or "")))
+    ws_all.row_dimensions[r_out].height = 42 if max_bio_len > 90 else 28
+
+    base_fill = fill_zebra if idx % 2 == 0 else fill_white
+    is_major = not item["cat_label"].startswith("⑥")
+    diff_highlight = fill_alert_red if item["cat_label"].startswith("①") else (
+        fill_alert_amber if is_major else fill_alert_blue
+    )
+
+    col_map_to_hdr = {
+        11: "한문 약력 원문", 12: "한문 약력 원문",
+        13: "한문 약력 정렬", 14: "한문 약력 정렬",
+        15: "한글 약력 원문", 16: "한글 약력 원문",
+        17: "한글 약력 정렬", 18: "한글 약력 정렬",
+    }
+
+    for c_idx, val in enumerate(row_vals, 1):
+        cell = ws_all.cell(row=r_out, column=c_idx, value=val)
+        cell.border = border_data
+        if c_idx <= 7:
+            cell.alignment = align_center
+            cell.font = font_data_bold if c_idx in (2, 3, 4) else font_data
+            cell.fill = diff_highlight if is_major else base_fill
+        elif c_idx in (8, 9, 10):
+            cell.alignment = align_left if c_idx in (8, 10) else align_center
+            cell.font = font_diff_red if item["cat_label"].startswith("①") else (
+                font_diff_amber if is_major else font_data
+            )
+            cell.fill = diff_highlight if is_major else base_fill
+        else:
+            bio_col_name = col_map_to_hdr[c_idx]
+            cell.alignment = align_left
+            if bio_col_name in diff_col_set:
+                cell.fill = diff_highlight
+                cell.font = font_data_bold if is_major else font_diff_blue
+            else:
+                cell.fill = base_fill
+                cell.font = font_data
+
+ws_all.freeze_panes = "E5"
+ws_all.auto_filter.ref = f"A4:R{len(all_diff_rows) + 4}"
+
+s2_widths = {
+    1: 8, 2: 12, 3: 16, 4: 15, 5: 9, 6: 14, 7: 14,
+    8: 36, 9: 24, 10: 48,
+    11: 42, 12: 42, 13: 45, 14: 45, 15: 42, 16: 42, 17: 45, 18: 45
+}
+for c_idx, w in s2_widths.items():
+    ws_all.column_dimensions[get_column_letter(c_idx)].width = w
+
+ws_all.page_setup.orientation = ws_all.ORIENTATION_LANDSCAPE
+ws_all.page_setup.paperSize = ws_all.PAPERSIZE_A4
+
+
+# ==============================================================================
+# SHEET 3: 열별_상세비교_목록(844건)
+# ==============================================================================
+ws_cell = wb_out.create_sheet(title="3_열별_상세비교_목록(844건)")
+ws_cell.views.sheetView[0].showGridLines = True
+
+ws_cell["A1"] = "족보전사결과 시트 상이 셀(열) 1:1 상세 대조표 (총 844개 상이 셀)"
+ws_cell["A1"].font = font_title
+ws_cell["A2"] = "620개 상이 행에서 발생한 총 844개 상이 셀(한문원문 2건, 한문정렬 236건, 한글원문 7건, 한글정렬 599건)을 열 단위로 1:1 대조할 수 있도록 구성한 시트입니다."
+ws_cell["A2"].font = font_subtitle
+ws_cell.row_dimensions[1].height = 28
+ws_cell.row_dimensions[2].height = 20
+
+cell_headers = [
+    "연번", "엑셀 행번호", "고유ID", "인명", "관계", "부친",
+    "상이 열(컬럼명)", "차이 유형 분류",
+    "[파일1] 보정 족보A_B_C_D_통합_전사결과.xlsx", "[파일2] 완귀공파 족보 통합.xlsx",
+    "구체적 차이 내용"
+]
+ws_cell.row_dimensions[4].height = 28
+for c_idx, h_text in enumerate(cell_headers, 1):
+    cell = ws_cell.cell(row=4, column=c_idx, value=h_text)
+    cell.font = font_tbl_hdr
+    cell.fill = fill_navy
+    cell.alignment = align_center
+    cell.border = border_hdr
+
+for idx, rec in enumerate(cell_diff_records, start=1):
+    r_out = idx + 4
+    vals = [
+        idx, rec["r_num"], rec["uid"], rec["name"], rec["rel"], rec["father"],
+        rec["col_name"], rec["cat_label"], rec["v1"], rec["v2"], rec["cell_note"]
+    ]
+    max_l = max(len(str(rec["v1"] or "")), len(str(rec["v2"] or "")))
+    ws_cell.row_dimensions[r_out].height = 40 if max_l > 85 else 26
+
+    is_major = not rec["cat_label"].startswith("⑥")
+    row_fill = fill_alert_red if rec["cat_label"].startswith("①") else (
+        fill_alert_amber if is_major else (fill_zebra if idx % 2 == 0 else fill_white)
+    )
+
+    for c_idx, val in enumerate(vals, 1):
+        cell = ws_cell.cell(row=r_out, column=c_idx, value=val)
+        cell.border = border_data
+        cell.fill = row_fill
+        if c_idx <= 7:
+            cell.alignment = align_center
+            cell.font = font_data_bold if c_idx in (2, 3, 4, 7) else font_data
+        else:
+            cell.alignment = align_left
+            cell.font = font_data
+
+ws_cell.freeze_panes = "A5"
+ws_cell.auto_filter.ref = f"A4:K{len(cell_diff_records) + 4}"
+
+s3_widths = {1: 8, 2: 12, 3: 16, 4: 15, 5: 9, 6: 14, 7: 18, 8: 36, 9: 50, 10: 50, 11: 45}
+for c_idx, w in s3_widths.items():
+    ws_cell.column_dimensions[get_column_letter(c_idx)].width = w
+
+ws_cell.page_setup.orientation = ws_cell.ORIENTATION_LANDSCAPE
+ws_cell.page_setup.paperSize = ws_cell.PAPERSIZE_A4
+
+wb_out.save(out_path)
+print("Saved successfully to:", out_path)
