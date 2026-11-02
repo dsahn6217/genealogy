@@ -611,7 +611,7 @@ render_html(f"""
 <div class="title-container">
     <div class="title-line-1">{icon_img_tag} 광주안씨 완귀공파 종중</div>
     <div class="title-line-2">족보 검색 시스템</div>
-    <div class="title-reference-text">광주안씨 완귀공(휘 嶒) 후손 24세 ~ 44세 총 2,887위 (고위 기준)</div>
+    <div class="title-reference-text">파조 완귀공(휘 嶒, 24세)부터 44세 까지 총 2,887위(고위 기준)</div>
 </div>
 """)
 
