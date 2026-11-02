@@ -78,7 +78,7 @@ def scroll_to_result():
     )
 
 # =============================================================================
-# 1. 페이지 설정 및 디자인 스타일 CSS (여백 초밀착, 글자 확대, 입력창 굵은 테두리)
+# 1. 페이지 설정 및 디자인 스타일 CSS (여백 초밀착, 한 줄 라디오, 입력창 굵은 테두리)
 # =============================================================================
 st.set_page_config(
     page_title="광주안씨 완귀공파 종중 족보 검색 시스템",
@@ -106,17 +106,17 @@ header[data-testid="stHeader"] {
     width: 100% !important;
     padding-top: 0rem !important;
     padding-bottom: 1rem !important;
-    padding-left: 0.6rem !important;
-    padding-right: 0.6rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
 }
 
 /* 창 별로 간격이 벌어져 있는 것을 최대한 좁힘 */
 div[data-testid="stVerticalBlock"] > div {
-    gap: 0.12rem !important;
+    gap: 0.1rem !important;
     margin-bottom: 0px !important;
 }
 .element-container {
-    margin-bottom: 1px !important;
+    margin-bottom: 0px !important;
 }
 
 /* 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
@@ -187,66 +187,85 @@ div[data-testid="stVerticalBlock"] > div {
     letter-spacing: -0.2px;
 }
 
-/* ⭐ '족보 검색' 타이틀을 상단 족보 검색 시스템 창에 밀접하게 붙임 */
+/* ⭐ '족보 검색' 단어 삭제 후 안내문을 상단 창 바로 아래에 밀착 표시 */
 .compact-search-header {
     margin-top: 2px !important;
-    margin-bottom: 0px !important;
+    margin-bottom: 1px !important;
     padding: 0px 2px !important;
-    line-height: 1.15 !important;
+    line-height: 1.2 !important;
 }
-.compact-search-title {
-    font-size: 17pt !important;
+.compact-search-subtitle {
+    font-size: 12pt !important;
     font-weight: 800 !important;
-    color: #ffffff !important;
-    margin: 0px !important;
-    padding: 0px !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    color: #fef08a !important;
+    margin-top: 0px !important;
+    margin-bottom: 1px !important;
+    letter-spacing: -0.4px !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ '아래 검색 방식 중 하나를 선택하세요' 및 '인명 검색, 계보 검색, 단어 검색' 글자 크게 표시 */
-.compact-search-subtitle {
-    font-size: 13.5pt !important;
-    font-weight: 700 !important;
-    color: #fef08a !important;
-    margin-top: 2px !important;
-    margin-bottom: 2px !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
+/* ⭐ 검색 방식(인명 검색, 계보 검색, 단어 검색) 모바일에서도 무조건 한 줄로 표시 */
 div[role="radiogroup"] {
-    gap: 14px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 100% !important;
     margin-top: 0px !important;
     margin-bottom: 2px !important;
-    padding: 2px 4px !important;
+    padding: 2px 2px !important;
+    overflow-x: auto !important;
 }
-div[role="radiogroup"] label {
-    font-size: 14pt !important;
-    font-weight: 800 !important;
+div[role="radiogroup"] > label,
+div[role="radiogroup"] label[data-baseweb="radio"] {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    margin-right: 4px !important;
+    padding: 2px 2px !important;
 }
 div[role="radiogroup"] label p,
 div[role="radiogroup"] label span {
-    font-size: 14pt !important;
+    font-size: 12.5pt !important;
     font-weight: 800 !important;
     color: #ffffff !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    white-space: nowrap !important;
+    letter-spacing: -0.3px !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* ⭐ 검색어 입력 창은 테두리를 굵게 하여 돋보이게 표시 */
+/* ⭐ 검색어 입력창 테두리를 굵게 표시 및 예시 글씨 색상 회색 지정 */
 div[data-testid="stTextInput"] {
     margin-top: 0px !important;
     margin-bottom: 2px !important;
 }
+div[data-testid="stTextInputRootElement"],
+div[data-testid="stTextInput"] > div > div,
+div[data-testid="stTextInput"] div[data-baseweb="base-input"],
 div[data-testid="stTextInput"] div[data-baseweb="input"] {
-    border: 4px solid #f59e0b !important;
-    outline: 2px solid #0f172a !important;
+    border: 3.5px solid #f59e0b !important;
     border-radius: 8px !important;
     background-color: #ffffff !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.35) !important;
+    box-shadow: 0 0 0 2px #0f172a, 0 3px 8px rgba(0,0,0,0.3) !important;
+    box-sizing: border-box !important;
 }
 div[data-testid="stTextInput"] input {
-    color: #0f172a !important;
-    font-weight: 800 !important;
-    font-size: 12.5pt !important;
-    padding: 8px 12px !important;
+    color: #4b5563 !important;
+    font-weight: 700 !important;
+    font-size: 12pt !important;
+    padding: 7px 10px !important;
+    background-color: #ffffff !important;
+}
+div[data-testid="stTextInput"] input::placeholder {
+    color: #888888 !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
+}
+div[data-testid="stTextInput"] input::-webkit-input-placeholder {
+    color: #888888 !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
 /* 검색 방식별 동적 안내문 상자 (간격 최소화) */
@@ -300,7 +319,7 @@ div[data-testid="stTextInput"] input {
     border: 1px solid #bfdbfe;
 }
 
-/* 인물 기본 신상 및 계통 정보 (한글 전용 문단 형식, 간격 최소화) */
+/* 인물 기본 신상 및 계보 정보 (한글 전용 문단 형식, 간격 최소화) */
 .meta-para-container {
     background: #f8fafc;
     border: 1px solid #cbd5e1;
@@ -325,7 +344,7 @@ div[data-testid="stTextInput"] input {
     color: #1e293b;
 }
 
-/* ⭐ 상세 한글·한문 약력 박스 가로(상하 풀와이드) 배치: 한글 약력 먼저, 그 뒤에 한문 약력 배치 */
+/* ⭐ 상세 한글·한문 약력 박스 가로(상하 풀와이드) 배치: 한글 약력 먼저, 그 뒤에 정리된 한문 약력 배치 */
 .bio-horizontal-stack {
     display: flex;
     flex-direction: column;
@@ -600,7 +619,7 @@ def highlight_corrections_html(text, search_term=None):
 
 def parse_person_hangul_details(row):
     """
-    ⭐ 인물 기본 신상 및 계통 정보에서 한글로만 표시하고 한문은 기재하지 않음
+    ⭐ 인물 기본 신상 및 계보 정보에서 한글로만 표시하고 한문은 기재하지 않음
     """
     gid = row.get("고유ID", "")
     gen_num, gen_str = extract_generation_info(gid)
@@ -644,7 +663,7 @@ def parse_person_hangul_details(row):
 
 def format_hangul_only_paragraph_html(row, search_term=None):
     """
-    ⭐ 인물 기본 신상 및 계통 정보를 한글로만 표시 (내용이 없는 항목은 생략)
+    ⭐ 인물 기본 신상 및 계보 정보를 한글로만 표시 (내용이 없는 항목은 생략)
     """
     details = parse_person_hangul_details(row)
     lines_html = []
@@ -690,15 +709,14 @@ def format_structured_bio(bio_text, is_hanmun=False, search_term=None):
 def render_person_result_card(target_row, search_term=None):
     """
     ⭐ 인물 검색 결과 카드 통합 출력:
-    1. 인물 기본 신상 및 계통 정보: 한글로만 표시 (한문 미기재)
+    1. 인물 기본 신상 및 계보 정보: 한글로만 표시 (한문 미기재)
     2. 상세 한글·한문 약력란: 박스를 가로형(위아래 순차 배치)으로 하여
-       한글 약력(정리+원문)을 먼저 배치하고, 그 뒤에 한문 약력(정리+원문)을 배치
+       한글 약력(정리+원문)을 먼저 배치하고, 그 뒤에 한문 약력 창은 '정리된 한문 약력'만 기재
     """
     h_name, _ = split_name(target_row['인명'])
     meta_paragraphs_html = format_hangul_only_paragraph_html(target_row, search_term=search_term)
     
     ko_raw = highlight_corrections_html(target_row.get('한글 약력 원문', ''), search_term=search_term)
-    cn_raw = highlight_corrections_html(target_row.get('한문 약력 원문', ''), search_term=search_term)
     
     render_html(f"""
     <div id="search-result-anchor"></div>
@@ -712,14 +730,14 @@ def render_person_result_card(target_row, search_term=None):
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-bottom:3px; font-size:11pt;">
-            📌 인물 기본 신상 및 계통 정보
+            📌 인물 기본 신상 및 계보 정보
         </div>
         <div class="meta-para-container">
             {meta_paragraphs_html}
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-top:6px; margin-bottom:4px; font-size:11pt;">
-            📜 상세 한글·한문 약력 (정리 및 원문)
+            📜 상세 한글·한문 약력
         </div>
         
         <div class="bio-horizontal-stack">
@@ -731,11 +749,8 @@ def render_person_result_card(target_row, search_term=None):
                 </div>
             </div>
             <div class="bio-detail-container">
-                <div class="bio-section-title">2. 한문 약력 (정리 및 한문 원문)</div>
+                <div class="bio-section-title">2. 한문 약력 (정리된 한문 약력)</div>
                 {format_structured_bio(target_row.get('한문 약력 정리', ''), is_hanmun=True, search_term=search_term)}
-                <div class="bio-raw-subbox">
-                    <b style="color:#1e3c72;">[한문 약력 원문]</b><br>{cn_raw if cn_raw else '수록된 원문이 없습니다.'}
-                </div>
             </div>
         </div>
     </div>
@@ -909,7 +924,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더 및 직결된 족보 검색 인터페이스 (중간 탭/조회안내문 삭제)
+# 4. 최상단 헤더 및 직결된 족보 검색 인터페이스 ('족보 검색' 단어 삭제)
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:26px; height:26px; border-radius:50%; vertical-align:middle;">' if icon_b64 else '📜'
 
@@ -918,7 +933,7 @@ bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; 
 if bg_style_tag:
     render_html(bg_style_tag)
 
-# ⭐ 1. 최상단 족보 검색 시스템 상자 + 바로 아래 '족보 검색' 타이틀 및 선택 안내문을 밀접하게 부착
+# ⭐ 1. 최상단 족보 검색 시스템 상자 + 바로 아래 안내문 표시 ('족보 검색' 단어 삭제)
 render_html(f"""
 <div class="title-container">
     <div class="title-top-left">
@@ -933,8 +948,7 @@ render_html(f"""
     </div>
 </div>
 <div class="compact-search-header">
-    <div class="compact-search-title">족보 검색</div>
-    <div class="compact-search-subtitle">아래 검색 방식 중 하나를 선택하세요</div>
+    <div class="compact-search-subtitle">아래 방식 중 하나를 선택하고 검색어를 한글로 입력하세요</div>
 </div>
 """)
 
@@ -943,7 +957,7 @@ if df is None:
     st.info("파일 이름이 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
     st.stop()
 
-# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 큰 글씨 적용)
+# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색 - 한 줄로 표시)
 search_type = st.radio(
     "검색 종류 선택",
     ["인명 검색", "계보 검색", "단어 검색"],
@@ -951,14 +965,14 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# ⭐ 3. 굵은 테두리 검색어 입력창 및 우측 동적 안내문 (간격 최소화)
+# ⭐ 3. 굵은 테두리 검색어 입력창 (예시 중 한문 삭제 및 회색 글씨) 및 동적 안내문
 c_input, c_guide = st.columns([1.1, 2.4])
 
 with c_input:
     if search_type == "인명 검색":
-        query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 嶒, 완귀", key="name_query", label_visibility="collapsed")
+        query_val = st.text_input("검색어 입력", placeholder="예: 경시, 안경시, 증, 완귀", key="name_query", label_visibility="collapsed")
     elif search_type == "계보 검색":
-        query_val = st.text_input("검색어 입력", placeholder="예: 嶒, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
+        query_val = st.text_input("검색어 입력", placeholder="예: 증, 명한, 안경시", key="lineage_query", label_visibility="collapsed")
     else:
         query_val = st.text_input("검색어 입력", placeholder="예: 시강원, 헌릉참봉, 1699", key="word_query", label_visibility="collapsed")
 
@@ -972,13 +986,13 @@ with c_guide:
     elif search_type == "계보 검색":
         render_html("""
         <div class="search-guide-right-text">
-            🌳 <b>[계보 검색 안내]</b> 계보를 조회할 인물의 함자(성씨 안 포함 가능), 자(字), 호(號), 초휘(初諱) 등을 입력 (생성된 계보도 도형 클릭 시 즉시 새 계보 생성)
+            🌳 <b>[계보 검색 안내]</b> 계보를 조회할 인물의 함자(성씨 안 포함 가능), 자(字), 호(號), 초휘(初諱) 등을 한글로 입력 (생성된 계보도 도형 클릭 시 즉시 새 계보 생성)
         </div>
         """)
     else:
         render_html("""
         <div class="search-guide-right-text">
-            🔍 <b>[단어 검색 안내]</b> 약력에 포함된 관직명, 과거 급제, 지명, 묘소 좌향, 시호, 연대 등의 단어를 입력 (검색어는 <span style="color:#dc2626;">빨간색</span>으로 표시됨)
+            🔍 <b>[단어 검색 안내]</b> 약력에 포함된 관직명, 과거 급제, 지명, 묘소 좌향, 시호, 연대 등의 단어를 한글로 입력 (검색어는 <span style="color:#dc2626;">빨간색</span>으로 표시됨)
         </div>
         """)
 
