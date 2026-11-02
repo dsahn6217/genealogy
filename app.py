@@ -615,7 +615,7 @@ render_html(f"""
 </div>
 """)
 
-with st.expander("🏯 <span style='font-size:12pt;font-weight;600;'> [영천 완귀정(경상북도 민속문화재 제20호) 소개]", expanded=False):
+with st.expander("🏯 <span style='font-size:12pt;font-weight;700;'> [영천 완귀정(경상북도 민속문화재 제20호) 소개]", expanded=False):
     col_intro_1, col_intro_2 = st.columns([1.3, 1])
     with col_intro_1:
         render_html("""
