@@ -74,26 +74,38 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
-def scroll_to_result():
-    """검색 완료 시 화면이 즉시 검색 결과창 위치로 자동 스크롤되도록 처리"""
+def scroll_to_search_top():
+    """검색 엔터 시 인명검색 라인이 화면 제일 위에 오도록 상단으로 자동 스크롤"""
     components.html(
         """
         <script>
             setTimeout(function() {
                 try {
-                    var target = window.parent.document.getElementById('search-result-anchor');
+                    var target = window.parent.document.getElementById('search-section-anchor');
                     if (target) {
                         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 } catch (e) {}
-            }, 120);
+            }, 100);
         </script>
         """,
         height=0
     )
 
+def get_query_param(key):
+    try:
+        if hasattr(st, "query_params") and key in st.query_params:
+            return st.query_params[key]
+        elif hasattr(st, "experimental_get_query_params"):
+            params = st.experimental_get_query_params()
+            if key in params and params[key]:
+                return params[key][0]
+    except Exception:
+        pass
+    return None
+
 # =============================================================================
-# 1. 디자인 스타일 CSS
+# 1. 디자인 스타일 CSS (아이콘 확대, 안내문 축소, 흰색 테두리, 중앙 정렬, 간격 50% 축소)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -123,12 +135,12 @@ header[data-testid="stHeader"] {
 }
 
 div[data-testid="stVerticalBlock"] {
-    gap: 0.42rem !important;
+    gap: 0.35rem !important;
 }
 div[data-testid="stElementContainer"],
 .element-container {
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 1px !important;
 }
 
 /* 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
@@ -140,7 +152,7 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* 제일 위 페이지 타이틀 창 */
+/* ⭐ 제일 위 페이지 타이틀 창: 좌측 대형 아이콘 + 우측 타이틀 문장 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -156,7 +168,7 @@ div[data-testid="stElementContainer"],
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 12px !important;
+    gap: 14px !important;
 }
 
 .title-left-icon {
@@ -210,33 +222,33 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* 안내 문구 */
+/* ⭐ '다음 중 하나를 선택하고 검색어를 한글로 입력' 라인 글자 크기 조금 축소(10.8pt) */
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
-    margin-top: 6px !important;
-    margin-bottom: 6px !important;
-    padding: 2px 2px !important;
-    line-height: 1.45 !important;
+    margin-top: 4px !important;
+    margin-bottom: 3px !important;
+    padding: 1px 2px !important;
+    line-height: 1.35 !important;
 }
 .compact-search-subtitle {
-    font-size: 12pt !important;
-    font-weight: 800 !important;
+    font-size: 10.8pt !important;
+    font-weight: 700 !important;
     color: #fef08a !important;
     text-align: center !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
-    line-height: 1.45 !important;
-    letter-spacing: -0.4px !important;
+    margin-bottom: 0px !important;
+    line-height: 1.35 !important;
+    letter-spacing: -0.3px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* 검색 유형 선택 라인 */
+/* ⭐ 검색 유형 선택 라인과 아래 검색어 입력창 간격을 50% 이상 축소 */
 div[data-testid="stRadio"] {
-    margin-top: 2px !important;
-    margin-bottom: 4px !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
+    margin-top: 0px !important;
+    margin-bottom: 1px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
 div[role="radiogroup"] {
     display: flex !important;
@@ -247,8 +259,8 @@ div[role="radiogroup"] {
     gap: 14px !important;
     width: 100% !important;
     margin-top: 0px !important;
-    margin-bottom: 2px !important;
-    padding: 2px 2px !important;
+    margin-bottom: 0px !important;
+    padding: 0px 2px !important;
     overflow-x: auto !important;
 }
 div[role="radiogroup"] > label,
@@ -257,8 +269,8 @@ div[role="radiogroup"] label[data-baseweb="radio"] {
     flex-shrink: 0 !important;
     margin-right: 2px !important;
     margin-bottom: 0px !important;
-    padding: 2px 2px !important;
-    line-height: 1.4 !important;
+    padding: 1px 2px !important;
+    line-height: 1.3 !important;
 }
 div[role="radiogroup"] label p,
 div[role="radiogroup"] label span {
@@ -266,21 +278,23 @@ div[role="radiogroup"] label span {
     font-weight: 800 !important;
     color: #ffffff !important;
     white-space: nowrap !important;
-    line-height: 1.4 !important;
+    line-height: 1.3 !important;
     letter-spacing: -0.3px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* 검색어 입력창: 배경 청색, 입력 글자 흰색·크게, 안내문구 회색·작게, 테두리 굵은 검은색 */
+/* ⭐ 검색어 입력창: 테두리 흰색(3.5px solid #ffffff), 배경 청색, 세로 중앙 정렬 */
 div[data-testid="stTextInput"] {
-    margin-top: 4px !important;
-    margin-bottom: 8px !important;
+    margin-top: 1px !important;
+    margin-bottom: 6px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
 div[data-testid="stTextInputRootElement"] {
-    border: 4px solid #000000 !important;
+    border: 3.5px solid #ffffff !important;
     border-radius: 8px !important;
     background-color: #1d4ed8 !important;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.35) !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
 }
@@ -289,6 +303,10 @@ div[data-testid="stTextInput"] div[data-baseweb="base-input"] {
     background-color: #1d4ed8 !important;
     border: none !important;
     box-shadow: none !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 div[data-testid="stTextInput"] input {
     background-color: #1d4ed8 !important;
@@ -296,23 +314,53 @@ div[data-testid="stTextInput"] input {
     -webkit-text-fill-color: #ffffff !important;
     caret-color: #ffffff !important;
     font-weight: 800 !important;
-    font-size: 14.5pt !important;
-    padding: 9px 12px !important;
-    line-height: 1.4 !important;
+    font-size: 13.5pt !important;
+    padding: 0px 12px !important;
+    height: 100% !important;
+    line-height: 48px !important;
+    vertical-align: middle !important;
 }
 div[data-testid="stTextInput"] input::placeholder {
     color: #cbd5e1 !important;
     -webkit-text-fill-color: #cbd5e1 !important;
-    font-size: 9.2pt !important;
+    font-size: 9.6pt !important;
     font-weight: 400 !important;
     opacity: 1 !important;
+    line-height: 48px !important;
+    vertical-align: middle !important;
 }
 div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     color: #cbd5e1 !important;
     -webkit-text-fill-color: #cbd5e1 !important;
-    font-size: 9.2pt !important;
+    font-size: 9.6pt !important;
     font-weight: 400 !important;
     opacity: 1 !important;
+    line-height: 48px !important;
+    vertical-align: middle !important;
+}
+
+/* ⭐ 계보 검색 상향/하향 세대수 슬라이더: 글자 흰색, 글자 크기 확대, 막대 간격 50% 축소 */
+div[data-testid="stSlider"] {
+    margin-top: 0px !important;
+    margin-bottom: 2px !important;
+}
+div[data-testid="stSlider"] label,
+div[data-testid="stSlider"] [data-testid="stWidgetLabel"] p,
+div[data-testid="stSlider"] [data-testid="stWidgetLabel"] span {
+    color: #ffffff !important;
+    font-size: 11.5pt !important;
+    font-weight: 800 !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7) !important;
+    margin-bottom: -10px !important;
+    padding-bottom: 0px !important;
+}
+div[data-testid="stSlider"] div[data-baseweb="slider"] {
+    margin-top: 0px !important;
+    padding-top: 0px !important;
+}
+div[data-testid="stSlider"] [data-testid="stThumbValue"] {
+    color: #ffffff !important;
+    font-weight: 800 !important;
 }
 
 /* 복수 후보 안내 배너 */
@@ -327,13 +375,13 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     font-size: 11pt !important;
     font-weight: 400 !important;
     margin-top: 4px !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 6px !important;
     line-height: 1.48 !important;
 }
 
 /* 드롭다운 명부 */
 div[data-testid="stSelectbox"] {
-    margin-top: 4px !important;
+    margin-top: 2px !important;
     margin-bottom: 6px !important;
 }
 div[data-testid="stSelectbox"] *,
@@ -459,7 +507,7 @@ div[role="option"] * {
     border: 1px solid #f87171;
 }
 
-/* 계보도 */
+/* ⭐ 계보도 도형 박스: 클릭 가능한 링크 스타일 적용 (클릭 시 새 계보 즉시 생성) */
 .tree-diagram-wrapper {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -507,19 +555,30 @@ div[role="option"] * {
     align-items: center;
 }
 .tree-node-box {
-    background: #ffffff;
-    border: 1.5px solid #64748b;
-    border-radius: 4px;
-    padding: 2px 7px;
-    font-size: 9.5pt;
-    color: #0f172a;
-    line-height: 1.3;
+    display: inline-block !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+    background: #ffffff !important;
+    border: 1.5px solid #64748b !important;
+    border-radius: 4px !important;
+    padding: 2px 7px !important;
+    font-size: 9.5pt !important;
+    color: #0f172a !important;
+    line-height: 1.3 !important;
+    transition: all 0.15s ease-in-out !important;
+}
+.tree-node-box:hover {
+    background: #dbeafe !important;
+    border-color: #2563eb !important;
+    color: #1d4ed8 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
 }
 .tree-node-target {
-    background: #eff6ff;
-    border: 2px solid #2563eb;
-    font-weight: 800;
-    color: #1e40af;
+    background: #eff6ff !important;
+    border: 2px solid #2563eb !important;
+    font-weight: 800 !important;
+    color: #1e40af !important;
 }
 .tree-h-line {
     color: #64748b;
@@ -584,11 +643,10 @@ div[role="option"] * {
 render_html(CUSTOM_CSS)
 
 # =============================================================================
-# 2. 데이터 로드 (SQLite DB가 있으면 초고속 로드, 없으면 엑셀 로드 - 무에러 보장)
+# 2. 데이터 로드 (SQLite DB 우선, 없으면 엑셀 로드)
 # =============================================================================
 @st.cache_data
 def load_and_preprocess_genealogy():
-    # 1. genealogy.db 파일이 존재하는 경우 SQLite로 로드
     if os.path.exists(db_file_path):
         try:
             conn = sqlite3.connect(f"file:{db_file_path}?mode=ro", uri=True)
@@ -606,7 +664,6 @@ def load_and_preprocess_genealogy():
             except Exception:
                 pass
 
-    # 2. 엑셀 파일(genealogy.xlsx)로 안전하게 로드
     if os.path.exists(excel_file_path):
         try:
             import openpyxl
@@ -656,6 +713,47 @@ def clean_ko_name(raw_val):
         return ko
     cleaned = re.sub(r"[一-龥]+", "", s).strip()
     return cleaned if cleaned else s
+
+def match_name_query(row, q):
+    """
+    ⭐ 인명 검색 및 계보 검색 시 함자, 성명, 호, 초명, 통명만 정확하게 검색
+    """
+    q = q.strip()
+    if not q:
+        return False
+    q_alt = q[1:] if q.startswith('안') and len(q) > 1 else q
+    
+    # 1. 함자, 성명 (인명 컬럼)
+    name_str = str(row.get('인명', '')).strip()
+    ko_name = re.sub(r'[^가-힣]+', '', name_str)
+    cn_name = re.sub(r'[^一-龥]+', '', name_str)
+    
+    if q in name_str or q_alt in name_str:
+        return True
+    if ko_name and (q == ko_name or q == '안' + ko_name or q_alt == ko_name):
+        return True
+    if cn_name and (q == cn_name or q == '安' + cn_name or q_alt == cn_name):
+        return True
+        
+    # 2. 호, 초명, 통명 (한글 약력 정리 첫 줄)
+    first_line_ko = str(row.get('한글 약력 정리', '')).split('\n')[0]
+    for pattern in [r'호는\s*([^\.,\n\s]+)', r'초명은?\s*([^\.,\n\s]+)', r'통명은?\s*([^\.,\n\s]+)']:
+        m = re.search(pattern, first_line_ko)
+        if m:
+            val = m.group(1).strip()
+            if q == val or q_alt == val or q in val:
+                return True
+
+    # 3. 호, 초명, 통명 (한문 약력 정리 첫 줄)
+    first_line_cn = str(row.get('한문 약력 정리', '')).split('\n')[0]
+    for pattern in [r'號\s*([^\.,\n\s]+)', r'初名\s*([^\.,\n\s]+)', r'通名\s*([^\.,\n\s]+)']:
+        m = re.search(pattern, first_line_cn)
+        if m:
+            val = m.group(1).strip()
+            if q == val or q_alt == val or q in val:
+                return True
+                
+    return False
 
 def get_adoption_info(row):
     rel = str(row.get("관계", "")).strip()
@@ -826,6 +924,9 @@ def render_person_result_card(target_row, search_term=None):
     """)
 
 def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="tree"):
+    """
+    ⭐ 계보도 도형 박스 클릭 시 새 계보 즉시 생성 (하단 불필요 버튼 라인은 신상 정보 전까지 모두 삭제)
+    """
     target_gid = target_row['고유ID']
     target_name = target_row['인명']
     
@@ -844,7 +945,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
-    diagram_parts = [f'<div id="search-result-anchor"></div><div class="tree-diagram-wrapper"><div style="font-weight:800; color:#1e3c72; font-size:11.5pt; margin-bottom:4px;">🌳 [{clean_ko_name(target_name)}] 기준 혈통 계보도</div>']
+    diagram_parts = [f'<div id="search-result-anchor"></div><div class="tree-diagram-wrapper"><div style="font-weight:800; color:#1e3c72; font-size:11.5pt; margin-bottom:4px;">🌳 [{clean_ko_name(target_name)}] 기준 혈통 계보도 <span style="font-size:9pt; font-weight:400; color:#64748b;">(네모 박스 클릭 시 해당 인물로 즉시 새 계보 생성)</span></div>']
     
     for idx_a, anc in enumerate(reversed(ancestors)):
         lvl = anc['level']
@@ -858,11 +959,12 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         if lvl >= 3:
             rel_str = f" ({len(sibs)}자 중 {r['관계']})" if len(sibs) > 1 else f" ({r['관계']})"
             lbl_badge = "증조부" if lvl == 3 else f"{lvl}대조"
+            r_gid = r['고유ID']
             diagram_parts.append(f"""
             <div class="tree-level-row">
                 <span class="tree-gen-badge">▲ {lbl_badge}({g_num}세)</span>
                 <div class="tree-nodes-container">
-                    <span class="tree-node-box tree-node-target"><b>{r['인명']}</b>{rel_str}</span>
+                    <a href="?tree_gid={r_gid}" target="_self" class="tree-node-box tree-node-target"><b>{r['인명']}</b>{rel_str}</a>
                 </div>
             </div>
             """)
@@ -874,9 +976,10 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
                 cls = "tree-node-box tree-node-target" if is_direct else "tree-node-box"
                 s_name = s['인명']
                 s_rel = s['관계']
+                s_gid = s['고유ID']
                 if s_i > 0:
                     node_htmls.append('<span class="tree-h-line">──</span>')
-                node_htmls.append(f'<span class="{cls}"><b>{s_name}</b>({s_rel})</span>')
+                node_htmls.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{cls}"><b>{s_name}</b>({s_rel})</a>')
             nodes_joined = ''.join(node_htmls)
             diagram_parts.append(f"""
             <div class="tree-level-row">
@@ -899,9 +1002,10 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         marker = " 🎯[기준]" if is_t else ""
         s_name = s['인명']
         s_rel = s['관계']
+        s_gid = s['고유ID']
         if s_i > 0:
             t_nodes.append('<span class="tree-h-line">──</span>')
-        t_nodes.append(f'<span class="{cls}"><b>{s_name}</b>{marker}({s_rel})</span>')
+        t_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{cls}"><b>{s_name}</b>{marker}({s_rel})</a>')
     t_joined = ''.join(t_nodes)
     diagram_parts.append(f"""
     <div class="tree-level-row" style="background:#eff6ff; border:2px solid #2563eb;">
@@ -918,9 +1022,10 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         for s_i, (_, s) in enumerate(sons.iterrows()):
             s_name = s['인명']
             s_rel = s['관계']
+            s_gid = s['고유ID']
             if s_i > 0:
                 s_nodes.append('<span class="tree-h-line">──</span>')
-            s_nodes.append(f'<span class="tree-node-box"><b>{s_name}</b>({s_rel})</span>')
+            s_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="tree-node-box"><b>{s_name}</b>({s_rel})</a>')
         s_joined = ''.join(s_nodes)
         sg_num = tg_num + 1 if tg_num else 25
         diagram_parts.append(f"""
@@ -939,9 +1044,10 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
                     g_name = g['인명']
                     s_name = s['인명']
                     g_rel = g['관계']
+                    g_gid = g['고유ID']
                     if len(grandsons) > 0:
                         grandsons.append('<span class="tree-h-line">──</span>')
-                    grandsons.append(f'<span class="tree-node-box"><b>{g_name}</b>({s_name}의 {g_rel})</span>')
+                    grandsons.append(f'<a href="?tree_gid={g_gid}" target="_self" class="tree-node-box"><b>{g_name}</b>({s_name}의 {g_rel})</a>')
             if grandsons:
                 diagram_parts.append('<div class="tree-connector-line">│<br>▼</div>')
                 g_joined = ''.join(grandsons)
@@ -955,51 +1061,20 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     diagram_parts.append('</div>')
     render_html("".join(diagram_parts))
 
-    st.markdown("##### 👆 계보도 인물 클릭 (클릭 시 검색창 입력 없이 즉시 새 계보 생성)")
-    clickable_Pool = []
-    seen_gids = set()
-    for anc in reversed(ancestors):
-        for _, s in anc['siblings'].iterrows():
-            if s['고유ID'] not in seen_gids:
-                clickable_Pool.append(s)
-                seen_gids.add(s['고유ID'])
-    for _, s in t_sibs.iterrows():
-        if s['고유ID'] not in seen_gids:
-            clickable_Pool.append(s)
-            seen_gids.add(s['고유ID'])
-    for _, s in sons.iterrows():
-        if s['고유ID'] not in seen_gids:
-            clickable_Pool.append(s)
-            seen_gids.add(s['고유ID'])
-    for g in grandsons_rows:
-        if g['고유ID'] not in seen_gids:
-            clickable_Pool.append(g)
-            seen_gids.add(g['고유ID'])
-
-    if clickable_Pool:
-        cols_per_row = 6
-        for i in range(0, len(clickable_Pool), cols_per_row):
-            chunk = clickable_Pool[i:i+cols_per_row]
-            b_cols = st.columns(len(chunk))
-            for c_i, p_row in enumerate(chunk):
-                p_gid = p_row['고유ID']
-                is_curr = (p_gid == target_gid)
-                btn_lbl = f"{'🎯 ' if is_curr else ''}{p_row['인명']}({p_row['관계']})"
-                if b_cols[c_i].button(btn_lbl, key=f"{key_prefix}_node_{p_gid}", use_container_width=True):
-                    st.session_state['active_tree_gid'] = p_gid
-                    st.rerun()
-
+    # ⭐ 마지막에 있던 별도 '👆 계보도 인물 클릭' 버튼 라인은 신상 및 계보정보 창 이전까지 모두 완전 삭제됨!
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더(좌측 세로중앙 대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
+# 4. 최상단 헤더(좌측 대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
 # =============================================================================
-icon_img_tag = f'<img src="{icon_b64}" style="width:76px; height:76px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:48px;">📜</span>'
+# ⭐ 1. 아이콘 크기 대폭 확대 (96px × 96px)
+icon_img_tag = f'<img src="{icon_b64}" style="width:96px; height:96px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:56px;">📜</span>'
 
 bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
 if bg_style_tag:
     render_html(bg_style_tag)
 
+# 타이틀 상자 출력
 render_html(f"""
 <div class="title-container">
     <div class="title-left-icon">
@@ -1011,6 +1086,11 @@ render_html(f"""
         <div class="title-sub-bottom">- 완귀공(휘 嶒, 24세) ~ 44세<br>총 2,887인(고위 기준) -</div>
     </div>
 </div>
+""")
+
+# ⭐ 검색 엔터 시 인명검색 라인이 화면 제일 위에 위치하도록 앵커 배치
+render_html("""
+<div id="search-section-anchor"></div>
 <div class="compact-search-header">
     <div class="compact-search-subtitle">다음 중 하나를 선택하고 검색어를 한글로 입력</div>
 </div>
@@ -1021,52 +1101,57 @@ if df is None:
     st.info(f"데이터베이스 파일(`genealogy.db` 또는 `genealogy.xlsx`)이 저장소에 존재하는지 확인해 주시기 바랍니다.")
     st.stop()
 
+# URL 파라미터로 계보 클릭 시 처리
+param_tree_gid = get_query_param("tree_gid")
+if param_tree_gid:
+    st.session_state['active_tree_gid'] = param_tree_gid
+    st.session_state['default_search_type'] = "계보 검색"
+
+# ⭐ 2. 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색)
+default_idx = 0
+if st.session_state.get('default_search_type') == "계보 검색":
+    default_idx = 1
+
 search_type = st.radio(
     "검색 종류 선택",
     ["인명 검색", "계보 검색", "단어 검색"],
+    index=default_idx,
     horizontal=True,
     label_visibility="collapsed"
 )
 
+# ⭐ 3. 검색어 안내문 표시 및 입력창 (테두리 흰색, 세로 중앙 정렬)
 if search_type == "인명 검색":
     query_val = st.text_input(
         "검색어 입력",
-        placeholder="인물의 함자 혹은 성명, 호, 별명을 한글로 입력",
+        placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
         key="name_query",
         label_visibility="collapsed"
     )
 elif search_type == "계보 검색":
     query_val = st.text_input(
         "검색어 입력",
-        placeholder="인물의 함자 혹은 성명, 호, 별명을 한글로 입력(생성된 계보 도형 클릭시 새 계보 생성)",
+        placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
         key="lineage_query",
         label_visibility="collapsed"
     )
 else:
     query_val = st.text_input(
         "검색어 입력",
-        placeholder="관직명, 과거, 지명, 묘관련,연대 등 단어 입력",
+        placeholder="관직, 과거, 학문 등 모든 약력 내용 검색 가능",
         key="word_query",
         label_visibility="collapsed"
     )
 
 # =============================================================================
-# 4. 검색 결과 창 (항상 문화재 안내 창 위에 뜨도록 고정 + 스크롤)
+# ⭐ 5. 검색 결과 창 (엔터 시 인명검색 라인이 화면 제일 위에 오도록 스크롤)
 # =============================================================================
 if search_type == "인명 검색" and query_val.strip():
     q = query_val.strip()
-    q_alt = q[1:] if q.startswith("안") and len(q) > 1 else q
-    
-    mask = (
-        df['인명'].astype(str).str.contains(q, case=False, na=False) |
-        df['인명'].astype(str).str.contains(q_alt, case=False, na=False) |
-        df['한글 약력 정리'].apply(lambda x: q in str(x).split('\n')[0] or q_alt in str(x).split('\n')[0]) |
-        df['한문 약력 정리'].apply(lambda x: q in str(x).split('\n')[0] or q_alt in str(x).split('\n')[0])
-    )
-    matched_df = df[mask]
+    matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
     
     if len(matched_df) == 0:
-        st.warning(f"입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다.")
+        st.warning(f"입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)")
     else:
         if len(matched_df) > 1:
             render_html(f"""
@@ -1082,7 +1167,7 @@ if search_type == "인명 검색" and query_val.strip():
             target_row = matched_df.iloc[0]
             
         render_person_result_card(target_row)
-        scroll_to_result()
+        scroll_to_search_top()
 
 elif search_type == "계보 검색":
     q = query_val.strip()
@@ -1097,15 +1182,9 @@ elif search_type == "계보 검색":
             tree_target = g_match.iloc[0]
 
     if tree_target is None and q:
-        q_alt = q[1:] if q.startswith("안") and len(q) > 1 else q
-        mask = (
-            df['인명'].astype(str).str.contains(q, case=False, na=False) |
-            df['인명'].astype(str).str.contains(q_alt, case=False, na=False) |
-            df['한글 약력 정리'].apply(lambda x: q in str(x).split('\n')[0] or q_alt in str(x).split('\n')[0])
-        )
-        l_matches = df[mask]
+        l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
         if len(l_matches) == 0:
-            st.warning("계보를 작성할 선조 인명을 찾을 수 없습니다.")
+            st.warning("계보를 작성할 선조 인명을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)")
         elif len(l_matches) > 1:
             render_html(f"""
             <div class="multi-ancestor-banner">
@@ -1129,9 +1208,11 @@ elif search_type == "계보 검색":
             if st.session_state.get('active_tree_gid'):
                 if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
                     st.session_state['active_tree_gid'] = None
+                    if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+                        del st.query_params["tree_gid"]
                     st.rerun()
         render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens, key_prefix="main_tree")
-        scroll_to_result()
+        scroll_to_search_top()
 
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
@@ -1157,10 +1238,10 @@ elif search_type == "단어 검색" and query_val.strip():
         chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
         
         render_person_result_card(chosen_row, search_term=term)
-        scroll_to_result()
+        scroll_to_search_top()
 
 # =============================================================================
-# 5. 종중 주요 유적 및 문화재 안내 (항상 검색 결과 창 아래에 위치)
+# 6. 종중 주요 유적 및 문화재 안내 (항상 검색 결과 창 아래에 위치)
 # =============================================================================
 render_html("""
 <div class="heritage-sub-container">
@@ -1187,7 +1268,7 @@ render_html("""
 """)
 
 # =============================================================================
-# 6. 하단 푸터 (Footer)
+# 7. 하단 푸터 (Footer)
 # =============================================================================
 active_data_label = "genealogy.db (SQLite)" if os.path.exists(db_file_path) else "genealogy.xlsx (Excel)"
 render_html(f"""
