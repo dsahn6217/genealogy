@@ -1,19 +1,20 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
+import openpyxl
 import sqlite3
 import re
 import os
 import base64
 
 # =============================================================================
-# 0. 기본 설정 및 파일 경로
+# 0. 기본 설정 및 아이콘 / 데이터 / 배경 파일 경로
 # =============================================================================
 ICON_FILE = "icon.png"
 DB_FILE = "genealogy.db"
-EXCEL_FILE = "genealogy.xlsx"
+DATA_FILE = "genealogy.xlsx"
 
-# 저장소 업로드 배경 이미지 파일 탐색
+# 저장소 업로드 배경 이미지 파일 탐색 (background.png, bg.png 등)
 BG_PATHS = [
     "background.png",
     "background.jpg",
@@ -24,7 +25,7 @@ BG_PATHS = [
 ]
 bg_file = next((p for p in BG_PATHS if os.path.exists(p)), None)
 
-# 아이콘 및 데이터 파일 탐색
+# 폴백 경로 탐색
 if not os.path.exists(ICON_FILE):
     alt_icon = "artifacts/file_generation/ttl=63d/output/icon.png"
     if os.path.exists(alt_icon):
@@ -36,14 +37,15 @@ DB_PATHS = [
 ]
 db_file_path = next((p for p in DB_PATHS if os.path.exists(p)), DB_FILE)
 
-EXCEL_PATHS = [
-    "genealogy.xlsx",
-    "완귀공파 족보 검색 시스템.xlsx",
-    "artifacts/file_generation/ttl=63d/output/genealogy.xlsx"
-]
-excel_file_path = next((p for p in EXCEL_PATHS if os.path.exists(p)), EXCEL_FILE)
+if not os.path.exists(DATA_FILE):
+    if os.path.exists("완귀공파 족보 검색 시스템.xlsx"):
+        DATA_FILE = "완귀공파 족보 검색 시스템.xlsx"
+    elif os.path.exists("artifacts/file_generation/ttl=63d/output/genealogy.xlsx"):
+        DATA_FILE = "artifacts/file_generation/ttl=63d/output/genealogy.xlsx"
+    elif os.path.exists("artifacts/file_generation/ttl=63d/output/완귀공파 족보 통합.xlsx"):
+        DATA_FILE = "artifacts/file_generation/ttl=63d/output/완귀공파 족보 통합.xlsx"
 
-# ⭐ st.set_page_config는 항상 최상단에서 가장 먼저 호출
+# ⭐ st.set_page_config는 반드시 모든 st.* 명령보다 가장 먼저 호출되어야 함
 st.set_page_config(
     page_title="광주안씨 완귀공파 종중 족보 검색 시스템",
     page_icon=ICON_FILE if os.path.exists(ICON_FILE) else "📜",
@@ -74,31 +76,106 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
+def inject_global_ui_handlers():
+    """
+    ⭐ 전역 UI 제어 스크립트:
+    1) 검색창(인명·계보·단어 검색)에서 엔터(Enter)를 누르는 즉시 모바일 자판(가상 키보드) 강제 숨김(blur)
+    2) 슬라이더 막대 오른쪽 끝이나 손잡이 위에 뜨는 빨간색 숫자(ThumbValue / 1~6 숫자 텍스트) 실시간 완전 제거
+    """
+    components.html(
+        """
+        <script>
+            (function() {
+                try {
+                    var parentDoc = window.parent.document;
+
+                    // 1. 엔터 키 입력 시 즉시 입력창 포커스 해제하여 모바일 자판 숨김
+                    if (!parentDoc._genealogyKeyHandlerAdded) {
+                        parentDoc.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.keyCode === 13) {
+                                setTimeout(function() {
+                                    try {
+                                        if (parentDoc.activeElement && parentDoc.activeElement.tagName === 'INPUT') {
+                                            parentDoc.activeElement.blur();
+                                        }
+                                        var allInputs = parentDoc.querySelectorAll('input[type="text"], input:not([type])');
+                                        allInputs.forEach(function(inp) { inp.blur(); });
+                                    } catch (err) {}
+                                }, 50);
+                            }
+                        }, true);
+                        parentDoc._genealogyKeyHandlerAdded = true;
+                    }
+
+                    // 2. 슬라이더 내부의 빨간 숫자 표시(1~6) 요소를 찾아 완전히 숨김
+                    function hideSliderRedNumbers() {
+                        try {
+                            var sliders = parentDoc.querySelectorAll('[data-testid="stSlider"]');
+                            sliders.forEach(function(sl) {
+                                var nodes = sl.querySelectorAll('div, span, p');
+                                nodes.forEach(function(el) {
+                                    if (el.children.length === 0 && el.textContent) {
+                                        var txt = el.textContent.trim();
+                                        if (/^[1-6]$/.test(txt)) {
+                                            el.style.setProperty('display', 'none', 'important');
+                                            el.style.setProperty('visibility', 'hidden', 'important');
+                                            el.style.setProperty('opacity', '0', 'important');
+                                            el.style.setProperty('font-size', '0px', 'important');
+                                            el.style.setProperty('color', 'transparent', 'important');
+                                        }
+                                    }
+                                });
+                            });
+                        } catch (err) {}
+                    }
+
+                    hideSliderRedNumbers();
+                    setTimeout(hideSliderRedNumbers, 100);
+                    setTimeout(hideSliderRedNumbers, 300);
+
+                    if (!parentDoc._sliderObserverAdded) {
+                        var obs = new MutationObserver(function() {
+                            hideSliderRedNumbers();
+                        });
+                        obs.observe(parentDoc.body, { childList: true, subtree: true });
+                        parentDoc._sliderObserverAdded = true;
+                    }
+                } catch (e) {}
+            })();
+        </script>
+        """,
+        height=0
+    )
+
 def scroll_to_search_top():
     """
     ⭐ 검색 엔터 후:
-    1) 모바일 가상 자판(키보드)이 즉시 숨겨지도록 입력창 포커스 해제(blur)
+    1) 모바일 가상 자판(키보드)이 확실히 내려가도록 포커스 해제(blur) 처리
     2) 인명검색 라인이 화면 제일 위에 오도록 상단으로 자동 스크롤
     """
     components.html(
         """
         <script>
-            setTimeout(function() {
-                try {
-                    var parentDoc = window.parent.document;
-                    if (parentDoc.activeElement) {
-                        parentDoc.activeElement.blur();
-                    }
-                    var inputs = parentDoc.querySelectorAll('input');
-                    inputs.forEach(function(inp) {
-                        inp.blur();
-                    });
-                    var target = parentDoc.getElementById('search-section-anchor');
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                } catch (e) {}
-            }, 80);
+            (function() {
+                function dismissKeyboardAndScroll() {
+                    try {
+                        var parentDoc = window.parent.document;
+                        var allInputs = parentDoc.querySelectorAll('input');
+                        allInputs.forEach(function(inp) {
+                            inp.blur();
+                        });
+                        if (parentDoc.activeElement && typeof parentDoc.activeElement.blur === 'function') {
+                            parentDoc.activeElement.blur();
+                        }
+                        var target = parentDoc.getElementById('search-section-anchor');
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } catch (e) {}
+                }
+                setTimeout(dismissKeyboardAndScroll, 60);
+                setTimeout(dismissKeyboardAndScroll, 220);
+            })();
         </script>
         """,
         height=0
@@ -117,7 +194,7 @@ def get_query_param(key):
     return None
 
 # =============================================================================
-# 1. 디자인 스타일 CSS
+# 1. 디자인 스타일 CSS (바깥쪽 좌우 여백 50% 축소, 황색 타이틀, 녹색 복귀 버튼 등)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -127,25 +204,12 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* ⭐ 상단 헤더 및 앱 내부 툴바/푸터/배지 숨김 */
-header[data-testid="stHeader"],
-div[data-testid="stToolbar"],
-div[data-testid="stDecoration"],
-div[data-testid="stStatusWidget"],
-div[data-testid="stAppDeployButton"],
-.stDeployButton,
-footer,
-#MainMenu,
-[class*="viewerBadge"],
-[class^=" _profileContainer"],
-[class*="_profileContainer"],
-[class^=" _container"],
-iframe[title="streamlit_badge"] {
+/* 기본 상단 헤더 숨김 */
+header[data-testid="stHeader"] {
     display: none !important;
-    visibility: hidden !important;
-    height: 0px !important;
 }
 
+/* ⭐ 화면에 있는 모든 창의 바깥쪽 좌우 여백을 기존 대비 50% 축소 (0.65rem -> 0.32rem) */
 .main .block-container, 
 [data-testid="stAppViewBlockContainer"], 
 .block-container {
@@ -155,18 +219,18 @@ iframe[title="streamlit_badge"] {
     margin-right: auto !important;
     padding-top: 1.0rem !important;
     padding-bottom: 1.2rem !important;
-    padding-left: 0.65rem !important;
-    padding-right: 0.65rem !important;
+    padding-left: 0.32rem !important;
+    padding-right: 0.32rem !important;
     box-sizing: border-box !important;
 }
 
 div[data-testid="stVerticalBlock"] {
-    gap: 0.25rem !important;
+    gap: 0.28rem !important;
 }
 div[data-testid="stElementContainer"],
 .element-container {
     margin-top: 0px !important;
-    margin-bottom: 0px !important;
+    margin-bottom: 1px !important;
 }
 
 /* 저장소 배경 이미지 적용 및 투명도 제로(100% 완전 불투명) */
@@ -178,30 +242,34 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* ⭐ 제일 위 페이지 타이틀 창: 좌측 초대형 아이콘(118px) + 우측 타이틀 문장 */
+/* ⭐ 제일 위 페이지 타이틀 창: 배경 색상 황색(#facc15) + 아이콘을 왼쪽 끝으로 최대한 밀착 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
     margin-top: 8px !important;
     margin-bottom: 14px !important;
-    padding: 10px 14px;
-    border-bottom: 3px solid #8c2d19;
-    background: #ffffff !important;
+    padding: 8px 10px 8px 2px !important;
+    border: 2px solid #b45309 !important;
+    border-bottom: 3.5px solid #8c2d19 !important;
+    background: #facc15 !important;
+    background-color: #facc15 !important;
     opacity: 1 !important;
     border-radius: 6px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
 }
 
 .title-left-icon {
     flex-shrink: 0 !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
+    margin-left: 0px !important;
+    padding-left: 0px !important;
 }
 
 .title-right-content {
@@ -227,7 +295,7 @@ div[data-testid="stElementContainer"],
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
     font-size: 16.5pt;
     font-weight: 800;
-    color: #1a202c;
+    color: #111827;
     text-align: center;
     width: 100%;
     margin-top: 1px;
@@ -239,8 +307,8 @@ div[data-testid="stElementContainer"],
 .title-sub-bottom {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
     font-size: 10.5pt;
-    font-weight: 600;
-    color: #334155;
+    font-weight: 700;
+    color: #1e293b;
     text-align: center;
     width: 100%;
     margin-top: 1px;
@@ -248,14 +316,14 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* ⭐ 위 타이틀 창과 간격을 조금 더 넓힌 안내 문구 라인 */
+/* 위 타이틀 창과 간격을 넓힌 안내 문구 라인 */
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
     margin-top: 12px !important;
     margin-bottom: 2px !important;
     padding: 2px 2px !important;
-    line-height: 1.3 !important;
+    line-height: 1.35 !important;
 }
 .compact-search-subtitle {
     font-size: 10.8pt !important;
@@ -264,7 +332,7 @@ div[data-testid="stElementContainer"],
     text-align: center !important;
     margin-top: 0px !important;
     margin-bottom: 0px !important;
-    line-height: 1.3 !important;
+    line-height: 1.35 !important;
     letter-spacing: -0.3px !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
@@ -365,7 +433,7 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     vertical-align: middle !important;
 }
 
-/* ⭐ 검색 결과 없을 때 안내 문구: 글자 색상 흰색(#ffffff) */
+/* 검색 결과 없을 때 안내 문구: 글자 색상 흰색(#ffffff) */
 .no-result-notice {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -383,10 +451,35 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
 }
 
-/* ⭐ 직계 상대/하대 선조수 설정 슬라이더:
-   1) 문구: '직계 상대 선조수 설정' / '직계 하대 선조수 설정'
-   2) 하얀색 대수 글자(1대~6대): 크기 축소(9.2pt), 비볼드체(font-weight: 400)
-   3) 하얀색 라인 위 빨간색 기본 숫자(ThumbValue 등) 완전 삭제 */
+/* ⭐ '초기 검색 인물로 복귀' 버튼: 바탕색 녹색(#15803d), 글씨체 흰색(#ffffff) */
+div[data-testid="stButton"] > button {
+    background-color: #15803d !important;
+    background: #15803d !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+    border-radius: 6px !important;
+    font-weight: 800 !important;
+    font-size: 11pt !important;
+    padding: 6px 12px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+}
+div[data-testid="stButton"] > button:hover,
+div[data-testid="stButton"] > button:active,
+div[data-testid="stButton"] > button:focus {
+    background-color: #166534 !important;
+    background: #166534 !important;
+    color: #ffffff !important;
+    border-color: #fef08a !important;
+}
+div[data-testid="stButton"] > button *,
+div[data-testid="stButton"] > button p,
+div[data-testid="stButton"] > button span {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 11pt !important;
+}
+
+/* 직계 상대/하대 선조수 선택 슬라이더 */
 .slider-custom-header {
     display: flex;
     flex-direction: column;
@@ -426,6 +519,8 @@ div[data-testid="stSlider"] {
     margin-bottom: -8px !important;
     padding-top: 0px !important;
     padding-bottom: 0px !important;
+    font-size: 0px !important;
+    color: transparent !important;
 }
 div[data-testid="stSlider"] [data-testid="stWidgetLabel"] {
     display: none !important;
@@ -438,8 +533,14 @@ div[data-testid="stSlider"] div[data-baseweb="slider"] {
     margin-bottom: 0px !important;
     padding-top: 6px !important;
     padding-bottom: 4px !important;
+    font-size: 0px !important;
+    color: transparent !important;
 }
-/* 슬라이더 하얀 선(트랙): 검은색 테두리 + 5등분 경계 눈금선 표시 */
+div[data-testid="stSlider"] * {
+    font-size: 0px !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
+}
 div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
     height: 10px !important;
     background: repeating-linear-gradient(
@@ -453,7 +554,6 @@ div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
     border-radius: 5px !important;
     box-sizing: border-box !important;
 }
-/* 슬라이더 조절 손잡이(Thumb) */
 div[data-testid="stSlider"] [role="slider"] {
     width: 20px !important;
     height: 20px !important;
@@ -461,17 +561,16 @@ div[data-testid="stSlider"] [role="slider"] {
     border: 2.5px solid #000000 !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.6) !important;
 }
-/* ⭐ 하얀색 라인 위에 뜨는 빨간색 숫자(ThumbValue) 및 기본 TickBar 완전 삭제 */
 div[data-testid="stSlider"] [data-testid="stThumbValue"],
 div[data-testid="stSlider"] [data-testid="stTickBar"],
 div[data-testid="stSlider"] [data-testid="stTickBarMin"],
 div[data-testid="stSlider"] [data-testid="stTickBarMax"],
-div[data-testid="stSlider"] div[role="slider"] > div,
-div[data-testid="stSlider"] div[role="slider"] * {
+div[data-testid="stSlider"] [role="slider"] > div,
+div[data-testid="stSlider"] [role="slider"] *,
+div[data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(n+2) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
-    font-size: 0px !important;
     height: 0px !important;
     width: 0px !important;
     overflow: hidden !important;
@@ -550,16 +649,25 @@ div[role="option"] * {
     gap: 8px;
 }
 .result-badge {
-    font-size: 10.5pt;
+    font-size: 11.5pt;
     font-weight: 800;
     background: #eff6ff;
     color: #1d4ed8;
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #bfdbfe;
 }
+.result-book-loc {
+    font-size: 10.5pt;
+    font-weight: 800;
+    color: #1e293b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
 
-/* 신상 및 계보 정보 */
+/* 한글 약력 컨테이너 */
 .meta-para-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -701,23 +809,25 @@ div[role="option"] * {
     margin: 0 1px;
 }
 
-/* 문화재 안내 */
+/* 종중 주요 유적 및 문화재 안내: 바탕색 녹색(#15803d), 헤더 흰색 글씨 */
 .heritage-sub-container {
     width: 100% !important;
     box-sizing: border-box !important;
-    background-color: #ffffff;
-    border: 2px solid #cbd5e1;
+    background-color: #15803d !important;
+    border: 2px solid #14532d !important;
     border-radius: 8px;
     padding: 9px 12px;
     margin-top: 6px;
     margin-bottom: 6px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.22);
 }
 .heritage-sub-header {
-    font-size: 11pt;
+    font-size: 11.2pt;
     font-weight: 800;
-    color: #1e3c72;
+    color: #ffffff !important;
     margin-bottom: 6px;
     line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 .heritage-sub-grid {
     display: grid;
@@ -725,21 +835,21 @@ div[role="option"] * {
     gap: 6px;
 }
 .heritage-sub-card {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border: 1px solid #dcfce7;
     border-radius: 6px;
     padding: 6px 8px;
     text-decoration: none !important;
     display: block;
 }
 .heritage-sub-card:hover {
-    background: #eff6ff;
-    border-color: #2563eb;
+    background: #f0fdf4;
+    border-color: #fef08a;
 }
 .h-card-name {
     font-size: 10pt;
     font-weight: 700;
-    color: #1e40af;
+    color: #14532d;
     margin-bottom: 2px;
     line-height: 1.35;
     display: flex;
@@ -748,16 +858,65 @@ div[role="option"] * {
 }
 .h-card-desc {
     font-size: 8.8pt;
-    color: #475569;
+    color: #334155;
     line-height: 1.35;
+}
+
+/* ⭐ 모바일에서도 모든 창의 바깥쪽 좌우 여백을 50% 축소 (12px -> 6px) 및 좌우 대칭 유지 */
+@media (max-width: 768px) {
+    html,
+    body,
+    #root {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    section.main,
+    [data-testid="stAppViewBlockContainer"],
+    [data-testid="stMain"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    [data-testid="stMainBlockContainer"],
+    .main .block-container,
+    .block-container {
+        position: relative !important;
+        left: calc((100vw - 100%) / 2) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    [data-testid="stMarkdownContainer"],
+    .stMarkdown {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
 </style>
 """
 
 render_html(CUSTOM_CSS)
+inject_global_ui_handlers()
 
 # =============================================================================
-# 2. 데이터 로드 및 고유ID 기반 부모-자녀 정밀 매핑 전처리
+# 2. 데이터 로드 및 초고속(0.2초) 고유ID 기반 부모-자녀 매핑 전처리
 # =============================================================================
 def parse_gid_tuple(gid):
     """고유ID(예: C-529-4-1-37)를 (권, 페이지, 단, 순서, 세수)로 분리"""
@@ -766,76 +925,39 @@ def parse_gid_tuple(gid):
         return m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5))
     return "", 0, 0, 0, 0
 
-def resolve_exact_father_gid(child_row, all_df):
+def format_book_location(gid):
     """
-    ⭐ 동명이인 선조가 여러 명 있을 때 단순 인명 비교가 아니라
-    1) 세수(본인 세수 - 1)
-    2) 조부 성함 일치 여부(후보 부친의 '부친' == 본인의 '조부')
-    3) 족보 권(A~D)·페이지·순번의 근접성
-    을 종합 검증하여 정확한 부친의 고유ID(_father_gid)를 찾아냅니다.
+    ⭐ 인물별 약력 제목란 우측 족보 위치 표기: '상(하)권 000P 0단'
+    - A, B, C로 시작하면 '상권', D로 시작하면 '하권'
+    - 첫 번째 숫자는 족보 페이지(P), 두 번째 숫자는 단수(단)
+    - 예: 'A-24-1-1-24' -> '상권 24P 1단', 'D-208-1-1-39' -> '하권 208P 1단'
     """
-    f_name = str(child_row.get("부친", "")).strip()
-    if not f_name or f_name == "覯구" or f_name == "-":
-        return ""
-    gf_name = str(child_row.get("조부", "")).strip()
-    c_vol, c_page, c_tier, c_seq, c_gen = parse_gid_tuple(child_row.get("고유ID", ""))
-
-    # 1차: 인명 일치 + 세수가 정확히 1세대 위(c_gen - 1)인 후보
-    cands = all_df[(all_df["인명"] == f_name) & (all_df["_gen"] == c_gen - 1)]
-    if cands.empty:
-        cands = all_df[all_df["인명"] == f_name]
-    if cands.empty:
-        return ""
-    if len(cands) == 1:
-        return str(cands.iloc[0]["고유ID"])
-
-    # 2차: 후보의 부친 성함이 자녀의 조부 성함과 일치하는 후보로 압축
-    if gf_name and gf_name != "-":
-        cands_gf = cands[cands["부친"] == gf_name]
-        if len(cands_gf) == 1:
-            return str(cands_gf.iloc[0]["고유ID"])
-        elif len(cands_gf) > 1:
-            cands = cands_gf
-
-    # 3차: 같은 권(Volume) 내에서 자녀 페이지 이하이면서 가장 가까운 페이지에 수록된 선조 선택
-    same_vol = cands[(cands["_vol"] == c_vol) & (cands["_page"] <= c_page)]
-    if not same_vol.empty:
-        same_vol_sorted = same_vol.sort_values(by=["_page", "_seq"], ascending=[False, True])
-        return str(same_vol_sorted.iloc[0]["고유ID"])
-
-    # 4차: 권이 넘어가는 경우(C권 38세 -> D권 39세 등) 본 기록(생년·배위 수록) 우선 선택
-    non_empty_bio = cands[cands["한글 약력 정리"].astype(str).str.contains("생|배 :", na=False)]
-    if len(non_empty_bio) == 1:
-        return str(non_empty_bio.iloc[0]["고유ID"])
-
-    return str(cands.iloc[0]["고유ID"])
+    vol, page, tier, _, _ = parse_gid_tuple(gid)
+    if not vol:
+        return str(gid).strip()
+    vol_label = "상권" if vol in ("A", "B", "C") else ("하권" if vol == "D" else f"{vol}권")
+    return f"{vol_label} {page}P {tier}단"
 
 @st.cache_data
 def load_and_preprocess_genealogy():
     raw_df = None
     status_msg = ""
 
+    # 1순위: SQLite DB 로드
     if os.path.exists(db_file_path):
         try:
-            conn = sqlite3.connect(f"file:{db_file_path}?mode=ro", uri=True)
+            conn = sqlite3.connect(db_file_path)
             raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
             conn.close()
             if not raw_df.empty:
                 status_msg = "성공 (SQLite DB)"
         except Exception:
-            try:
-                conn = sqlite3.connect(db_file_path)
-                raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
-                conn.close()
-                if not raw_df.empty:
-                    status_msg = "성공 (SQLite DB)"
-            except Exception:
-                pass
+            raw_df = None
 
-    if (raw_df is None or raw_df.empty) and os.path.exists(excel_file_path):
+    # 2순위: Excel 로드
+    if (raw_df is None or raw_df.empty) and os.path.exists(DATA_FILE):
         try:
-            import openpyxl
-            wb = openpyxl.load_workbook(excel_file_path, read_only=True)
+            wb = openpyxl.load_workbook(DATA_FILE, read_only=True)
             sheet_name = "족보전사결과" if "족보전사결과" in wb.sheetnames else wb.sheetnames[0]
             ws = wb[sheet_name]
             rows = list(ws.iter_rows(values_only=True))
@@ -848,26 +970,153 @@ def load_and_preprocess_genealogy():
             return None, str(e)
 
     if raw_df is None or raw_df.empty:
-        return None, f"데이터 파일을 찾을 수 없습니다. (확인 경로: {excel_file_path})"
+        return None, f"데이터 파일({DATA_FILE})을 찾을 수 없습니다."
 
-    # 고유ID 파싱 및 부친 고유ID(_father_gid) 사전 매핑
-    parsed = raw_df["고유ID"].apply(parse_gid_tuple)
-    raw_df["_vol"] = [p[0] for p in parsed]
-    raw_df["_page"] = [p[1] for p in parsed]
-    raw_df["_tier"] = [p[2] for p in parsed]
-    raw_df["_seq"] = [p[3] for p in parsed]
-    raw_df["_gen"] = [p[4] for p in parsed]
+    # 초고속 딕셔너리 인덱싱(O(N), 0.2초)으로 동명이인 부친 고유ID(_father_gid) 정확히 매핑
+    records = raw_df.to_dict("records")
+    by_name = {}
+    for r in records:
+        vol, page, tier, seq, gen = parse_gid_tuple(r.get("고유ID", ""))
+        r["_vol"] = vol
+        r["_page"] = page
+        r["_tier"] = tier
+        r["_seq"] = seq
+        r["_gen"] = gen
+        nm = str(r.get("인명", "")).strip()
+        by_name.setdefault(nm, []).append(r)
 
-    father_gids = [resolve_exact_father_gid(row, raw_df) for _, row in raw_df.iterrows()]
+    father_gids = []
+    for r in records:
+        f_name = str(r.get("부친", "")).strip()
+        if not f_name or f_name == "覯구" or f_name == "-":
+            father_gids.append("")
+            continue
+        cands_all = by_name.get(f_name, [])
+        if not cands_all:
+            father_gids.append("")
+            continue
+        if len(cands_all) == 1:
+            father_gids.append(str(cands_all[0]["고유ID"]))
+            continue
+
+        # 1차: 세수(본인 세수 - 1) 일치 후보
+        c_gen = r["_gen"]
+        cands = [c for c in cands_all if c["_gen"] == c_gen - 1] or cands_all
+        if len(cands) == 1:
+            father_gids.append(str(cands[0]["고유ID"]))
+            continue
+
+        # 2차: 후보의 부친 == 본인의 조부 일치 후보
+        gf_name = str(r.get("조부", "")).strip()
+        if gf_name and gf_name != "-":
+            cands_gf = [c for c in cands if str(c.get("부친", "")).strip() == gf_name]
+            if len(cands_gf) == 1:
+                father_gids.append(str(cands_gf[0]["고유ID"]))
+                continue
+            elif len(cands_gf) > 1:
+                cands = cands_gf
+
+        # 3차: 같은 권(Volume)에서 페이지가 작거나 같으면서 가장 가까운 선조 선택
+        c_vol, c_page = r["_vol"], r["_page"]
+        same_vol = [c for c in cands if c["_vol"] == c_vol and c["_page"] <= c_page]
+        if same_vol:
+            same_vol.sort(key=lambda x: (-x["_page"], x["_seq"]))
+            father_gids.append(str(same_vol[0]["고유ID"]))
+            continue
+
+        # 4차: 생년/배위 상세 기록이 있는 본 기록 우선
+        non_empty = [c for c in cands if ("생" in str(c.get("한글 약력 정리", "")) or "배 :" in str(c.get("한글 약력 정리", "")))]
+        if len(non_empty) == 1:
+            father_gids.append(str(non_empty[0]["고유ID"]))
+            continue
+
+        father_gids.append(str(cands[0]["고유ID"]))
+
     raw_df["_father_gid"] = father_gids
-
     return raw_df, status_msg
 
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 세수 표기, 입계/출계 판별, 문집 추출, 한글 신상 문단 생성
+# 3. 보조 유틸리티 함수: 남성 우위·앞선 페이지·앞선 단 우선 정렬, 통합 검색어, 한글 약력 생성
 # =============================================================================
+# 1) 과거 관련 통합 검색어 그룹 (1단어만 입력해도 그룹 전체 검색)
+EXAM_GROUP_KEYWORDS = [
+    "과거", "문과", "급제", "사마", "별시", "대과", "무과", "잡과", "장원",
+    "진사", "생원", "향시", "회시", "복시", "현랑과", "현량과", "증광시",
+    "전시", "식년시", "알성시", "정시", "춘당대시", "갑과", "을과", "병과"
+]
+
+# 2) 문집·저술 관련 통합 검색어 그룹 (문집, 유집, 유고, 실기, 서집록, 저서, 논문 중 1단어만 입력해도 전체 통합 검색)
+LITERARY_GROUP_KEYWORDS = [
+    "문집", "유집", "유고", "실기", "서집록", "저서", "논문"
+]
+
+VOL_ORDER_MAP = {"A": 1, "B": 2, "C": 3, "D": 4}
+
+def get_sibling_sort_key(row, all_sibling_rels=None):
+    """
+    ⭐ 동일 부친을 둔 형제·자매(자녀) 정렬 키:
+    1) 남성 우위 원칙: 남성(1자, 2자, 3자..., 계자, 승사손)이 여성(1녀, 2녀, 3녀...)보다 무조건 우선
+       (족보 6단 끝에 후사 없는 아들이나 딸(1녀, 2녀)이 먼저 기재되고 다음 권 1단에 후사 있는 아들(1자, 2자, 3자)이
+        이어서 기재되는 경우에도 반드시 1자 -> 2자 -> 3자 -> 1녀 -> 2녀 -> 3녀 순으로 정렬)
+    2) 동성 내에서는 장유 서열(1자 < 2자 < 3자... / 1녀 < 2녀 < 3녀...) 우선
+       - '계자'/'승사손'은 형제 중 '1자'가 없으면 장자(1) 위치에, '1자'가 있으면 '1자' 바로 다음(1.5)에 배치
+    3) 앞선 권(A<B<C<D) -> 앞선 페이지(page) -> 앞선 단(tier) -> 앞선 순서(seq) 우선
+    """
+    rel = str(row.get("관계", "")).strip()
+    vol, page, tier, seq, _ = parse_gid_tuple(row.get("고유ID", ""))
+    vol_idx = VOL_ORDER_MAP.get(vol, 9)
+
+    if "녀" in rel:
+        gender_rank = 1  # 여성(녀)은 남성(자) 다음으로 배치
+        m = re.match(r"^(\d+)녀$", rel)
+        rel_num = float(m.group(1)) if m else 99.0
+    else:
+        gender_rank = 0  # 남성(자·계자·승사손) 최우선 배치
+        m = re.match(r"^(\d+)자$", rel)
+        if m:
+            rel_num = float(m.group(1))
+        elif rel in ("계자", "승사손"):
+            rel_num = 1.5 if (all_sibling_rels and "1자" in all_sibling_rels) else 1.0
+        else:
+            rel_num = 99.0
+
+    return (gender_rank, rel_num, vol_idx, page, tier, seq)
+
+def sort_siblings_df(sib_df):
+    """
+    형제·자매 DataFrame을 '남성 우위 원칙(1자,2자,3자... -> 1녀,2녀,3녀...)' 및
+    '앞선 페이지 우선·앞선 단 우선 원칙'에 따라 정렬하여 반환
+    """
+    if sib_df is None or len(sib_df) <= 1:
+        return sib_df
+    rels = set(sib_df["관계"].astype(str).str.strip().tolist())
+    recs = sib_df.to_dict("records")
+    recs.sort(key=lambda r: get_sibling_sort_key(r, rels))
+    return pd.DataFrame(recs)
+
+def sort_search_candidates_df(cand_df):
+    """
+    인명·계보·단어 검색 결과 후보 명부도
+    1) 남성 우위 원칙 (남성 선조 우선, 여성 후순위)
+    2) 앞선 권(상권 A·B·C -> 하권 D) 우선
+    3) 앞선 페이지(page) 우선
+    4) 앞선 단(tier) 및 순서(seq) 우선
+    원칙에 따라 정렬
+    """
+    if cand_df is None or len(cand_df) <= 1:
+        return cand_df
+    recs = cand_df.to_dict("records")
+    def cand_key(r):
+        rel = str(r.get("관계", "")).strip()
+        gender_rank = 1 if "녀" in rel else 0
+        vol, page, tier, seq, _ = parse_gid_tuple(r.get("고유ID", ""))
+        vol_idx = VOL_ORDER_MAP.get(vol, 9)
+        return (gender_rank, vol_idx, page, tier, seq)
+    recs.sort(key=cand_key)
+    return pd.DataFrame(recs)
+
 def extract_generation_info(gid):
     m = re.search(r"-(\d+)$", str(gid).strip())
     if m:
@@ -896,10 +1145,19 @@ def clean_ko_name(raw_val):
     cleaned = re.sub(r"[一-龥]+", "", s).strip()
     return cleaned if cleaned else s
 
+def format_ko_hanja_attached(raw_val):
+    """
+    '[한글함자][한문함자]' 붙여서 표기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
+    """
+    s = str(raw_val).strip()
+    ko, hj = split_name(s)
+    if ko and hj:
+        return f"{ko}{hj}"
+    return s
+
 def match_name_query(row, q):
     """
-    ⭐ 인명 검색 및 계보 검색 시 안내문은 그대로 유지하되,
-    실제 검색은 함자, 성명, 자(字), 초자(初字), 호(號), 일휘(一諱), 초휘(初諱), 초명(初名), 통명(通名)을 모두 검색
+    인명 검색 및 계보 검색 시 함자, 성명, 자(字), 초자(初字), 호(號), 일휘(一諱), 초휘(初諱), 초명(初名), 통명(通名) 모두 검색
     """
     q = q.strip()
     if not q:
@@ -978,18 +1236,47 @@ def get_adoption_info(row):
     return "일반", father_ko, ""
 
 def format_candidate_label(row):
-    _, gen_str = extract_generation_info(row.get("고유ID", ""))
-    person_ko = clean_ko_name(row.get("인명", ""))
+    """
+    ⭐ 인명·계보 검색 시 결과 명부(선택 드롭다운) 표기 방식:
+    '[한글함자][한문함자]: 0자, 부 00, (출계이면 양부 00 / 입계이면 생부 00), 조부 00'
+    - 일반: '증嶒: 2자, 부 구, 조부 보문'
+    - 입계: '종경宗慶: 계자, 부 증, 생부 영, 조부 구'
+    - 출계: '여행汝行: 3자(출계), 부 후정, 양부 인정, 조부 세영'
+    """
+    person_combined = format_ko_hanja_attached(row.get("인명", ""))
     gfather_ko = clean_ko_name(row.get("조부", ""))
     rel = str(row.get("관계", "")).strip()
-    adopt_type, father_ko, _ = get_adoption_info(row)
+    adopt_type, father_ko, other_father_ko = get_adoption_info(row)
 
     if adopt_type == "입계":
-        return f"[{gen_str}] {person_ko}  {rel} (계부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        rel_str = rel if rel == "계자" else f"{rel}(계자)"
+        parts = [f"{person_combined}: {rel_str}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if other_father_ko:
+            parts.append(f"생부 {other_father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
+
     elif adopt_type == "출계":
-        return f"[{gen_str}] {person_ko}  {rel} (출계) (생부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        rel_str = f"{rel}(출계)" if "출계" not in rel else rel
+        parts = [f"{person_combined}: {rel_str}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if other_father_ko:
+            parts.append(f"양부 {other_father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
+
     else:
-        return f"[{gen_str}] {person_ko}  {rel} (부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        parts = [f"{person_combined}: {rel}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
 
 def highlight_corrections_html(text, search_term=None):
     if not text:
@@ -1012,19 +1299,32 @@ def highlight_corrections_html(text, search_term=None):
     for kw in keywords:
         if kw in formatted:
             formatted = formatted.replace(kw, f'<span class="red-correction">{kw}</span>')
-    if search_term and search_term.strip():
-        sterm = search_term.strip()
-        formatted = re.sub(
-            f"({re.escape(sterm)})",
-            r'<span class="search-word-red">\1</span>',
-            formatted,
-            flags=re.IGNORECASE
-        )
+
+    if search_term:
+        if isinstance(search_term, (list, tuple, set)):
+            terms = [str(t).strip() for t in search_term if str(t).strip()]
+            terms.sort(key=len, reverse=True)
+            if terms:
+                pat = "|".join(re.escape(t) for t in terms)
+                formatted = re.sub(
+                    f"({pat})",
+                    r'<span class="search-word-red">\1</span>',
+                    formatted,
+                    flags=re.IGNORECASE
+                )
+        elif str(search_term).strip():
+            sterm = str(search_term).strip()
+            formatted = re.sub(
+                f"({re.escape(sterm)})",
+                r'<span class="search-word-red">\1</span>',
+                formatted,
+                flags=re.IGNORECASE
+            )
     return formatted
 
 def extract_munjip_info(ko_bio):
     """
-    약력 텍스트에서 문집·유고·실기·유집·유사·서집록·저서 정보를 추출하여 '문집' 항목으로 반환
+    약력 텍스트에서 문집·유고·실기·유집·유사·서집록·저서·논문 정보를 추출하여 '문집' 항목으로 반환
     """
     for line in str(ko_bio).split("\n"):
         if line.startswith("문집 :"):
@@ -1058,12 +1358,30 @@ def extract_munjip_info(ko_bio):
                 return m.group(1).strip()
     return ""
 
+def format_hakmun_sentences_with_linebreaks(text):
+    """
+    학력·인품·업적 항목에서 문장이 끝난 경우 마침표(.)를 찍고 줄바꿈(<br>) 처리
+    """
+    if not text:
+        return ""
+    s = str(text).strip()
+    s = re.sub(
+        r'(하였다|있었다|되었다|받았다|보임되었다|역임하였다|전하였다|없었다|추중하였다|존중하였다|칭송하였다|마쳤다|올랐다|돌아왔다|소실되었다|세웠다|받들었다|수훈하였다|길렀다|높았다|있도다|빛나리라|격절되었도다|만하도다|아름다움을 이었다|실려 있다|기록이다|것이다|있다)\s+(?!(?:고|며|니|하고|하니|하며|하였으니|하였다|하더라도))',
+        r'\1. ',
+        s
+    )
+    parts = [p.strip() for p in re.split(r'\.\s+', s) if p.strip()]
+    formatted_parts = [p if p.endswith('.') else p + '.' for p in parts]
+    return "<br>".join(formatted_parts)
+
 def parse_person_hangul_details(row):
     """
-    신상 및 계보 정보 항목 구성:
-    1) 부, 조부 통합 -> '부친·조부' 항목 (부친 00, 조부 00)
-    2) 자, 호 통합 -> '자·호' 항목 (자 00, 호 00 형식)
-    3) '학력·인품·업적' 바로 위에 '문집' 항목 배치
+    한글 약력 항목 구성 (종전과 동일하게 상세 표시):
+    1) 세수
+    2) 부친·조부 통합 (부친 00, 조부 00)
+    3) 자·호 통합 (자 00, 호 00 형식)
+    4) '학력·인품·업적' 바로 위에 '문집' 항목 배치
+    5) '학력·인품·업적'은 문장이 끝날 때마다 마침표를 찍고 줄바꿈 처리
     """
     gid = row.get("고유ID", "")
     _, gen_str = extract_generation_info(gid)
@@ -1140,7 +1458,7 @@ def parse_person_hangul_details(row):
         details.append(("문집", munjip_val))
 
     if hakmun_val:
-        details.append(("학력·인품·업적", hakmun_val))
+        details.append(("학력·인품·업적", format_hakmun_sentences_with_linebreaks(hakmun_val)))
 
     for myo in myo_list:
         details.append(("묘", myo))
@@ -1166,9 +1484,14 @@ def format_hangul_only_paragraph_html(row, search_term=None):
     return "".join(lines_html)
 
 def render_person_result_card(target_row, search_term=None):
-    h_name = clean_ko_name(target_row['인명'])
+    """
+    ⭐ 인물별 약력 제목란 표기:
+    좌측: [한글함자][한문함자] 0자  |  우측: 상(하)권 000P 0단
+    """
+    combined_name = format_ko_hanja_attached(target_row['인명'])
     adopt_type, _, _ = get_adoption_info(target_row)
-    rel_badge_text = f"{target_row['관계']} (출계)" if adopt_type == "출계" else str(target_row['관계'])
+    rel_badge_text = f"{target_row['관계']}(출계)" if adopt_type == "출계" else str(target_row['관계'])
+    book_loc_text = format_book_location(target_row.get('고유ID', ''))
 
     meta_paragraphs_html = format_hangul_only_paragraph_html(target_row, search_term=search_term)
     cn_raw = highlight_corrections_html(target_row.get('한문 약력 원문', ''), search_term=search_term)
@@ -1178,14 +1501,14 @@ def render_person_result_card(target_row, search_term=None):
     <div class="result-card">
         <div class="result-card-header">
             <div class="result-name-big">
-                <span>{h_name if h_name else target_row['인명']}</span>
+                <span>{combined_name}</span>
                 <span class="result-badge">{rel_badge_text}</span>
             </div>
-            <div style="font-size:10pt; color:#6b7280; font-family:monospace;">고유ID: {target_row['고유ID']}</div>
+            <div class="result-book-loc">{book_loc_text}</div>
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-bottom:4px; font-size:11pt;">
-            📌 신상 및 계보 정보
+            📌 한글 약력
         </div>
         <div class="meta-para-container">
             {meta_paragraphs_html}
@@ -1202,24 +1525,28 @@ def render_person_result_card(target_row, search_term=None):
 
 def get_siblings_by_father_gid(person_row, all_df):
     """
-    ⭐ 동명이인 부친과 혼동되지 않도록 부친의 고유ID(_father_gid)가 동일한 형제들만 정확히 추출
+    ⭐ 동명이인 부친과 혼동되지 않도록 부친의 고유ID(_father_gid)가 동일한 형제들만 추출한 뒤,
+    반드시 '남성 우위 원칙(1자, 2자, 3자... -> 1녀, 2녀, 3녀...)' 및 '앞선 페이지·앞선 단 우선 원칙'으로 정렬하여 반환
     """
     f_gid = str(person_row.get("_father_gid", "")).strip()
     if f_gid:
-        return all_df[all_df["_father_gid"] == f_gid]
+        sib_df = all_df[all_df["_father_gid"] == f_gid]
+        return sort_siblings_df(sib_df)
     f_name = str(person_row.get("부친", "")).strip()
     if f_name == "覯구":
-        return all_df[all_df["부친"] == "覯구"]
+        sib_df = all_df[all_df["부친"] == "覯구"]
+        return sort_siblings_df(sib_df)
     return pd.DataFrame([person_row])
 
 def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="tree"):
     """
-    ⭐ 고유ID(_father_gid) 검증을 통해 동명이인 선조 오류 없이 정확한 직계 선대·하대 계보도 생성
+    ⭐ 고유ID(_father_gid) 검증 및 '남성 우위 원칙 · 앞선 페이지 우선 · 앞선 단 우선 원칙'을
+    전 세대(선대·본인·하대 후손 전체)에 일관되게 적용하여 계보도 생성
     """
     target_gid = target_row['고유ID']
     target_name = target_row['인명']
     
-    # 1. 선대 조상 탐색 (1 ~ max_up대): 고유ID(_father_gid) 기반으로 정확히 추적
+    # 1. 선대 조상 탐색 (1 ~ max_up대): 고유ID(_father_gid) 기반으로 추적 및 형제 정렬
     ancestors = []
     curr = target_row
     for up in range(1, max_up + 1):
@@ -1234,7 +1561,16 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
-    diagram_parts = [f'<div id="search-result-anchor"></div><div class="tree-diagram-wrapper"><div style="font-weight:800; color:#1e3c72; font-size:11.5pt; margin-bottom:4px;">🌳 [{clean_ko_name(target_name)}] 기준 혈통 계보도 <span style="font-size:9pt; font-weight:400; color:#64748b;">(네모 박스 클릭 시 해당 인물로 즉시 새 계보 생성)</span></div>']
+    # 계보 검색 결과창 제목: '계보도' [한글한자 병기 인물명] 표시 후 줄바꿈하여 '(네모 박스 인물 클릭 시 새 계보 생성)' 표시
+    person_label = format_ko_hanja_attached(target_name)
+    diagram_parts = [
+        f'<div id="search-result-anchor"></div>'
+        f'<div class="tree-diagram-wrapper">'
+        f'<div style="font-weight:800; color:#1e3c72; font-size:12pt; line-height:1.35; margin-bottom:6px;">'
+        f'🌳 계보도 [{person_label}]<br>'
+        f'<span style="font-size:9.5pt; font-weight:500; color:#475569;">(네모 박스 인물 클릭 시 새 계보 생성)</span>'
+        f'</div>'
+    ]
     
     for idx_a, anc in enumerate(reversed(ancestors)):
         lvl = anc['level']
@@ -1246,7 +1582,8 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
             diagram_parts.append('<div class="tree-connector-line">│<br>▼</div>')
             
         if lvl >= 3:
-            rel_str = f" ({len(sibs)}자 중 {r['관계']})" if len(sibs) > 1 else f" ({r['관계']})"
+            male_sib_cnt = sum(1 for _, s_row in sibs.iterrows() if "녀" not in str(s_row.get("관계", "")))
+            rel_str = f" ({male_sib_cnt}자 중 {r['관계']})" if male_sib_cnt > 1 and "녀" not in str(r['관계']) else f" ({r['관계']})"
             lbl_badge = "증조부" if lvl == 3 else ("고조부" if lvl == 4 else f"{lvl}대조")
             r_gid = r['고유ID']
             diagram_parts.append(f"""
@@ -1280,7 +1617,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     if len(ancestors) > 0:
         diagram_parts.append('<div class="tree-connector-line">│<br>▼</div>')
 
-    # 2. 본인 및 형제 행: 부친의 고유ID(_father_gid)가 일치하는 친형제만 표시
+    # 2. 본인 및 형제 행: 부친의 고유ID(_father_gid)가 일치하는 친형제들을 남성 우위 및 장유 서열로 정렬하여 표시
     t_sibs = get_siblings_by_father_gid(target_row, all_df)
     tg_num, _ = extract_generation_info(target_row['고유ID'])
     
@@ -1303,7 +1640,9 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     </div>
     """)
 
-    # 3. 하대 후손 탐색 (1 ~ max_down대): 부모의 고유ID(_father_gid == p_gid)가 일치하는 자녀만 추출
+    # 3. 하대 후손 탐색 (1 ~ max_down대):
+    #    - 각 부친의 자녀들을 sort_siblings_df()로 정렬하여 1자 -> 2자 -> 3자... -> 1녀 -> 2녀 -> 3녀... 순서 보장
+    #    - 같은 세대 내에서도 남성(자·계자·승사손) 후손들을 먼저 배치하고 여성(녀) 후손들을 뒤에 배치하여 남성 우위 원칙을 완벽히 준수
     down_labels = {
         1: "자(子)",
         2: "손(孫)",
@@ -1314,25 +1653,39 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     }
     current_parents = [target_row]
     for down_lvl in range(1, max_down + 1):
-        next_gen_rows = []
-        node_htmls = []
+        male_items = []
+        female_items = []
         for p_row in current_parents:
             p_gid = p_row['고유ID']
             p_name = p_row['인명']
-            children = all_df[all_df['_father_gid'] == p_gid]
-            for _, ch in children.iterrows():
-                next_gen_rows.append(ch)
+            raw_children = all_df[all_df['_father_gid'] == p_gid]
+            sorted_children = sort_siblings_df(raw_children)
+            for _, ch in sorted_children.iterrows():
                 ch_name = ch['인명']
-                ch_rel = ch['관계']
+                ch_rel = str(ch['관계']).strip()
                 ch_gid = ch['고유ID']
-                if len(node_htmls) > 0:
-                    node_htmls.append('<span class="tree-h-line">──</span>')
                 if down_lvl == 1:
-                    node_htmls.append(f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box"><b>{ch_name}</b>({ch_rel})</a>')
+                    node_html = f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box"><b>{ch_name}</b>({ch_rel})</a>'
                 else:
-                    node_htmls.append(f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box"><b>{ch_name}</b>({p_name}의 {ch_rel})</a>')
-        if not next_gen_rows:
+                    node_html = f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box"><b>{ch_name}</b>({p_name}의 {ch_rel})</a>'
+
+                if "녀" in ch_rel:
+                    female_items.append((ch, node_html))
+                else:
+                    male_items.append((ch, node_html))
+
+        ordered_items = male_items + female_items
+        if not ordered_items:
             break
+
+        node_htmls = []
+        next_gen_rows = []
+        for idx_item, (ch_row, html_str) in enumerate(ordered_items):
+            next_gen_rows.append(ch_row)
+            if idx_item > 0:
+                node_htmls.append('<span class="tree-h-line">──</span>')
+            node_htmls.append(html_str)
+
         diagram_parts.append('<div class="tree-connector-line">│<br>▼</div>')
         dg_num = (tg_num + down_lvl) if tg_num else (24 + down_lvl)
         d_badge = down_labels.get(down_lvl, f"{down_lvl}대손")
@@ -1351,9 +1704,9 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더(좌측 초대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
+# 4. 최상단 헤더(황색 배경 + 좌측 초대형 아이콘 밀착 + 우측 타이틀) 및 검색 인터페이스
 # =============================================================================
-icon_img_tag = f'<img src="{icon_b64}" style="width:118px; height:118px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:68px;">📜</span>'
+icon_img_tag = f'<img src="{icon_b64}" style="width:118px; height:118px; object-fit:contain; display:block; margin-left:0px;">' if icon_b64 else '<span style="font-size:68px;">📜</span>'
 
 bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
 if bg_style_tag:
@@ -1383,7 +1736,7 @@ render_html("""
 
 if df is None:
     st.error(f"데이터 로드 오류: {load_msg}")
-    st.info(f"데이터베이스 파일(`genealogy.db` 또는 `genealogy.xlsx`)이 저장소에 존재하는지 확인해 주시기 바랍니다.")
+    st.info("파일 이름이 `genealogy.xlsx` 또는 `genealogy.db`인지 확인해 주시기 바랍니다.")
     st.stop()
 
 # URL 파라미터로 계보 클릭 시 처리
@@ -1405,7 +1758,7 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# ⭐ 검색어 안내문은 기존 그대로 유지하되, 내부 검색은 자·초자·일휘·초휘까지 모두 포함
+# 검색어 안내문은 기존 그대로 유지하되, 내부 검색은 자·초자·일휘·초휘까지 모두 포함
 if search_type == "인명 검색":
     query_val = st.text_input(
         "검색어 입력",
@@ -1429,11 +1782,12 @@ else:
     )
 
 # =============================================================================
-# 5. 검색 결과 창 (검색 실패 안내문 흰색 글자 적용)
+# 5. 검색 결과 창
 # =============================================================================
 if search_type == "인명 검색" and query_val.strip():
     q = query_val.strip()
-    matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
+    matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)].reset_index(drop=True)
+    matched_df = sort_search_candidates_df(matched_df)
     
     if len(matched_df) == 0:
         render_html(f"""
@@ -1441,6 +1795,7 @@ if search_type == "인명 검색" and query_val.strip():
             입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다.
         </div>
         """)
+        scroll_to_search_top()
     else:
         if len(matched_df) > 1:
             render_html(f"""
@@ -1448,10 +1803,13 @@ if search_type == "인명 검색" and query_val.strip():
                 📢 동명이인 또는 복수 후보가 총 {len(matched_df)}위 검색되었습니다. 아래에서 조회할 인물을 선택하세요.
             </div>
             """)
-            candidate_labels = [format_candidate_label(row) for _, row in matched_df.iterrows()]
-            selected_label = st.selectbox("선조 선택", candidate_labels, label_visibility="collapsed")
-            selected_gid = selected_label.split("고유ID: ")[-1].strip()
-            target_row = matched_df[matched_df['고유ID'] == selected_gid].iloc[0]
+            selected_idx = st.selectbox(
+                "선조 선택",
+                range(len(matched_df)),
+                format_func=lambda i: format_candidate_label(matched_df.iloc[i]),
+                label_visibility="collapsed"
+            )
+            target_row = matched_df.iloc[selected_idx]
         else:
             target_row = matched_df.iloc[0]
             
@@ -1460,89 +1818,131 @@ if search_type == "인명 검색" and query_val.strip():
 
 elif search_type == "계보 검색":
     q = query_val.strip()
-    if q != st.session_state.get('last_lineage_query', ''):
+
+    # 검색어가 비어 있으면(검색 전에는) 이전 계보 선택 상태를 초기화하여 아무것도 표시하지 않음
+    if not q:
+        st.session_state['last_lineage_query'] = ''
+        st.session_state['active_tree_gid'] = None
+        if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+            del st.query_params["tree_gid"]
+    elif q != st.session_state.get('last_lineage_query', ''):
         st.session_state['last_lineage_query'] = q
         st.session_state['active_tree_gid'] = None
+        if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+            del st.query_params["tree_gid"]
 
-    tree_target = None
-    if st.session_state.get('active_tree_gid'):
-        g_match = df[df['고유ID'] == st.session_state['active_tree_gid']]
-        if not g_match.empty:
-            tree_target = g_match.iloc[0]
-
-    if tree_target is None and q:
-        l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
+    if q:
+        l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)].reset_index(drop=True)
+        l_matches = sort_search_candidates_df(l_matches)
         if len(l_matches) == 0:
             render_html(f"""
             <div class="no-result-notice">
                 계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다.
             </div>
             """)
-        elif len(l_matches) > 1:
-            render_html(f"""
-            <div class="multi-ancestor-banner">
-                📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
-            </div>
-            """)
-            cand_opts = [format_candidate_label(r) for _, r in l_matches.iterrows()]
-            sel_cand = st.selectbox("계보 기준 인물 선택", cand_opts, label_visibility="collapsed")
-            target_gid = sel_cand.split("고유ID: ")[-1].strip()
-            tree_target = l_matches[l_matches['고유ID'] == target_gid].iloc[0]
+            scroll_to_search_top()
         else:
-            tree_target = l_matches.iloc[0]
-
-    if tree_target is not None:
-        c_cond1, c_cond2 = st.columns(2)
-        with c_cond1:
-            render_html("""
-            <div class="slider-custom-header">
-                <div class="slider-title-text">직계 상대 선조수 설정</div>
-                <div class="slider-ticks-row">
-                    <span class="slider-tick-item">1대</span>
-                    <span class="slider-tick-item">2대</span>
-                    <span class="slider-tick-item">3대</span>
-                    <span class="slider-tick-item">4대</span>
-                    <span class="slider-tick-item">5대</span>
-                    <span class="slider-tick-item">6대</span>
+            # 1) 검색 후 복수 후보(명부)가 있는 경우 상단에 항상 명부를 먼저 표시
+            if len(l_matches) > 1:
+                render_html(f"""
+                <div class="multi-ancestor-banner">
+                    📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
                 </div>
-            </div>
-            """)
-            up_gens = st.slider("직계 상대 선조수 설정", min_value=1, max_value=6, value=3, label_visibility="collapsed")
-        with c_cond2:
-            render_html("""
-            <div class="slider-custom-header">
-                <div class="slider-title-text">직계 하대 선조수 설정</div>
-                <div class="slider-ticks-row">
-                    <span class="slider-tick-item">1대</span>
-                    <span class="slider-tick-item">2대</span>
-                    <span class="slider-tick-item">3대</span>
-                    <span class="slider-tick-item">4대</span>
-                    <span class="slider-tick-item">5대</span>
-                    <span class="slider-tick-item">6대</span>
-                </div>
-            </div>
-            """)
-            down_gens = st.slider("직계 하대 선조수 설정", min_value=1, max_value=6, value=2, label_visibility="collapsed")
+                """)
+                sel_idx = st.selectbox(
+                    "계보 기준 인물 선택",
+                    range(len(l_matches)),
+                    format_func=lambda i: format_candidate_label(l_matches.iloc[i]),
+                    label_visibility="collapsed"
+                )
+                initial_target = l_matches.iloc[sel_idx]
+            else:
+                initial_target = l_matches.iloc[0]
 
-        if st.session_state.get('active_tree_gid'):
-            if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+            # 사용자가 드롭다운 명부에서 다른 인물로 변경하면 즉시 해당 인물의 계보로 전환
+            if st.session_state.get('last_selected_initial_gid') != initial_target['고유ID']:
+                st.session_state['last_selected_initial_gid'] = initial_target['고유ID']
                 st.session_state['active_tree_gid'] = None
                 if hasattr(st, "query_params") and "tree_gid" in st.query_params:
                     del st.query_params["tree_gid"]
-                st.rerun()
 
-        render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens, key_prefix="main_tree")
-        scroll_to_search_top()
+            # 계보도 도형 박스를 클릭해 다른 인물로 이동한 경우 해당 인물을, 아니면 초기 선택 인물을 표시
+            tree_target = initial_target
+            active_gid = st.session_state.get('active_tree_gid')
+            if active_gid and active_gid != initial_target['고유ID']:
+                g_match = df[df['고유ID'] == active_gid]
+                if not g_match.empty:
+                    tree_target = g_match.iloc[0]
+
+            c_cond1, c_cond2 = st.columns(2)
+            with c_cond1:
+                render_html("""
+                <div class="slider-custom-header">
+                    <div class="slider-title-text">직계 상대 선조수 선택</div>
+                    <div class="slider-ticks-row">
+                        <span class="slider-tick-item">1대</span>
+                        <span class="slider-tick-item">2대</span>
+                        <span class="slider-tick-item">3대</span>
+                        <span class="slider-tick-item">4대</span>
+                        <span class="slider-tick-item">5대</span>
+                        <span class="slider-tick-item">6대</span>
+                    </div>
+                </div>
+                """)
+                up_gens = st.slider("직계 상대 선조수 선택", min_value=1, max_value=6, value=3, format="", label_visibility="collapsed")
+            with c_cond2:
+                render_html("""
+                <div class="slider-custom-header">
+                    <div class="slider-title-text">직계 하대 선조수 선택</div>
+                    <div class="slider-ticks-row">
+                        <span class="slider-tick-item">1대</span>
+                        <span class="slider-tick-item">2대</span>
+                        <span class="slider-tick-item">3대</span>
+                        <span class="slider-tick-item">4대</span>
+                        <span class="slider-tick-item">5대</span>
+                        <span class="slider-tick-item">6대</span>
+                    </div>
+                </div>
+                """)
+                down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, format="", label_visibility="collapsed")
+
+            # 검색 전에는 표시하지 않고, 검색 후 계보도에서 다른 인물을 클릭해 이동했을 때만 복귀 박스 표시
+            if active_gid and active_gid != initial_target['고유ID']:
+                if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+                    st.session_state['active_tree_gid'] = None
+                    if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+                        del st.query_params["tree_gid"]
+                    st.rerun()
+
+            render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens, key_prefix="main_tree")
+            scroll_to_search_top()
 
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
+
+    # 1) 과거 통합 검색어 그룹
+    if term in EXAM_GROUP_KEYWORDS:
+        search_terms_list = EXAM_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in EXAM_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (과거·문과·급제·사마·진사·생원 등 통합 검색)"
+    # 2) 문집·저술 통합 검색어 그룹 (문집, 유집, 유고, 실기, 서집록, 저서, 논문)
+    elif term in LITERARY_GROUP_KEYWORDS:
+        search_terms_list = LITERARY_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in LITERARY_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (문집·유집·유고·실기·서집록·저서·논문 통합 검색)"
+    else:
+        search_terms_list = [term]
+        regex_pattern = re.escape(term)
+        banner_term_label = f"'{term}'"
+
     mask = (
-        df['한글 약력 정리'].astype(str).str.contains(term, case=False, na=False) |
-        df['한문 약력 정리'].astype(str).str.contains(term, case=False, na=False) |
-        df['한글 약력 원문'].astype(str).str.contains(term, case=False, na=False) |
-        df['한문 약력 원문'].astype(str).str.contains(term, case=False, na=False)
+        df['한글 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한글 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True)
     )
-    word_matches = df[mask]
+    word_matches = df[mask].reset_index(drop=True)
+    word_matches = sort_search_candidates_df(word_matches)
     
     if len(word_matches) == 0:
         render_html(f"""
@@ -1550,26 +1950,30 @@ elif search_type == "단어 검색" and query_val.strip():
             입력하신 단어 '{term}'을(를) 포함하고 있는 약력 기록이 없습니다.
         </div>
         """)
+        scroll_to_search_top()
     else:
         render_html(f"""
         <div class="multi-ancestor-banner">
-            📢 검색어 <span class="search-word-red">'{term}'</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위(다수) 검색되었습니다. 아래 목록에서 선조를 선택하세요.
+            📢 검색어 <span class="search-word-red">{banner_term_label}</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위 검색되었습니다. 아래 목록에서 선조를 선택하세요.
         </div>
         """)
-        candidate_list = [format_candidate_label(r) for _, r in word_matches.iterrows()]
-        chosen = st.selectbox("조회할 선조를 선택하세요", candidate_list, label_visibility="collapsed")
-        chosen_gid = chosen.split("고유ID: ")[-1].strip()
-        chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
+        chosen_idx = st.selectbox(
+            "조회할 선조를 선택하세요",
+            range(len(word_matches)),
+            format_func=lambda i: format_candidate_label(word_matches.iloc[i]),
+            label_visibility="collapsed"
+        )
+        chosen_row = word_matches.iloc[chosen_idx]
         
-        render_person_result_card(chosen_row, search_term=term)
+        render_person_result_card(chosen_row, search_term=search_terms_list)
         scroll_to_search_top()
 
 # =============================================================================
-# 6. 종중 주요 유적 및 문화재 안내 (항상 검색 결과 창 아래에 위치)
+# 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
 # =============================================================================
 render_html("""
 <div class="heritage-sub-container">
-    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내 (클릭 시 국가유산 포털로 이동)</div>
+    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내</div>
     <div class="heritage-sub-grid">
         <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" class="heritage-sub-card">
             <div class="h-card-name">1. 영천 완귀정(경상북도 민속문화재 제20호) <span>↗</span></div>
@@ -1592,10 +1996,11 @@ render_html("""
 """)
 
 # =============================================================================
-# 7. 하단 푸터 (Footer)
+# 7. 하단 푸터 (Footer): '구축(고위 기준 2,887명)' 표기 + 줄바꿈 연락처 + 비볼드체
 # =============================================================================
 render_html("""
-<div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.5pt; font-weight:600; border-top:1px solid #475569; margin-top:8px; line-height:1.45; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
-    데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스(완귀공파  고위 기준 총 2,887인)화 &lt;연락처 안동수 010 5097 6403&gt;
+<div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.3pt; font-weight:400; border-top:1px solid #475569; margin-top:8px; line-height:1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
+    📚 데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스 구축(고위 기준 2,887명)<br>
+    &lt;연락처 안동수 010 5097 6403&gt;
 </div>
 """)
