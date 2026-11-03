@@ -192,7 +192,7 @@ def get_query_param(key):
     return None
 
 # =============================================================================
-# 1. 디자인 스타일 CSS (타이틀 박스 황색 배경, 녹색 복귀 버튼, 빨간 숫자 제거 등)
+# 1. 디자인 스타일 CSS (바깥쪽 좌우 여백 50% 축소, 황색 타이틀, 녹색 복귀 버튼 등)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -207,6 +207,7 @@ header[data-testid="stHeader"] {
     display: none !important;
 }
 
+/* ⭐ 화면에 있는 모든 창의 바깥쪽 좌우 여백을 기존 대비 50% 축소 (0.65rem -> 0.32rem) */
 .main .block-container, 
 [data-testid="stAppViewBlockContainer"], 
 .block-container {
@@ -216,8 +217,8 @@ header[data-testid="stHeader"] {
     margin-right: auto !important;
     padding-top: 1.0rem !important;
     padding-bottom: 1.2rem !important;
-    padding-left: 0.65rem !important;
-    padding-right: 0.65rem !important;
+    padding-left: 0.32rem !important;
+    padding-right: 0.32rem !important;
     box-sizing: border-box !important;
 }
 
@@ -313,7 +314,7 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* ⭐ 위 타이틀 창과 간격을 넓힌 안내 문구 라인 */
+/* 위 타이틀 창과 간격을 넓힌 안내 문구 라인 */
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
@@ -476,10 +477,7 @@ div[data-testid="stButton"] > button span {
     font-size: 11pt !important;
 }
 
-/* ⭐ 직계 상대/하대 선조수 선택 슬라이더:
-   1) 문구: '직계 상대 선조수 선택' / '직계 하대 선조수 선택'
-   2) 하얀색 대수 글자(1대~6대): 크기 축소(9.2pt), 비볼드체(font-weight: 400)
-   3) 빨간 막대 오른쪽 끝 위에 뜨는 빨간색 숫자 표시 완전 삭제 */
+/* 직계 상대/하대 선조수 선택 슬라이더 */
 .slider-custom-header {
     display: flex;
     flex-direction: column;
@@ -536,13 +534,11 @@ div[data-testid="stSlider"] div[data-baseweb="slider"] {
     font-size: 0px !important;
     color: transparent !important;
 }
-/* 슬라이더 내부의 모든 텍스트(빨간 막대 오른쪽 끝 위의 빨간 숫자 포함) 투명화 및 크기 0 처리 */
 div[data-testid="stSlider"] * {
     font-size: 0px !important;
     color: transparent !important;
     -webkit-text-fill-color: transparent !important;
 }
-/* 슬라이더 하얀 선(트랙): 검은색 테두리 + 5등분 경계 눈금선 표시 */
 div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
     height: 10px !important;
     background: repeating-linear-gradient(
@@ -556,7 +552,6 @@ div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
     border-radius: 5px !important;
     box-sizing: border-box !important;
 }
-/* 슬라이더 조절 손잡이(Thumb) */
 div[data-testid="stSlider"] [role="slider"] {
     width: 20px !important;
     height: 20px !important;
@@ -564,7 +559,6 @@ div[data-testid="stSlider"] [role="slider"] {
     border: 2.5px solid #000000 !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.6) !important;
 }
-/* 슬라이더의 숫자 표시용 자식 요소들 완전 숨김 */
 div[data-testid="stSlider"] [data-testid="stThumbValue"],
 div[data-testid="stSlider"] [data-testid="stTickBar"],
 div[data-testid="stSlider"] [data-testid="stTickBarMin"],
@@ -661,8 +655,17 @@ div[role="option"] * {
     border-radius: 10px;
     border: 1px solid #bfdbfe;
 }
+.result-book-loc {
+    font-size: 10.2pt;
+    font-weight: 700;
+    color: #334155;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
 
-/* 인물 한글 약력 컨테이너 */
+/* 한글 약력 컨테이너 */
 .meta-para-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -804,7 +807,7 @@ div[role="option"] * {
     margin: 0 1px;
 }
 
-/* ⭐ 종중 주요 유적 및 문화재 안내: 바탕색 녹색(#15803d), 헤더 흰색 글씨 */
+/* 종중 주요 유적 및 문화재 안내: 바탕색 녹색(#15803d), 헤더 흰색 글씨 */
 .heritage-sub-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -857,7 +860,7 @@ div[role="option"] * {
     line-height: 1.35;
 }
 
-/* 업로드하신 수정app.py의 모바일 좌우 여백 동일화 CSS 그대로 적용 */
+/* ⭐ 모바일에서도 모든 창의 바깥쪽 좌우 여백을 50% 축소 (12px -> 6px) 및 좌우 대칭 유지 */
 @media (max-width: 768px) {
     html,
     body,
@@ -892,8 +895,8 @@ div[role="option"] * {
         max-width: 100% !important;
         margin-left: auto !important;
         margin-right: auto !important;
-        padding-left: 12px !important;
-        padding-right: 12px !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
         box-sizing: border-box !important;
     }
 
@@ -919,6 +922,19 @@ def parse_gid_tuple(gid):
     if m:
         return m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5))
     return "", 0, 0, 0, 0
+
+def format_book_location(gid):
+    """
+    ⭐ 고유ID를 '상(하)권-족보페이지-단수' 형태로 변환
+    - A, B, C로 시작하면 '상권', D로 시작하면 '하권'
+    - 첫 번째 숫자는 족보 페이지, 두 번째 숫자는 단수
+    - 예: 'A-24-1-1-24' -> '상권-24-1', 'D-208-1-1-39' -> '하권-208-1'
+    """
+    vol, page, tier, _, _ = parse_gid_tuple(gid)
+    if not vol:
+        return str(gid).strip()
+    vol_label = "상권" if vol in ("A", "B", "C") else ("하권" if vol == "D" else f"{vol}권")
+    return f"{vol_label}-{page}-{tier}"
 
 @st.cache_data
 def load_and_preprocess_genealogy():
@@ -1022,7 +1038,7 @@ df, load_msg = load_and_preprocess_genealogy()
 # =============================================================================
 # 3. 보조 유틸리티 함수: 한글한자 병기, 과거 통합 검색어, 한글 약력 문단 생성
 # =============================================================================
-# ⭐ 과거 관련 통합 검색어 그룹 (이 중 1단어만 입력해도 그룹 전체 단어를 검색)
+# 과거 관련 통합 검색어 그룹 (이 중 1단어만 입력해도 그룹 전체 단어를 검색)
 EXAM_GROUP_KEYWORDS = [
     "과거", "문과", "급제", "사마", "별시", "대과", "무과", "잡과", "장원",
     "진사", "생원", "향시", "회시", "복시", "현랑과", "현량과", "증광시",
@@ -1059,7 +1075,7 @@ def clean_ko_name(raw_val):
 
 def format_ko_hanja_attached(raw_val):
     """
-    ⭐ 검색 결과창 제목의 함자를 '한글한자' 붙여서 병기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
+    검색 결과창 제목의 함자를 '한글한자' 붙여서 병기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
     """
     s = str(raw_val).strip()
     ko, hj = split_name(s)
@@ -1148,18 +1164,22 @@ def get_adoption_info(row):
     return "일반", father_ko, ""
 
 def format_candidate_label(row):
-    _, gen_str = extract_generation_info(row.get("고유ID", ""))
+    """
+    ⭐ 동명이인 명세표(선택 드롭다운) 표시 방법:
+    '한글 함자, 0자, 부:00, 조부:00' 형태로 간결하게 표시
+    (명부의 인물을 클릭했을 때 나타나는 한글 약력은 종전과 동일하게 상세 표시)
+    """
     person_ko = clean_ko_name(row.get("인명", ""))
     gfather_ko = clean_ko_name(row.get("조부", ""))
     rel = str(row.get("관계", "")).strip()
     adopt_type, father_ko, _ = get_adoption_info(row)
 
     if adopt_type == "입계":
-        return f"[{gen_str}] {person_ko}  {rel} (계부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        return f"{person_ko}, {rel}, 계부:{father_ko}, 조부:{gfather_ko}"
     elif adopt_type == "출계":
-        return f"[{gen_str}] {person_ko}  {rel} (출계) (생부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        return f"{person_ko}, {rel}(출계), 생부:{father_ko}, 조부:{gfather_ko}"
     else:
-        return f"[{gen_str}] {person_ko}  {rel} (부:{father_ko}, 조부:{gfather_ko}) - 고유ID: {row['고유ID']}"
+        return f"{person_ko}, {rel}, 부:{father_ko}, 조부:{gfather_ko}"
 
 def highlight_corrections_html(text, search_term=None):
     if not text:
@@ -1259,11 +1279,12 @@ def format_hakmun_sentences_with_linebreaks(text):
 
 def parse_person_hangul_details(row):
     """
-    인물 한글 약력 항목 구성:
-    1) 부, 조부 통합 -> '부친·조부' 항목 (부친 00, 조부 00)
-    2) 자, 호 통합 -> '자·호' 항목 (자 00, 호 00 형식)
-    3) '학력·인품·업적' 바로 위에 '문집' 항목 배치
-    4) '학력·인품·업적'은 문장이 끝날 때마다 마침표를 찍고 줄바꿈 처리
+    한글 약력 항목 구성 (종전과 동일하게 상세 표시):
+    1) 세수
+    2) 부친·조부 통합 (부친 00, 조부 00)
+    3) 자·호 통합 (자 00, 호 00 형식)
+    4) '학력·인품·업적' 바로 위에 '문집' 항목 배치
+    5) '학력·인품·업적'은 문장이 끝날 때마다 마침표를 찍고 줄바꿈 처리
     """
     gid = row.get("고유ID", "")
     _, gen_str = extract_generation_info(gid)
@@ -1367,12 +1388,14 @@ def format_hangul_only_paragraph_html(row, search_term=None):
 
 def render_person_result_card(target_row, search_term=None):
     """
-    ⭐ 검색 결과창 제목 함자: 한글한자 붙여서 병기 (예: 증嶒, 경시景時)
-    ⭐ '신상 및 계보 정보' -> '인물 한글 약력'으로 변경
+    ⭐ 1) 검색 결과창 제목 함자: 한글한자 붙여서 병기 (예: 증嶒, 경시景時)
+    ⭐ 2) 오른쪽에 고유ID 대신 '상(하)권-족보페이지-단수' (예: 상권-24-1, 하권-208-1) 표시
+    ⭐ 3) '인물 한글 약력'에서 '인물'을 삭제하고 '한글 약력'만 표시
     """
     combined_name = format_ko_hanja_attached(target_row['인명'])
     adopt_type, _, _ = get_adoption_info(target_row)
     rel_badge_text = f"{target_row['관계']} (출계)" if adopt_type == "출계" else str(target_row['관계'])
+    book_loc_text = format_book_location(target_row.get('고유ID', ''))
 
     meta_paragraphs_html = format_hangul_only_paragraph_html(target_row, search_term=search_term)
     cn_raw = highlight_corrections_html(target_row.get('한문 약력 원문', ''), search_term=search_term)
@@ -1385,11 +1408,11 @@ def render_person_result_card(target_row, search_term=None):
                 <span>{combined_name}</span>
                 <span class="result-badge">{rel_badge_text}</span>
             </div>
-            <div style="font-size:10pt; color:#6b7280; font-family:monospace;">고유ID: {target_row['고유ID']}</div>
+            <div class="result-book-loc">{book_loc_text}</div>
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-bottom:4px; font-size:11pt;">
-            📌 인물 한글 약력
+            📌 한글 약력
         </div>
         <div class="meta-para-container">
             {meta_paragraphs_html}
@@ -1438,7 +1461,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
-    # ⭐ 계보 검색 결과창 제목: '계보도' [한글한자 병기 인물명] 표시 후 줄바꿈하여 '(네모 박스 인물 클릭 시 새 계보 생성)' 표시
+    # 계보 검색 결과창 제목: '계보도' [한글한자 병기 인물명] 표시 후 줄바꿈하여 '(네모 박스 인물 클릭 시 새 계보 생성)' 표시
     person_label = format_ko_hanja_attached(target_name)
     diagram_parts = [
         f'<div id="search-result-anchor"></div>'
@@ -1642,11 +1665,11 @@ else:
     )
 
 # =============================================================================
-# 5. 검색 결과 창 (엔터 시 자판 숨김 + 상단 스크롤 + 과거 통합 키워드 검색 적용)
+# 5. 검색 결과 창
 # =============================================================================
 if search_type == "인명 검색" and query_val.strip():
     q = query_val.strip()
-    matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
+    matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)].reset_index(drop=True)
     
     if len(matched_df) == 0:
         render_html(f"""
@@ -1662,10 +1685,13 @@ if search_type == "인명 검색" and query_val.strip():
                 📢 동명이인 또는 복수 후보가 총 {len(matched_df)}위 검색되었습니다. 아래에서 조회할 인물을 선택하세요.
             </div>
             """)
-            candidate_labels = [format_candidate_label(row) for _, row in matched_df.iterrows()]
-            selected_label = st.selectbox("선조 선택", candidate_labels, label_visibility="collapsed")
-            selected_gid = selected_label.split("고유ID: ")[-1].strip()
-            target_row = matched_df[matched_df['고유ID'] == selected_gid].iloc[0]
+            selected_idx = st.selectbox(
+                "선조 선택",
+                range(len(matched_df)),
+                format_func=lambda i: format_candidate_label(matched_df.iloc[i]),
+                label_visibility="collapsed"
+            )
+            target_row = matched_df.iloc[selected_idx]
         else:
             target_row = matched_df.iloc[0]
             
@@ -1674,18 +1700,21 @@ if search_type == "인명 검색" and query_val.strip():
 
 elif search_type == "계보 검색":
     q = query_val.strip()
-    if q != st.session_state.get('last_lineage_query', ''):
+
+    # 검색어가 비어 있으면(검색 전에는) 이전 계보 선택 상태를 초기화하여 아무것도 표시하지 않음
+    if not q:
+        st.session_state['last_lineage_query'] = ''
+        st.session_state['active_tree_gid'] = None
+        if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+            del st.query_params["tree_gid"]
+    elif q != st.session_state.get('last_lineage_query', ''):
         st.session_state['last_lineage_query'] = q
         st.session_state['active_tree_gid'] = None
+        if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+            del st.query_params["tree_gid"]
 
-    tree_target = None
-    if st.session_state.get('active_tree_gid'):
-        g_match = df[df['고유ID'] == st.session_state['active_tree_gid']]
-        if not g_match.empty:
-            tree_target = g_match.iloc[0]
-
-    if tree_target is None and q:
-        l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
+    if q:
+        l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)].reset_index(drop=True)
         if len(l_matches) == 0:
             render_html(f"""
             <div class="no-result-notice">
@@ -1693,66 +1722,86 @@ elif search_type == "계보 검색":
             </div>
             """)
             scroll_to_search_top()
-        elif len(l_matches) > 1:
-            render_html(f"""
-            <div class="multi-ancestor-banner">
-                📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
-            </div>
-            """)
-            cand_opts = [format_candidate_label(r) for _, r in l_matches.iterrows()]
-            sel_cand = st.selectbox("계보 기준 인물 선택", cand_opts, label_visibility="collapsed")
-            target_gid = sel_cand.split("고유ID: ")[-1].strip()
-            tree_target = l_matches[l_matches['고유ID'] == target_gid].iloc[0]
         else:
-            tree_target = l_matches.iloc[0]
-
-    if tree_target is not None:
-        c_cond1, c_cond2 = st.columns(2)
-        with c_cond1:
-            render_html("""
-            <div class="slider-custom-header">
-                <div class="slider-title-text">직계 상대 선조수 선택</div>
-                <div class="slider-ticks-row">
-                    <span class="slider-tick-item">1대</span>
-                    <span class="slider-tick-item">2대</span>
-                    <span class="slider-tick-item">3대</span>
-                    <span class="slider-tick-item">4대</span>
-                    <span class="slider-tick-item">5대</span>
-                    <span class="slider-tick-item">6대</span>
+            # 1) 검색 후 복수 후보(명부)가 있는 경우 상단에 항상 명부를 먼저 표시
+            if len(l_matches) > 1:
+                render_html(f"""
+                <div class="multi-ancestor-banner">
+                    📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
                 </div>
-            </div>
-            """)
-            up_gens = st.slider("직계 상대 선조수 선택", min_value=1, max_value=6, value=3, format="", label_visibility="collapsed")
-        with c_cond2:
-            render_html("""
-            <div class="slider-custom-header">
-                <div class="slider-title-text">직계 하대 선조수 선택</div>
-                <div class="slider-ticks-row">
-                    <span class="slider-tick-item">1대</span>
-                    <span class="slider-tick-item">2대</span>
-                    <span class="slider-tick-item">3대</span>
-                    <span class="slider-tick-item">4대</span>
-                    <span class="slider-tick-item">5대</span>
-                    <span class="slider-tick-item">6대</span>
-                </div>
-            </div>
-            """)
-            down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, format="", label_visibility="collapsed")
+                """)
+                sel_idx = st.selectbox(
+                    "계보 기준 인물 선택",
+                    range(len(l_matches)),
+                    format_func=lambda i: format_candidate_label(l_matches.iloc[i]),
+                    label_visibility="collapsed"
+                )
+                initial_target = l_matches.iloc[sel_idx]
+            else:
+                initial_target = l_matches.iloc[0]
 
-        if st.session_state.get('active_tree_gid'):
-            if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+            # 사용자가 드롭다운 명부에서 다른 인물로 변경하면 즉시 해당 인물의 계보로 전환
+            if st.session_state.get('last_selected_initial_gid') != initial_target['고유ID']:
+                st.session_state['last_selected_initial_gid'] = initial_target['고유ID']
                 st.session_state['active_tree_gid'] = None
                 if hasattr(st, "query_params") and "tree_gid" in st.query_params:
                     del st.query_params["tree_gid"]
-                st.rerun()
 
-        render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens, key_prefix="main_tree")
-        scroll_to_search_top()
+            # 계보도 도형 박스를 클릭해 다른 인물로 이동한 경우 해당 인물을, 아니면 초기 선택 인물을 표시
+            tree_target = initial_target
+            active_gid = st.session_state.get('active_tree_gid')
+            if active_gid and active_gid != initial_target['고유ID']:
+                g_match = df[df['고유ID'] == active_gid]
+                if not g_match.empty:
+                    tree_target = g_match.iloc[0]
+
+            c_cond1, c_cond2 = st.columns(2)
+            with c_cond1:
+                render_html("""
+                <div class="slider-custom-header">
+                    <div class="slider-title-text">직계 상대 선조수 선택</div>
+                    <div class="slider-ticks-row">
+                        <span class="slider-tick-item">1대</span>
+                        <span class="slider-tick-item">2대</span>
+                        <span class="slider-tick-item">3대</span>
+                        <span class="slider-tick-item">4대</span>
+                        <span class="slider-tick-item">5대</span>
+                        <span class="slider-tick-item">6대</span>
+                    </div>
+                </div>
+                """)
+                up_gens = st.slider("직계 상대 선조수 선택", min_value=1, max_value=6, value=3, format="", label_visibility="collapsed")
+            with c_cond2:
+                render_html("""
+                <div class="slider-custom-header">
+                    <div class="slider-title-text">직계 하대 선조수 선택</div>
+                    <div class="slider-ticks-row">
+                        <span class="slider-tick-item">1대</span>
+                        <span class="slider-tick-item">2대</span>
+                        <span class="slider-tick-item">3대</span>
+                        <span class="slider-tick-item">4대</span>
+                        <span class="slider-tick-item">5대</span>
+                        <span class="slider-tick-item">6대</span>
+                    </div>
+                </div>
+                """)
+                down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, format="", label_visibility="collapsed")
+
+            # ⭐ 검색 전에는 표시하지 않고, 검색 후 계보도에서 다른 인물을 클릭해 이동했을 때만 복귀 박스 표시
+            if active_gid and active_gid != initial_target['고유ID']:
+                if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+                    st.session_state['active_tree_gid'] = None
+                    if hasattr(st, "query_params") and "tree_gid" in st.query_params:
+                        del st.query_params["tree_gid"]
+                    st.rerun()
+
+            render_tree_hierarchy(tree_target, df, max_up=up_gens, max_down=down_gens, key_prefix="main_tree")
+            scroll_to_search_top()
 
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
 
-    # ⭐ 과거 통합 검색어 중 1단어라도 입력하면 열거된 모든 과거 관련 단어를 통합 검색
+    # 과거 통합 검색어 중 1단어라도 입력하면 열거된 모든 과거 관련 단어를 통합 검색
     if term in EXAM_GROUP_KEYWORDS:
         search_terms_list = EXAM_GROUP_KEYWORDS
         regex_pattern = "|".join(re.escape(k) for k in EXAM_GROUP_KEYWORDS)
@@ -1768,7 +1817,7 @@ elif search_type == "단어 검색" and query_val.strip():
         df['한글 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
         df['한문 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True)
     )
-    word_matches = df[mask]
+    word_matches = df[mask].reset_index(drop=True)
     
     if len(word_matches) == 0:
         render_html(f"""
@@ -1783,10 +1832,13 @@ elif search_type == "단어 검색" and query_val.strip():
             📢 검색어 <span class="search-word-red">{banner_term_label}</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위 검색되었습니다. 아래 목록에서 선조를 선택하세요.
         </div>
         """)
-        candidate_list = [format_candidate_label(r) for _, r in word_matches.iterrows()]
-        chosen = st.selectbox("조회할 선조를 선택하세요", candidate_list, label_visibility="collapsed")
-        chosen_gid = chosen.split("고유ID: ")[-1].strip()
-        chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
+        chosen_idx = st.selectbox(
+            "조회할 선조를 선택하세요",
+            range(len(word_matches)),
+            format_func=lambda i: format_candidate_label(word_matches.iloc[i]),
+            label_visibility="collapsed"
+        )
+        chosen_row = word_matches.iloc[chosen_idx]
         
         render_person_result_card(chosen_row, search_term=search_terms_list)
         scroll_to_search_top()
@@ -1819,10 +1871,11 @@ render_html("""
 """)
 
 # =============================================================================
-# 7. 하단 푸터 (Footer)
+# 7. 하단 푸터 (Footer): 기호 추가, 연락처 줄바꿈, 비볼드체(font-weight:400) 적용
 # =============================================================================
 render_html("""
-<div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.5pt; font-weight:600; border-top:1px solid #475569; margin-top:8px; line-height:1.45; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
-    데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스(완귀공파  고위 기준 총 2,887인)화 &lt;연락처 안동수 010 5097 6403&gt;
+<div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.3pt; font-weight:400; border-top:1px solid #475569; margin-top:8px; line-height:1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
+    📚 데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스(완귀공파 고위 기준 총 2,887인)화<br>
+    &lt;연락처 안동수 010 5097 6403&gt;
 </div>
 """)
