@@ -757,28 +757,82 @@ div[role="option"] * {
 render_html(CUSTOM_CSS)
 
 # =============================================================================
-# 2. 데이터 로드 (SQLite DB 우선, 없으면 엑셀 로드)
+# 2. 데이터 로드 및 고유ID 기반 부모-자녀 정밀 매핑 전처리
 # =============================================================================
+def parse_gid_tuple(gid):
+    """고유ID(예: C-529-4-1-37)를 (권, 페이지, 단, 순서, 세수)로 분리"""
+    m = re.match(r"^([A-Z])-(\d+)-(\d+)-(\d+)-(\d+)$", str(gid).strip())
+    if m:
+        return m.group(1), int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5))
+    return "", 0, 0, 0, 0
+
+def resolve_exact_father_gid(child_row, all_df):
+    """
+    ⭐ 동명이인 선조가 여러 명 있을 때 단순 인명 비교가 아니라
+    1) 세수(본인 세수 - 1)
+    2) 조부 성함 일치 여부(후보 부친의 '부친' == 본인의 '조부')
+    3) 족보 권(A~D)·페이지·순번의 근접성
+    을 종합 검증하여 정확한 부친의 고유ID(_father_gid)를 찾아냅니다.
+    """
+    f_name = str(child_row.get("부친", "")).strip()
+    if not f_name or f_name == "覯구" or f_name == "-":
+        return ""
+    gf_name = str(child_row.get("조부", "")).strip()
+    c_vol, c_page, c_tier, c_seq, c_gen = parse_gid_tuple(child_row.get("고유ID", ""))
+
+    # 1차: 인명 일치 + 세수가 정확히 1세대 위(c_gen - 1)인 후보
+    cands = all_df[(all_df["인명"] == f_name) & (all_df["_gen"] == c_gen - 1)]
+    if cands.empty:
+        cands = all_df[all_df["인명"] == f_name]
+    if cands.empty:
+        return ""
+    if len(cands) == 1:
+        return str(cands.iloc[0]["고유ID"])
+
+    # 2차: 후보의 부친 성함이 자녀의 조부 성함과 일치하는 후보로 압축
+    if gf_name and gf_name != "-":
+        cands_gf = cands[cands["부친"] == gf_name]
+        if len(cands_gf) == 1:
+            return str(cands_gf.iloc[0]["고유ID"])
+        elif len(cands_gf) > 1:
+            cands = cands_gf
+
+    # 3차: 같은 권(Volume) 내에서 자녀 페이지 이하이면서 가장 가까운 페이지에 수록된 선조 선택
+    same_vol = cands[(cands["_vol"] == c_vol) & (cands["_page"] <= c_page)]
+    if not same_vol.empty:
+        same_vol_sorted = same_vol.sort_values(by=["_page", "_seq"], ascending=[False, True])
+        return str(same_vol_sorted.iloc[0]["고유ID"])
+
+    # 4차: 권이 넘어가는 경우(C권 38세 -> D권 39세 등) 본 기록(생년·배위 수록) 우선 선택
+    non_empty_bio = cands[cands["한글 약력 정리"].astype(str).str.contains("생|배 :", na=False)]
+    if len(non_empty_bio) == 1:
+        return str(non_empty_bio.iloc[0]["고유ID"])
+
+    return str(cands.iloc[0]["고유ID"])
+
 @st.cache_data
 def load_and_preprocess_genealogy():
+    raw_df = None
+    status_msg = ""
+
     if os.path.exists(db_file_path):
         try:
             conn = sqlite3.connect(f"file:{db_file_path}?mode=ro", uri=True)
-            df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
+            raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
             conn.close()
-            if not df.empty:
-                return df, "성공 (SQLite DB)"
+            if not raw_df.empty:
+                status_msg = "성공 (SQLite DB)"
         except Exception:
             try:
                 conn = sqlite3.connect(db_file_path)
-                df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
+                raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
                 conn.close()
-                if not df.empty:
-                    return df, "성공 (SQLite DB)"
+                if not raw_df.empty:
+                    status_msg = "성공 (SQLite DB)"
             except Exception:
                 pass
 
-    if os.path.exists(excel_file_path):
+    if (raw_df is None or raw_df.empty) and os.path.exists(excel_file_path):
         try:
             import openpyxl
             wb = openpyxl.load_workbook(excel_file_path, read_only=True)
@@ -788,12 +842,26 @@ def load_and_preprocess_genealogy():
             if not rows:
                 return None, "시트에 데이터가 없습니다."
             header = [str(c).strip() if c is not None else f"Col{idx}" for idx, c in enumerate(rows[0])]
-            df = pd.DataFrame(rows[1:], columns=header).fillna("")
-            return df, "성공 (Excel)"
+            raw_df = pd.DataFrame(rows[1:], columns=header).fillna("")
+            status_msg = "성공 (Excel)"
         except Exception as e:
             return None, str(e)
 
-    return None, f"데이터 파일을 찾을 수 없습니다. (확인 경로: {excel_file_path})"
+    if raw_df is None or raw_df.empty:
+        return None, f"데이터 파일을 찾을 수 없습니다. (확인 경로: {excel_file_path})"
+
+    # 고유ID 파싱 및 부친 고유ID(_father_gid) 사전 매핑
+    parsed = raw_df["고유ID"].apply(parse_gid_tuple)
+    raw_df["_vol"] = [p[0] for p in parsed]
+    raw_df["_page"] = [p[1] for p in parsed]
+    raw_df["_tier"] = [p[2] for p in parsed]
+    raw_df["_seq"] = [p[3] for p in parsed]
+    raw_df["_gen"] = [p[4] for p in parsed]
+
+    father_gids = [resolve_exact_father_gid(row, raw_df) for _, row in raw_df.iterrows()]
+    raw_df["_father_gid"] = father_gids
+
+    return raw_df, status_msg
 
 df, load_msg = load_and_preprocess_genealogy()
 
@@ -830,7 +898,8 @@ def clean_ko_name(raw_val):
 
 def match_name_query(row, q):
     """
-    인명 검색 및 계보 검색 시 함자, 성명, 호, 초명, 통명만 정확하게 검색
+    ⭐ 인명 검색 및 계보 검색 시 안내문은 그대로 유지하되,
+    실제 검색은 함자, 성명, 자(字), 초자(初字), 호(號), 일휘(一諱), 초휘(初諱), 초명(初名), 통명(通名)을 모두 검색
     """
     q = q.strip()
     if not q:
@@ -849,20 +918,36 @@ def match_name_query(row, q):
     if cn_name and (q == cn_name or q == '安' + cn_name or q_alt == cn_name):
         return True
         
-    # 2. 호, 초명, 통명 (한글 약력 정리 첫 줄)
+    # 2. 자, 초자, 호, 일휘, 초휘, 초명, 통명 (한글 약력 정리 첫 줄)
     first_line_ko = str(row.get('한글 약력 정리', '')).split('\n')[0]
-    for pattern in [r'호는\s*([^\.,\n\s]+)', r'초명은?\s*([^\.,\n\s]+)', r'통명은?\s*([^\.,\n\s]+)']:
-        m = re.search(pattern, first_line_ko)
-        if m:
+    ko_patterns = [
+        r'자는\s*([^\.,\n\s]+)',
+        r'초자는?\s*([^\.,\n\s]+)',
+        r'호는\s*([^\.,\n\s]+)',
+        r'일휘는?\s*([^\.,\n\s]+)',
+        r'초휘는?\s*([^\.,\n\s]+)',
+        r'초명은?\s*([^\.,\n\s]+)',
+        r'통명은?\s*([^\.,\n\s]+)',
+    ]
+    for pattern in ko_patterns:
+        for m in re.finditer(pattern, first_line_ko):
             val = m.group(1).strip()
             if q == val or q_alt == val or q in val:
                 return True
 
-    # 3. 호, 초명, 통명 (한문 약력 정리 첫 줄)
+    # 3. 字, 初字, 號, 一諱, 初諱, 初名, 通名 (한문 약력 정리 첫 줄)
     first_line_cn = str(row.get('한문 약력 정리', '')).split('\n')[0]
-    for pattern in [r'號\s*([^\.,\n\s]+)', r'初名\s*([^\.,\n\s]+)', r'通名\s*([^\.,\n\s]+)']:
-        m = re.search(pattern, first_line_cn)
-        if m:
+    cn_patterns = [
+        r'字\s*([^\.,\n\s]+)',
+        r'初字\s*([^\.,\n\s]+)',
+        r'號\s*([^\.,\n\s]+)',
+        r'一諱\s*([^\.,\n\s]+)',
+        r'初諱\s*([^\.,\n\s]+)',
+        r'初名\s*([^\.,\n\s]+)',
+        r'通名\s*([^\.,\n\s]+)',
+    ]
+    for pattern in cn_patterns:
+        for m in re.finditer(pattern, first_line_cn):
             val = m.group(1).strip()
             if q == val or q_alt == val or q in val:
                 return True
@@ -975,7 +1060,7 @@ def extract_munjip_info(ko_bio):
 
 def parse_person_hangul_details(row):
     """
-    ⭐ 신상 및 계보 정보 항목 구성:
+    신상 및 계보 정보 항목 구성:
     1) 부, 조부 통합 -> '부친·조부' 항목 (부친 00, 조부 00)
     2) 자, 호 통합 -> '자·호' 항목 (자 00, 호 00 형식)
     3) '학력·인품·업적' 바로 위에 '문집' 항목 배치
@@ -1049,7 +1134,7 @@ def parse_person_hangul_details(row):
     if gwageo_val:
         details.append(("과거·관직", gwageo_val))
 
-    # ⭐ '학력·인품·업적' 바로 위에 '문집' 항목 삽입
+    # '학력·인품·업적' 바로 위에 '문집' 항목 삽입
     munjip_val = extract_munjip_info(ko_bio)
     if munjip_val:
         details.append(("문집", munjip_val))
@@ -1115,26 +1200,37 @@ def render_person_result_card(target_row, search_term=None):
     </div>
     """)
 
+def get_siblings_by_father_gid(person_row, all_df):
+    """
+    ⭐ 동명이인 부친과 혼동되지 않도록 부친의 고유ID(_father_gid)가 동일한 형제들만 정확히 추출
+    """
+    f_gid = str(person_row.get("_father_gid", "")).strip()
+    if f_gid:
+        return all_df[all_df["_father_gid"] == f_gid]
+    f_name = str(person_row.get("부친", "")).strip()
+    if f_name == "覯구":
+        return all_df[all_df["부친"] == "覯구"]
+    return pd.DataFrame([person_row])
+
 def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="tree"):
     """
-    계보도 도형 박스 클릭 시 새 계보 즉시 생성 (선대 1~6대, 하대 1~6대 지원)
+    ⭐ 고유ID(_father_gid) 검증을 통해 동명이인 선조 오류 없이 정확한 직계 선대·하대 계보도 생성
     """
     target_gid = target_row['고유ID']
     target_name = target_row['인명']
     
-    # 1. 선대 조상 탐색 (1 ~ max_up대)
+    # 1. 선대 조상 탐색 (1 ~ max_up대): 고유ID(_father_gid) 기반으로 정확히 추적
     ancestors = []
     curr = target_row
     for up in range(1, max_up + 1):
-        f_name = str(curr.get('부친', '')).strip()
-        if not f_name or f_name == '覯구':
+        f_gid = str(curr.get('_father_gid', '')).strip()
+        if not f_gid:
             break
-        f_match = all_df[all_df['인명'] == f_name]
+        f_match = all_df[all_df['고유ID'] == f_gid]
         if f_match.empty:
             break
         f_row = f_match.iloc[0]
-        ff_name = str(f_row.get('부친', '')).strip()
-        sibs = all_df[all_df['부친'] == ff_name] if ff_name else pd.DataFrame([f_row])
+        sibs = get_siblings_by_father_gid(f_row, all_df)
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
@@ -1184,9 +1280,8 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     if len(ancestors) > 0:
         diagram_parts.append('<div class="tree-connector-line">│<br>▼</div>')
 
-    # 2. 본인 및 형제 행
-    t_f = str(target_row.get('부친', '')).strip()
-    t_sibs = all_df[all_df['부친'] == t_f] if t_f else pd.DataFrame([target_row])
+    # 2. 본인 및 형제 행: 부친의 고유ID(_father_gid)가 일치하는 친형제만 표시
+    t_sibs = get_siblings_by_father_gid(target_row, all_df)
     tg_num, _ = extract_generation_info(target_row['고유ID'])
     
     t_nodes = []
@@ -1208,7 +1303,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     </div>
     """)
 
-    # 3. 하대 후손 탐색 (1 ~ max_down대까지 동적 지원)
+    # 3. 하대 후손 탐색 (1 ~ max_down대): 부모의 고유ID(_father_gid == p_gid)가 일치하는 자녀만 추출
     down_labels = {
         1: "자(子)",
         2: "손(孫)",
@@ -1222,8 +1317,9 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         next_gen_rows = []
         node_htmls = []
         for p_row in current_parents:
+            p_gid = p_row['고유ID']
             p_name = p_row['인명']
-            children = all_df[all_df['부친'] == p_name]
+            children = all_df[all_df['_father_gid'] == p_gid]
             for _, ch in children.iterrows():
                 next_gen_rows.append(ch)
                 ch_name = ch['인명']
@@ -1257,7 +1353,6 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
 # =============================================================================
 # 4. 최상단 헤더(좌측 초대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
 # =============================================================================
-# ⭐ 아이콘 크기 추가 확대 (96px -> 118px)
 icon_img_tag = f'<img src="{icon_b64}" style="width:118px; height:118px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:68px;">📜</span>'
 
 bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
@@ -1310,7 +1405,7 @@ search_type = st.radio(
     label_visibility="collapsed"
 )
 
-# 검색어 안내문 표시 및 입력창 (테두리 흰색, 세로 중앙 정렬)
+# ⭐ 검색어 안내문은 기존 그대로 유지하되, 내부 검색은 자·초자·일휘·초휘까지 모두 포함
 if search_type == "인명 검색":
     query_val = st.text_input(
         "검색어 입력",
@@ -1343,7 +1438,7 @@ if search_type == "인명 검색" and query_val.strip():
     if len(matched_df) == 0:
         render_html(f"""
         <div class="no-result-notice">
-            입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)
+            입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다.
         </div>
         """)
     else:
@@ -1380,7 +1475,7 @@ elif search_type == "계보 검색":
         if len(l_matches) == 0:
             render_html(f"""
             <div class="no-result-notice">
-                계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)
+                계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다.
             </div>
             """)
         elif len(l_matches) > 1:
