@@ -117,7 +117,7 @@ def get_query_param(key):
     return None
 
 # =============================================================================
-# 1. 디자인 스타일 CSS (앱 관리바 숨김, 5등분 슬라이더 눈금, 간격 축소 등)
+# 1. 디자인 스타일 CSS
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -127,7 +127,7 @@ html, body, [class*="css"], .stMarkdown, p, div {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
 }
 
-/* ⭐ 상단 헤더 및 우측 하단 앱 관리바(Manage app, 툴바, 푸터, 배지) 완전 숨김 */
+/* ⭐ 상단 헤더 및 앱 내부 툴바/푸터/배지 숨김 */
 header[data-testid="stHeader"],
 div[data-testid="stToolbar"],
 div[data-testid="stDecoration"],
@@ -178,12 +178,12 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* 제일 위 페이지 타이틀 창: 좌측 대형 아이콘 + 우측 타이틀 문장 */
+/* ⭐ 제일 위 페이지 타이틀 창: 좌측 초대형 아이콘(118px) + 우측 타이틀 문장 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
     margin-top: 8px !important;
-    margin-bottom: 5px !important;
+    margin-bottom: 14px !important;
     padding: 10px 14px;
     border-bottom: 3px solid #8c2d19;
     background: #ffffff !important;
@@ -194,7 +194,7 @@ div[data-testid="stElementContainer"],
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 14px !important;
+    gap: 12px !important;
 }
 
 .title-left-icon {
@@ -248,13 +248,13 @@ div[data-testid="stElementContainer"],
     letter-spacing: -0.2px;
 }
 
-/* '다음 중 하나를 선택하고 검색어를 한글로 입력' 라인 글자 크기 축소(10.8pt) */
+/* ⭐ 위 타이틀 창과 간격을 조금 더 넓힌 안내 문구 라인 */
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
-    margin-top: 3px !important;
+    margin-top: 12px !important;
     margin-bottom: 2px !important;
-    padding: 1px 2px !important;
+    padding: 2px 2px !important;
     line-height: 1.3 !important;
 }
 .compact-search-subtitle {
@@ -365,10 +365,28 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     vertical-align: middle !important;
 }
 
-/* ⭐ 계보 수 설정(선대/하대) 슬라이더:
-   1) 하얀 선에 검은색 테두리 적용
-   2) 선을 5등분(1~6대, 5개 구간)하여 경계선 위에 대수(1대~6대)를 하얀색으로 글자 확대 표시
-   3) 선 간격 50% 이상 대폭 축소 */
+/* ⭐ 검색 결과 없을 때 안내 문구: 글자 색상 흰색(#ffffff) */
+.no-result-notice {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background-color: rgba(30, 58, 138, 0.88) !important;
+    border: 1.5px solid #ffffff !important;
+    color: #ffffff !important;
+    padding: 9px 12px !important;
+    border-radius: 6px !important;
+    font-size: 10.8pt !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
+    margin-bottom: 6px !important;
+    line-height: 1.45 !important;
+    text-align: center !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
+}
+
+/* ⭐ 직계 상대/하대 선조수 설정 슬라이더:
+   1) 문구: '직계 상대 선조수 설정' / '직계 하대 선조수 설정'
+   2) 하얀색 대수 글자(1대~6대): 크기 축소(9.2pt), 비볼드체(font-weight: 400)
+   3) 하얀색 라인 위 빨간색 기본 숫자(ThumbValue 등) 완전 삭제 */
 .slider-custom-header {
     display: flex;
     flex-direction: column;
@@ -378,7 +396,7 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
 }
 .slider-title-text {
     color: #ffffff !important;
-    font-size: 11.5pt !important;
+    font-size: 11pt !important;
     font-weight: 800 !important;
     text-shadow: 0 1px 3px rgba(0,0,0,0.85) !important;
     line-height: 1.15 !important;
@@ -396,9 +414,9 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
 }
 .slider-tick-item {
     color: #ffffff !important;
-    font-size: 11pt !important;
-    font-weight: 800 !important;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.9) !important;
+    font-size: 9.2pt !important;
+    font-weight: 400 !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.85) !important;
     line-height: 1.0 !important;
     text-align: center !important;
 }
@@ -443,12 +461,20 @@ div[data-testid="stSlider"] [role="slider"] {
     border: 2.5px solid #000000 !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.6) !important;
 }
-/* 슬라이더 기본 숫자/최소최대 눈금 숨김(상단 커스텀 대수 표기로 대체) */
+/* ⭐ 하얀색 라인 위에 뜨는 빨간색 숫자(ThumbValue) 및 기본 TickBar 완전 삭제 */
 div[data-testid="stSlider"] [data-testid="stThumbValue"],
 div[data-testid="stSlider"] [data-testid="stTickBar"],
 div[data-testid="stSlider"] [data-testid="stTickBarMin"],
-div[data-testid="stSlider"] [data-testid="stTickBarMax"] {
+div[data-testid="stSlider"] [data-testid="stTickBarMax"],
+div[data-testid="stSlider"] div[role="slider"] > div,
+div[data-testid="stSlider"] div[role="slider"] * {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    font-size: 0px !important;
+    height: 0px !important;
+    width: 0px !important;
+    overflow: hidden !important;
 }
 
 /* 복수 후보 안내 배너 */
@@ -772,7 +798,7 @@ def load_and_preprocess_genealogy():
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 세수 표기, 입계/출계 판별, 한글 신상 문단 생성, 계보도
+# 3. 보조 유틸리티 함수: 세수 표기, 입계/출계 판별, 문집 추출, 한글 신상 문단 생성
 # =============================================================================
 def extract_generation_info(gid):
     m = re.search(r"-(\d+)$", str(gid).strip())
@@ -911,7 +937,49 @@ def highlight_corrections_html(text, search_term=None):
         )
     return formatted
 
+def extract_munjip_info(ko_bio):
+    """
+    약력 텍스트에서 문집·유고·실기·유집·유사·서집록·저서 정보를 추출하여 '문집' 항목으로 반환
+    """
+    for line in str(ko_bio).split("\n"):
+        if line.startswith("문집 :"):
+            return line.replace("문집 :", "").strip()
+        if line.startswith("학문·인품·업적 :"):
+            c = line.replace("학문·인품·업적 :", "").strip()
+            if "설서 완귀선생 유사" in c:
+                return "설서 완귀선생 유사(說書 完龜先生 遺事)"
+            if "문집이 있어 세상에 행해지며" in c:
+                return "문집이 있어 세상에 행해짐"
+            if "실기 상하 두 책이 있다" in c:
+                return "실기(實記) 상·하 두 책이 있음"
+            if "유고와 화부재강록이 있다" in c:
+                return "유고(遺稿)와 화부재강록이 있음"
+            if "고종 신축 1901년에 적변으로 유고가 소실되었다" in c:
+                return "유고(고종 신축 1901년 적변으로 소실)"
+            if "집안에 소장된 유고가 있" in c or "유고가 집안에 소장" in c:
+                return "집안에 소장된 유고(遺稿)가 있음"
+            if "유집이 있다" in c:
+                return "유집(遺集)이 있음"
+            if "학술논문집이 있다" in c:
+                return "학술논문집이 있음"
+            if "문집이 있다" in c:
+                return "문집(文集)이 있음"
+            if "유고가 있" in c:
+                return "유고(遺稿)가 있음"
+            if "서집록이 있다" in c:
+                return "서집록(書集錄)이 있음"
+            m = re.search(r"(저서[^\.]+있다)", c)
+            if m:
+                return m.group(1).strip()
+    return ""
+
 def parse_person_hangul_details(row):
+    """
+    ⭐ 신상 및 계보 정보 항목 구성:
+    1) 부, 조부 통합 -> '부친·조부' 항목 (부친 00, 조부 00)
+    2) 자, 호 통합 -> '자·호' 항목 (자 00, 호 00 형식)
+    3) '학력·인품·업적' 바로 위에 '문집' 항목 배치
+    """
     gid = row.get("고유ID", "")
     _, gen_str = extract_generation_info(gid)
     gfather_ko = clean_ko_name(row.get("조부", ""))
@@ -924,21 +992,36 @@ def parse_person_hangul_details(row):
     else:
         father_display = father_ko
 
+    # 부친·조부 통합 표기
+    fg_parts = []
+    if father_display and father_display != "-":
+        fg_parts.append(f"부친 {father_display}")
+    if gfather_ko and gfather_ko != "-":
+        fg_parts.append(f"조부 {gfather_ko}")
+    father_gfather_str = ", ".join(fg_parts)
+
     ko_bio = str(row.get("한글 약력 정리", ""))
     first_ko = ko_bio.split("\n")[0] if ko_bio else ""
 
     details = [
         ("세수", gen_str),
-        ("부", father_display),
-        ("조부", gfather_ko),
     ]
+    if father_gfather_str:
+        details.append(("부친·조부", father_gfather_str))
 
-    m = re.search(r'자는\s*([^\.,\n]+)', first_ko)
-    if m: details.append(("자", m.group(1).strip()))
+    # 자·호 통합 표기 (자 00, 호 00 형식)
+    m_ja = re.search(r'자는\s*([^\.,\n]+)', first_ko)
+    m_ho = re.search(r'호는\s*([^\.,\n]+)', first_ko)
+    jaho_parts = []
+    if m_ja:
+        jaho_parts.append(f"자 {m_ja.group(1).strip()}")
+    if m_ho:
+        jaho_parts.append(f"호 {m_ho.group(1).strip()}")
+    if jaho_parts:
+        details.append(("자·호", ", ".join(jaho_parts)))
+
     m = re.search(r'초자는?\s*([^\.,\n]+)', first_ko)
     if m: details.append(("초자", m.group(1).strip()))
-    m = re.search(r'호는\s*([^\.,\n]+)', first_ko)
-    if m: details.append(("호", m.group(1).strip()))
     m = re.search(r'초휘는?\s*([^\.,\n]+)', first_ko)
     if m: details.append(("초휘", m.group(1).strip()))
     m = re.search(r'일휘는?\s*([^\.,\n]+)', first_ko)
@@ -948,15 +1031,36 @@ def parse_person_hangul_details(row):
     m = re.search(r'초명은?\s*([^\.,\n]+)', first_ko)
     if m: details.append(("초명", m.group(1).strip()))
 
+    gwageo_val = ""
+    hakmun_val = ""
+    myo_list = []
+    bae_list = []
+
     for line in ko_bio.split("\n"):
         if line.startswith("과거·관직 :"):
-            details.append(("과거·관직", line.replace("과거·관직 :", "").strip()))
+            gwageo_val = line.replace("과거·관직 :", "").strip()
         elif line.startswith("학문·인품·업적 :"):
-            details.append(("학력·인품·업적", line.replace("학문·인품·업적 :", "").strip()))
+            hakmun_val = line.replace("학문·인품·업적 :", "").strip()
         elif line.startswith("묘 :"):
-            details.append(("묘", line.replace("묘 :", "").strip()))
+            myo_list.append(line.replace("묘 :", "").strip())
         elif line.startswith("배 :") or line.startswith("배위 :"):
-            details.append(("배위", re.sub(r'^(배|배위)\s*:\s*', '', line).strip()))
+            bae_list.append(re.sub(r'^(배|배위)\s*:\s*', '', line).strip())
+
+    if gwageo_val:
+        details.append(("과거·관직", gwageo_val))
+
+    # ⭐ '학력·인품·업적' 바로 위에 '문집' 항목 삽입
+    munjip_val = extract_munjip_info(ko_bio)
+    if munjip_val:
+        details.append(("문집", munjip_val))
+
+    if hakmun_val:
+        details.append(("학력·인품·업적", hakmun_val))
+
+    for myo in myo_list:
+        details.append(("묘", myo))
+    for bae in bae_list:
+        details.append(("배위", bae))
 
     return details
 
@@ -1151,9 +1255,10 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더(좌측 대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
+# 4. 최상단 헤더(좌측 초대형 아이콘 + 우측 타이틀) 및 검색 인터페이스
 # =============================================================================
-icon_img_tag = f'<img src="{icon_b64}" style="width:96px; height:96px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:56px;">📜</span>'
+# ⭐ 아이콘 크기 추가 확대 (96px -> 118px)
+icon_img_tag = f'<img src="{icon_b64}" style="width:118px; height:118px; object-fit:contain; display:block;">' if icon_b64 else '<span style="font-size:68px;">📜</span>'
 
 bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
 if bg_style_tag:
@@ -1229,14 +1334,18 @@ else:
     )
 
 # =============================================================================
-# 5. 검색 결과 창 (엔터 시 자판 숨김 + 인명검색 라인이 화면 제일 위에 오도록 스크롤)
+# 5. 검색 결과 창 (검색 실패 안내문 흰색 글자 적용)
 # =============================================================================
 if search_type == "인명 검색" and query_val.strip():
     q = query_val.strip()
     matched_df = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
     
     if len(matched_df) == 0:
-        st.warning(f"입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)")
+        render_html(f"""
+        <div class="no-result-notice">
+            입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)
+        </div>
+        """)
     else:
         if len(matched_df) > 1:
             render_html(f"""
@@ -1269,7 +1378,11 @@ elif search_type == "계보 검색":
     if tree_target is None and q:
         l_matches = df[df.apply(lambda r: match_name_query(r, q), axis=1)]
         if len(l_matches) == 0:
-            st.warning("계보를 작성할 선조 인명을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)")
+            render_html(f"""
+            <div class="no-result-notice">
+                계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다. (함자, 성명, 호, 초명, 통명)
+            </div>
+            """)
         elif len(l_matches) > 1:
             render_html(f"""
             <div class="multi-ancestor-banner">
@@ -1288,7 +1401,7 @@ elif search_type == "계보 검색":
         with c_cond1:
             render_html("""
             <div class="slider-custom-header">
-                <div class="slider-title-text">계보 수 설정(선대)</div>
+                <div class="slider-title-text">직계 상대 선조수 설정</div>
                 <div class="slider-ticks-row">
                     <span class="slider-tick-item">1대</span>
                     <span class="slider-tick-item">2대</span>
@@ -1299,11 +1412,11 @@ elif search_type == "계보 검색":
                 </div>
             </div>
             """)
-            up_gens = st.slider("계보 수 설정(선대)", min_value=1, max_value=6, value=3, label_visibility="collapsed")
+            up_gens = st.slider("직계 상대 선조수 설정", min_value=1, max_value=6, value=3, label_visibility="collapsed")
         with c_cond2:
             render_html("""
             <div class="slider-custom-header">
-                <div class="slider-title-text">계보 수 설정(하대)</div>
+                <div class="slider-title-text">직계 하대 선조수 설정</div>
                 <div class="slider-ticks-row">
                     <span class="slider-tick-item">1대</span>
                     <span class="slider-tick-item">2대</span>
@@ -1314,7 +1427,7 @@ elif search_type == "계보 검색":
                 </div>
             </div>
             """)
-            down_gens = st.slider("계보 수 설정(하대)", min_value=1, max_value=6, value=2, label_visibility="collapsed")
+            down_gens = st.slider("직계 하대 선조수 설정", min_value=1, max_value=6, value=2, label_visibility="collapsed")
 
         if st.session_state.get('active_tree_gid'):
             if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
@@ -1337,7 +1450,11 @@ elif search_type == "단어 검색" and query_val.strip():
     word_matches = df[mask]
     
     if len(word_matches) == 0:
-        st.warning(f"입력하신 단어 '{term}'을(를) 포함하고 있는 약력 기록이 없습니다.")
+        render_html(f"""
+        <div class="no-result-notice">
+            입력하신 단어 '{term}'을(를) 포함하고 있는 약력 기록이 없습니다.
+        </div>
+        """)
     else:
         render_html(f"""
         <div class="multi-ancestor-banner">
@@ -1380,7 +1497,7 @@ render_html("""
 """)
 
 # =============================================================================
-# 7. 하단 푸터 (Footer) - 요청 문장으로 완전 교체
+# 7. 하단 푸터 (Footer)
 # =============================================================================
 render_html("""
 <div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.5pt; font-weight:600; border-top:1px solid #475569; margin-top:8px; line-height:1.45; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
