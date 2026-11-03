@@ -647,18 +647,18 @@ div[role="option"] * {
     gap: 8px;
 }
 .result-badge {
-    font-size: 10.5pt;
+    font-size: 11.5pt;
     font-weight: 800;
     background: #eff6ff;
     color: #1d4ed8;
     padding: 2px 8px;
-    border-radius: 10px;
+    border-radius: 8px;
     border: 1px solid #bfdbfe;
 }
 .result-book-loc {
-    font-size: 10.2pt;
-    font-weight: 700;
-    color: #334155;
+    font-size: 10.5pt;
+    font-weight: 800;
+    color: #1e293b;
     background: #f1f5f9;
     padding: 2px 8px;
     border-radius: 6px;
@@ -925,16 +925,16 @@ def parse_gid_tuple(gid):
 
 def format_book_location(gid):
     """
-    ⭐ 고유ID를 '상(하)권-족보페이지-단수' 형태로 변환
+    ⭐ 인물별 약력 제목란 우측 족보 위치 표기: '상(하)권 000P 0단'
     - A, B, C로 시작하면 '상권', D로 시작하면 '하권'
-    - 첫 번째 숫자는 족보 페이지, 두 번째 숫자는 단수
-    - 예: 'A-24-1-1-24' -> '상권-24-1', 'D-208-1-1-39' -> '하권-208-1'
+    - 첫 번째 숫자는 족보 페이지(P), 두 번째 숫자는 단수(단)
+    - 예: 'A-24-1-1-24' -> '상권 24P 1단', 'D-208-1-1-39' -> '하권 208P 1단'
     """
     vol, page, tier, _, _ = parse_gid_tuple(gid)
     if not vol:
         return str(gid).strip()
     vol_label = "상권" if vol in ("A", "B", "C") else ("하권" if vol == "D" else f"{vol}권")
-    return f"{vol_label}-{page}-{tier}"
+    return f"{vol_label} {page}P {tier}단"
 
 @st.cache_data
 def load_and_preprocess_genealogy():
@@ -1036,13 +1036,18 @@ def load_and_preprocess_genealogy():
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 한글한자 병기, 과거 통합 검색어, 한글 약력 문단 생성
+# 3. 보조 유틸리티 함수: 한글한자 병기, 통합 검색어 그룹(과거·문집), 한글 약력 생성
 # =============================================================================
-# 과거 관련 통합 검색어 그룹 (이 중 1단어만 입력해도 그룹 전체 단어를 검색)
+# 1) 과거 관련 통합 검색어 그룹 (1단어만 입력해도 그룹 전체 검색)
 EXAM_GROUP_KEYWORDS = [
     "과거", "문과", "급제", "사마", "별시", "대과", "무과", "잡과", "장원",
     "진사", "생원", "향시", "회시", "복시", "현랑과", "현량과", "증광시",
     "전시", "식년시", "알성시", "정시", "춘당대시", "갑과", "을과", "병과"
+]
+
+# ⭐ 2) 문집·저술 관련 통합 검색어 그룹 (문집, 유집, 유고, 실기, 서집록, 저서, 논문 중 1단어만 입력해도 전체 통합 검색)
+LITERARY_GROUP_KEYWORDS = [
+    "문집", "유집", "유고", "실기", "서집록", "저서", "논문"
 ]
 
 def extract_generation_info(gid):
@@ -1075,7 +1080,7 @@ def clean_ko_name(raw_val):
 
 def format_ko_hanja_attached(raw_val):
     """
-    검색 결과창 제목의 함자를 '한글한자' 붙여서 병기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
+    '[한글함자][한문함자]' 붙여서 표기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
     """
     s = str(raw_val).strip()
     ko, hj = split_name(s)
@@ -1165,21 +1170,46 @@ def get_adoption_info(row):
 
 def format_candidate_label(row):
     """
-    ⭐ 동명이인 명세표(선택 드롭다운) 표시 방법:
-    '한글 함자, 0자, 부:00, 조부:00' 형태로 간결하게 표시
-    (명부의 인물을 클릭했을 때 나타나는 한글 약력은 종전과 동일하게 상세 표시)
+    ⭐ 인명·계보 검색 시 결과 명부(선택 드롭다운) 표기 방식:
+    '[한글함자][한문함자]: 0자, 부 00, (출계이면 양부 00 / 입계이면 생부 00), 조부 00'
+    - 일반: '증嶒: 2자, 부 구, 조부 보문'
+    - 입계: '종경宗慶: 계자, 부 증, 생부 영, 조부 구'
+    - 출계: '여행汝行: 3자(출계), 부 후정, 양부 인정, 조부 세영'
     """
-    person_ko = clean_ko_name(row.get("인명", ""))
+    person_combined = format_ko_hanja_attached(row.get("인명", ""))
     gfather_ko = clean_ko_name(row.get("조부", ""))
     rel = str(row.get("관계", "")).strip()
-    adopt_type, father_ko, _ = get_adoption_info(row)
+    adopt_type, father_ko, other_father_ko = get_adoption_info(row)
 
     if adopt_type == "입계":
-        return f"{person_ko}, {rel}, 계부:{father_ko}, 조부:{gfather_ko}"
+        rel_str = rel if rel == "계자" else f"{rel}(계자)"
+        parts = [f"{person_combined}: {rel_str}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if other_father_ko:
+            parts.append(f"생부 {other_father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
+
     elif adopt_type == "출계":
-        return f"{person_ko}, {rel}(출계), 생부:{father_ko}, 조부:{gfather_ko}"
+        rel_str = f"{rel}(출계)" if "출계" not in rel else rel
+        parts = [f"{person_combined}: {rel_str}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if other_father_ko:
+            parts.append(f"양부 {other_father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
+
     else:
-        return f"{person_ko}, {rel}, 부:{father_ko}, 조부:{gfather_ko}"
+        parts = [f"{person_combined}: {rel}"]
+        if father_ko:
+            parts.append(f"부 {father_ko}")
+        if gfather_ko:
+            parts.append(f"조부 {gfather_ko}")
+        return ", ".join(parts)
 
 def highlight_corrections_html(text, search_term=None):
     if not text:
@@ -1227,7 +1257,7 @@ def highlight_corrections_html(text, search_term=None):
 
 def extract_munjip_info(ko_bio):
     """
-    약력 텍스트에서 문집·유고·실기·유집·유사·서집록·저서 정보를 추출하여 '문집' 항목으로 반환
+    약력 텍스트에서 문집·유고·실기·유집·유사·서집록·저서·논문 정보를 추출하여 '문집' 항목으로 반환
     """
     for line in str(ko_bio).split("\n"):
         if line.startswith("문집 :"):
@@ -1388,13 +1418,12 @@ def format_hangul_only_paragraph_html(row, search_term=None):
 
 def render_person_result_card(target_row, search_term=None):
     """
-    ⭐ 1) 검색 결과창 제목 함자: 한글한자 붙여서 병기 (예: 증嶒, 경시景時)
-    ⭐ 2) 오른쪽에 고유ID 대신 '상(하)권-족보페이지-단수' (예: 상권-24-1, 하권-208-1) 표시
-    ⭐ 3) '인물 한글 약력'에서 '인물'을 삭제하고 '한글 약력'만 표시
+    ⭐ 인물별 약력 제목란 표기:
+    좌측: [한글함자][한문함자] 0자  |  우측: 상(하)권 000P 0단
     """
     combined_name = format_ko_hanja_attached(target_row['인명'])
     adopt_type, _, _ = get_adoption_info(target_row)
-    rel_badge_text = f"{target_row['관계']} (출계)" if adopt_type == "출계" else str(target_row['관계'])
+    rel_badge_text = f"{target_row['관계']}(출계)" if adopt_type == "출계" else str(target_row['관계'])
     book_loc_text = format_book_location(target_row.get('고유ID', ''))
 
     meta_paragraphs_html = format_hangul_only_paragraph_html(target_row, search_term=search_term)
@@ -1787,7 +1816,7 @@ elif search_type == "계보 검색":
                 """)
                 down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, format="", label_visibility="collapsed")
 
-            # ⭐ 검색 전에는 표시하지 않고, 검색 후 계보도에서 다른 인물을 클릭해 이동했을 때만 복귀 박스 표시
+            # 검색 전에는 표시하지 않고, 검색 후 계보도에서 다른 인물을 클릭해 이동했을 때만 복귀 박스 표시
             if active_gid and active_gid != initial_target['고유ID']:
                 if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
                     st.session_state['active_tree_gid'] = None
@@ -1801,11 +1830,16 @@ elif search_type == "계보 검색":
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
 
-    # 과거 통합 검색어 중 1단어라도 입력하면 열거된 모든 과거 관련 단어를 통합 검색
+    # ⭐ 1) 과거 통합 검색어 그룹
     if term in EXAM_GROUP_KEYWORDS:
         search_terms_list = EXAM_GROUP_KEYWORDS
         regex_pattern = "|".join(re.escape(k) for k in EXAM_GROUP_KEYWORDS)
-        banner_term_label = f"'{term}' (과거·문과·급제·사마·진사·생원 등 과거 관련 통합 검색)"
+        banner_term_label = f"'{term}' (과거·문과·급제·사마·진사·생원 등 통합 검색)"
+    # ⭐ 2) 문집·저술 통합 검색어 그룹 (문집, 유집, 유고, 실기, 서집록, 저서, 논문)
+    elif term in LITERARY_GROUP_KEYWORDS:
+        search_terms_list = LITERARY_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in LITERARY_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (문집·유집·유고·실기·서집록·저서·논문 통합 검색)"
     else:
         search_terms_list = [term]
         regex_pattern = re.escape(term)
@@ -1871,11 +1905,11 @@ render_html("""
 """)
 
 # =============================================================================
-# 7. 하단 푸터 (Footer): 기호 추가, 연락처 줄바꿈, 비볼드체(font-weight:400) 적용
+# 7. 하단 푸터 (Footer): '구축(고위 기준 2,887명)' 표기 + 줄바꿈 연락처 + 비볼드체
 # =============================================================================
 render_html("""
 <div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.3pt; font-weight:400; border-top:1px solid #475569; margin-top:8px; line-height:1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
-    📚 데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스(완귀공파 고위 기준 총 2,887인)화<br>
+    📚 데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스 구축(고위 기준 2,887명)<br>
     &lt;연락처 안동수 010 5097 6403&gt;
 </div>
 """)
