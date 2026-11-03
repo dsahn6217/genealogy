@@ -74,27 +74,106 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
-def scroll_to_search_top():
-    """검색 엔터 후 자판을 숨기고 인명검색 라인이 화면 제일 위에 오도록 자동 스크롤"""
+def inject_global_ui_handlers():
+    """
+    ⭐ 전역 UI 제어 스크립트:
+    1) 검색창(인명·계보·단어 검색)에서 엔터(Enter)를 누르는 즉시 모바일 자판(가상 키보드) 강제 숨김(blur)
+    2) 슬라이더 막대 오른쪽 끝이나 손잡이 위에 뜨는 빨간색 숫자(ThumbValue / 1~6 숫자 텍스트) 실시간 완전 제거
+    """
     components.html(
         """
         <script>
-            setTimeout(function() {
+            (function() {
                 try {
                     var parentDoc = window.parent.document;
-                    if (parentDoc.activeElement) {
-                        parentDoc.activeElement.blur();
+
+                    // 1. 엔터 키 입력 시 즉시 입력창 포커스 해제하여 모바일 자판 숨김
+                    if (!parentDoc._genealogyKeyHandlerAdded) {
+                        parentDoc.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' || e.keyCode === 13) {
+                                setTimeout(function() {
+                                    try {
+                                        if (parentDoc.activeElement && parentDoc.activeElement.tagName === 'INPUT') {
+                                            parentDoc.activeElement.blur();
+                                        }
+                                        var allInputs = parentDoc.querySelectorAll('input[type="text"], input:not([type])');
+                                        allInputs.forEach(function(inp) { inp.blur(); });
+                                    } catch (err) {}
+                                }, 50);
+                            }
+                        }, true);
+                        parentDoc._genealogyKeyHandlerAdded = true;
                     }
-                    var inputs = parentDoc.querySelectorAll('input');
-                    inputs.forEach(function(inp) {
-                        inp.blur();
-                    });
-                    var target = parentDoc.getElementById('search-section-anchor');
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // 2. 슬라이더 내부의 빨간 숫자 표시(1~6) 요소를 찾아 완전히 숨김
+                    function hideSliderRedNumbers() {
+                        try {
+                            var sliders = parentDoc.querySelectorAll('[data-testid="stSlider"]');
+                            sliders.forEach(function(sl) {
+                                var nodes = sl.querySelectorAll('div, span, p');
+                                nodes.forEach(function(el) {
+                                    if (el.children.length === 0 && el.textContent) {
+                                        var txt = el.textContent.trim();
+                                        if (/^[1-6]$/.test(txt)) {
+                                            el.style.setProperty('display', 'none', 'important');
+                                            el.style.setProperty('visibility', 'hidden', 'important');
+                                            el.style.setProperty('opacity', '0', 'important');
+                                            el.style.setProperty('font-size', '0px', 'important');
+                                            el.style.setProperty('color', 'transparent', 'important');
+                                        }
+                                    }
+                                });
+                            });
+                        } catch (err) {}
+                    }
+
+                    hideSliderRedNumbers();
+                    setTimeout(hideSliderRedNumbers, 100);
+                    setTimeout(hideSliderRedNumbers, 300);
+
+                    if (!parentDoc._sliderObserverAdded) {
+                        var obs = new MutationObserver(function() {
+                            hideSliderRedNumbers();
+                        });
+                        obs.observe(parentDoc.body, { childList: true, subtree: true });
+                        parentDoc._sliderObserverAdded = true;
                     }
                 } catch (e) {}
-            }, 80);
+            })();
+        </script>
+        """,
+        height=0
+    )
+
+def scroll_to_search_top():
+    """
+    ⭐ 검색 엔터 후:
+    1) 모바일 가상 자판(키보드)이 확실히 내려가도록 포커스 해제(blur) 처리
+    2) 인명검색 라인이 화면 제일 위에 오도록 상단으로 자동 스크롤
+    """
+    components.html(
+        """
+        <script>
+            (function() {
+                function dismissKeyboardAndScroll() {
+                    try {
+                        var parentDoc = window.parent.document;
+                        var allInputs = parentDoc.querySelectorAll('input');
+                        allInputs.forEach(function(inp) {
+                            inp.blur();
+                        });
+                        if (parentDoc.activeElement && typeof parentDoc.activeElement.blur === 'function') {
+                            parentDoc.activeElement.blur();
+                        }
+                        var target = parentDoc.getElementById('search-section-anchor');
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    } catch (e) {}
+                }
+                setTimeout(dismissKeyboardAndScroll, 60);
+                setTimeout(dismissKeyboardAndScroll, 220);
+            })();
         </script>
         """,
         height=0
@@ -113,7 +192,7 @@ def get_query_param(key):
     return None
 
 # =============================================================================
-# 1. 디자인 스타일 CSS (업로드하신 수정app.py 구조 그대로 유지하여 화면 먹통 원천 방지)
+# 1. 디자인 스타일 CSS (타이틀 박스 황색 배경, 녹색 복귀 버튼, 빨간 숫자 제거 등)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -160,18 +239,20 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* ⭐ 제일 위 페이지 타이틀 창: 아이콘을 박스 내 왼쪽 끝으로 최대한 밀착 배치 */
+/* ⭐ 제일 위 페이지 타이틀 창: 배경 색상 황색(#facc15) + 아이콘을 왼쪽 끝으로 최대한 밀착 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
     margin-top: 8px !important;
     margin-bottom: 14px !important;
     padding: 8px 10px 8px 2px !important;
-    border-bottom: 3px solid #8c2d19;
-    background: #ffffff !important;
+    border: 2px solid #b45309 !important;
+    border-bottom: 3.5px solid #8c2d19 !important;
+    background: #facc15 !important;
+    background-color: #facc15 !important;
     opacity: 1 !important;
     border-radius: 6px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
@@ -211,7 +292,7 @@ div[data-testid="stElementContainer"],
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
     font-size: 16.5pt;
     font-weight: 800;
-    color: #1a202c;
+    color: #111827;
     text-align: center;
     width: 100%;
     margin-top: 1px;
@@ -223,8 +304,8 @@ div[data-testid="stElementContainer"],
 .title-sub-bottom {
     font-family: 'HCR Dotum', '함초롱돋움', 'Noto Sans KR', sans-serif;
     font-size: 10.5pt;
-    font-weight: 600;
-    color: #334155;
+    font-weight: 700;
+    color: #1e293b;
     text-align: center;
     width: 100%;
     margin-top: 1px;
@@ -349,7 +430,7 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     vertical-align: middle !important;
 }
 
-/* ⭐ 검색 결과 없을 때 안내 문구: 글자 색상 흰색(#ffffff) */
+/* 검색 결과 없을 때 안내 문구: 글자 색상 흰색(#ffffff) */
 .no-result-notice {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -367,10 +448,38 @@ div[data-testid="stTextInput"] input::-webkit-input-placeholder {
     text-shadow: 0 1px 2px rgba(0,0,0,0.6) !important;
 }
 
+/* ⭐ '초기 검색 인물로 복귀' 버튼: 바탕색 녹색(#15803d), 글씨체 흰색(#ffffff) */
+div[data-testid="stButton"] > button {
+    background-color: #15803d !important;
+    background: #15803d !important;
+    color: #ffffff !important;
+    border: 2px solid #ffffff !important;
+    border-radius: 6px !important;
+    font-weight: 800 !important;
+    font-size: 11pt !important;
+    padding: 6px 12px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3) !important;
+}
+div[data-testid="stButton"] > button:hover,
+div[data-testid="stButton"] > button:active,
+div[data-testid="stButton"] > button:focus {
+    background-color: #166534 !important;
+    background: #166534 !important;
+    color: #ffffff !important;
+    border-color: #fef08a !important;
+}
+div[data-testid="stButton"] > button *,
+div[data-testid="stButton"] > button p,
+div[data-testid="stButton"] > button span {
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 11pt !important;
+}
+
 /* ⭐ 직계 상대/하대 선조수 선택 슬라이더:
    1) 문구: '직계 상대 선조수 선택' / '직계 하대 선조수 선택'
    2) 하얀색 대수 글자(1대~6대): 크기 축소(9.2pt), 비볼드체(font-weight: 400)
-   3) 빨간 막대 오른쪽 끝부분 위에 표시되는 빨간 숫자(stThumbValue) 완전 삭제 */
+   3) 빨간 막대 오른쪽 끝 위에 뜨는 빨간색 숫자 표시 완전 삭제 */
 .slider-custom-header {
     display: flex;
     flex-direction: column;
@@ -410,6 +519,8 @@ div[data-testid="stSlider"] {
     margin-bottom: -8px !important;
     padding-top: 0px !important;
     padding-bottom: 0px !important;
+    font-size: 0px !important;
+    color: transparent !important;
 }
 div[data-testid="stSlider"] [data-testid="stWidgetLabel"] {
     display: none !important;
@@ -422,6 +533,14 @@ div[data-testid="stSlider"] div[data-baseweb="slider"] {
     margin-bottom: 0px !important;
     padding-top: 6px !important;
     padding-bottom: 4px !important;
+    font-size: 0px !important;
+    color: transparent !important;
+}
+/* 슬라이더 내부의 모든 텍스트(빨간 막대 오른쪽 끝 위의 빨간 숫자 포함) 투명화 및 크기 0 처리 */
+div[data-testid="stSlider"] * {
+    font-size: 0px !important;
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
 }
 /* 슬라이더 하얀 선(트랙): 검은색 테두리 + 5등분 경계 눈금선 표시 */
 div[data-testid="stSlider"] div[data-baseweb="slider"] > div > div {
@@ -445,16 +564,20 @@ div[data-testid="stSlider"] [role="slider"] {
     border: 2.5px solid #000000 !important;
     box-shadow: 0 1px 4px rgba(0,0,0,0.6) !important;
 }
-/* ⭐ 빨간 막대 끝부분 위의 빨간 숫자(ThumbValue) 및 기본 TickBar 숨김 */
+/* 슬라이더의 숫자 표시용 자식 요소들 완전 숨김 */
 div[data-testid="stSlider"] [data-testid="stThumbValue"],
 div[data-testid="stSlider"] [data-testid="stTickBar"],
 div[data-testid="stSlider"] [data-testid="stTickBarMin"],
 div[data-testid="stSlider"] [data-testid="stTickBarMax"],
-div[data-testid="stSlider"] [role="slider"] > div {
+div[data-testid="stSlider"] [role="slider"] > div,
+div[data-testid="stSlider"] [role="slider"] *,
+div[data-testid="stSlider"] div[data-baseweb="slider"] > div:nth-child(n+2) {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
-    font-size: 0px !important;
+    height: 0px !important;
+    width: 0px !important;
+    overflow: hidden !important;
 }
 
 /* 복수 후보 안내 배너 */
@@ -539,7 +662,7 @@ div[role="option"] * {
     border: 1px solid #bfdbfe;
 }
 
-/* 신상 및 계보 정보 */
+/* 인물 한글 약력 컨테이너 */
 .meta-para-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -681,23 +804,25 @@ div[role="option"] * {
     margin: 0 1px;
 }
 
-/* 문화재 안내 */
+/* ⭐ 종중 주요 유적 및 문화재 안내: 바탕색 녹색(#15803d), 헤더 흰색 글씨 */
 .heritage-sub-container {
     width: 100% !important;
     box-sizing: border-box !important;
-    background-color: #ffffff;
-    border: 2px solid #cbd5e1;
+    background-color: #15803d !important;
+    border: 2px solid #14532d !important;
     border-radius: 8px;
     padding: 9px 12px;
     margin-top: 6px;
     margin-bottom: 6px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.22);
 }
 .heritage-sub-header {
-    font-size: 11pt;
+    font-size: 11.2pt;
     font-weight: 800;
-    color: #1e3c72;
+    color: #ffffff !important;
     margin-bottom: 6px;
     line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 .heritage-sub-grid {
     display: grid;
@@ -705,21 +830,21 @@ div[role="option"] * {
     gap: 6px;
 }
 .heritage-sub-card {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    border: 1px solid #dcfce7;
     border-radius: 6px;
     padding: 6px 8px;
     text-decoration: none !important;
     display: block;
 }
 .heritage-sub-card:hover {
-    background: #eff6ff;
-    border-color: #2563eb;
+    background: #f0fdf4;
+    border-color: #fef08a;
 }
 .h-card-name {
     font-size: 10pt;
     font-weight: 700;
-    color: #1e40af;
+    color: #14532d;
     margin-bottom: 2px;
     line-height: 1.35;
     display: flex;
@@ -728,11 +853,11 @@ div[role="option"] * {
 }
 .h-card-desc {
     font-size: 8.8pt;
-    color: #475569;
+    color: #334155;
     line-height: 1.35;
 }
 
-/* ⭐ 업로드하신 수정app.py의 모바일 좌우 여백 동일화 CSS 그대로 적용 */
+/* 업로드하신 수정app.py의 모바일 좌우 여백 동일화 CSS 그대로 적용 */
 @media (max-width: 768px) {
     html,
     body,
@@ -783,6 +908,7 @@ div[role="option"] * {
 """
 
 render_html(CUSTOM_CSS)
+inject_global_ui_handlers()
 
 # =============================================================================
 # 2. 데이터 로드 및 초고속(0.2초) 고유ID 기반 부모-자녀 매핑 전처리
@@ -828,7 +954,7 @@ def load_and_preprocess_genealogy():
     if raw_df is None or raw_df.empty:
         return None, f"데이터 파일({DATA_FILE})을 찾을 수 없습니다."
 
-    # ⭐ 초고속 딕셔너리 인덱싱(O(N), 0.2초)으로 동명이인 부친 고유ID(_father_gid) 정확히 매핑
+    # 초고속 딕셔너리 인덱싱(O(N), 0.2초)으로 동명이인 부친 고유ID(_father_gid) 정확히 매핑
     records = raw_df.to_dict("records")
     by_name = {}
     for r in records:
@@ -894,8 +1020,15 @@ def load_and_preprocess_genealogy():
 df, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: 세수 표기, 입계/출계 판별, 문집 추출, 한글 신상 문단 생성
+# 3. 보조 유틸리티 함수: 한글한자 병기, 과거 통합 검색어, 한글 약력 문단 생성
 # =============================================================================
+# ⭐ 과거 관련 통합 검색어 그룹 (이 중 1단어만 입력해도 그룹 전체 단어를 검색)
+EXAM_GROUP_KEYWORDS = [
+    "과거", "문과", "급제", "사마", "별시", "대과", "무과", "잡과", "장원",
+    "진사", "생원", "향시", "회시", "복시", "현랑과", "현량과", "증광시",
+    "전시", "식년시", "알성시", "정시", "춘당대시", "갑과", "을과", "병과"
+]
+
 def extract_generation_info(gid):
     m = re.search(r"-(\d+)$", str(gid).strip())
     if m:
@@ -924,10 +1057,19 @@ def clean_ko_name(raw_val):
     cleaned = re.sub(r"[一-龥]+", "", s).strip()
     return cleaned if cleaned else s
 
+def format_ko_hanja_attached(raw_val):
+    """
+    ⭐ 검색 결과창 제목의 함자를 '한글한자' 붙여서 병기 (예: '嶒증' -> '증嶒', '景時경시' -> '경시景時')
+    """
+    s = str(raw_val).strip()
+    ko, hj = split_name(s)
+    if ko and hj:
+        return f"{ko}{hj}"
+    return s
+
 def match_name_query(row, q):
     """
-    인명 검색 및 계보 검색 시 안내문은 그대로 유지하되,
-    실제 검색은 함자, 성명, 자(字), 초자(初字), 호(號), 일휘(一諱), 초휘(初諱), 초명(初名), 통명(通名)을 모두 검색
+    인명 검색 및 계보 검색 시 함자, 성명, 자(字), 초자(初字), 호(號), 일휘(一諱), 초휘(初諱), 초명(初名), 통명(通名) 모두 검색
     """
     q = q.strip()
     if not q:
@@ -1040,14 +1182,27 @@ def highlight_corrections_html(text, search_term=None):
     for kw in keywords:
         if kw in formatted:
             formatted = formatted.replace(kw, f'<span class="red-correction">{kw}</span>')
-    if search_term and search_term.strip():
-        sterm = search_term.strip()
-        formatted = re.sub(
-            f"({re.escape(sterm)})",
-            r'<span class="search-word-red">\1</span>',
-            formatted,
-            flags=re.IGNORECASE
-        )
+
+    if search_term:
+        if isinstance(search_term, (list, tuple, set)):
+            terms = [str(t).strip() for t in search_term if str(t).strip()]
+            terms.sort(key=len, reverse=True)
+            if terms:
+                pat = "|".join(re.escape(t) for t in terms)
+                formatted = re.sub(
+                    f"({pat})",
+                    r'<span class="search-word-red">\1</span>',
+                    formatted,
+                    flags=re.IGNORECASE
+                )
+        elif str(search_term).strip():
+            sterm = str(search_term).strip()
+            formatted = re.sub(
+                f"({re.escape(sterm)})",
+                r'<span class="search-word-red">\1</span>',
+                formatted,
+                flags=re.IGNORECASE
+            )
     return formatted
 
 def extract_munjip_info(ko_bio):
@@ -1088,7 +1243,7 @@ def extract_munjip_info(ko_bio):
 
 def format_hakmun_sentences_with_linebreaks(text):
     """
-    ⭐ 학력·인품·업적 항목에서 문장이 끝난 경우 마침표(.)를 찍고 줄바꿈(<br>) 처리
+    학력·인품·업적 항목에서 문장이 끝난 경우 마침표(.)를 찍고 줄바꿈(<br>) 처리
     """
     if not text:
         return ""
@@ -1104,7 +1259,7 @@ def format_hakmun_sentences_with_linebreaks(text):
 
 def parse_person_hangul_details(row):
     """
-    신상 및 계보 정보 항목 구성:
+    인물 한글 약력 항목 구성:
     1) 부, 조부 통합 -> '부친·조부' 항목 (부친 00, 조부 00)
     2) 자, 호 통합 -> '자·호' 항목 (자 00, 호 00 형식)
     3) '학력·인품·업적' 바로 위에 '문집' 항목 배치
@@ -1211,7 +1366,11 @@ def format_hangul_only_paragraph_html(row, search_term=None):
     return "".join(lines_html)
 
 def render_person_result_card(target_row, search_term=None):
-    h_name = clean_ko_name(target_row['인명'])
+    """
+    ⭐ 검색 결과창 제목 함자: 한글한자 붙여서 병기 (예: 증嶒, 경시景時)
+    ⭐ '신상 및 계보 정보' -> '인물 한글 약력'으로 변경
+    """
+    combined_name = format_ko_hanja_attached(target_row['인명'])
     adopt_type, _, _ = get_adoption_info(target_row)
     rel_badge_text = f"{target_row['관계']} (출계)" if adopt_type == "출계" else str(target_row['관계'])
 
@@ -1223,14 +1382,14 @@ def render_person_result_card(target_row, search_term=None):
     <div class="result-card">
         <div class="result-card-header">
             <div class="result-name-big">
-                <span>{h_name if h_name else target_row['인명']}</span>
+                <span>{combined_name}</span>
                 <span class="result-badge">{rel_badge_text}</span>
             </div>
             <div style="font-size:10pt; color:#6b7280; font-family:monospace;">고유ID: {target_row['고유ID']}</div>
         </div>
         
         <div style="font-weight:800; color:#1e3c72; margin-bottom:4px; font-size:11pt;">
-            📌 신상 및 계보 정보
+            📌 인물 한글 약력
         </div>
         <div class="meta-para-container">
             {meta_paragraphs_html}
@@ -1279,8 +1438,8 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
         ancestors.append({"level": up, "row": f_row, "siblings": sibs})
         curr = f_row
 
-    # ⭐ 계보 검색 결과창 제목: '계보도' [인물명] 표시 후 줄바꿈하여 '(네모 박스 인물 클릭 시 새 계보 생성)' 표시
-    person_label = clean_ko_name(target_name) if clean_ko_name(target_name) else target_name
+    # ⭐ 계보 검색 결과창 제목: '계보도' [한글한자 병기 인물명] 표시 후 줄바꿈하여 '(네모 박스 인물 클릭 시 새 계보 생성)' 표시
+    person_label = format_ko_hanja_attached(target_name)
     diagram_parts = [
         f'<div id="search-result-anchor"></div>'
         f'<div class="tree-diagram-wrapper">'
@@ -1405,7 +1564,7 @@ def render_tree_hierarchy(target_row, all_df, max_up=3, max_down=2, key_prefix="
     render_person_result_card(target_row)
 
 # =============================================================================
-# 4. 최상단 헤더(좌측 초대형 아이콘 밀착 + 우측 타이틀) 및 검색 인터페이스
+# 4. 최상단 헤더(황색 배경 + 좌측 초대형 아이콘 밀착 + 우측 타이틀) 및 검색 인터페이스
 # =============================================================================
 icon_img_tag = f'<img src="{icon_b64}" style="width:118px; height:118px; object-fit:contain; display:block; margin-left:0px;">' if icon_b64 else '<span style="font-size:68px;">📜</span>'
 
@@ -1483,7 +1642,7 @@ else:
     )
 
 # =============================================================================
-# 5. 검색 결과 창 (검색 실패 안내문 흰색 글자 적용)
+# 5. 검색 결과 창 (엔터 시 자판 숨김 + 상단 스크롤 + 과거 통합 키워드 검색 적용)
 # =============================================================================
 if search_type == "인명 검색" and query_val.strip():
     q = query_val.strip()
@@ -1495,6 +1654,7 @@ if search_type == "인명 검색" and query_val.strip():
             입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다.
         </div>
         """)
+        scroll_to_search_top()
     else:
         if len(matched_df) > 1:
             render_html(f"""
@@ -1532,6 +1692,7 @@ elif search_type == "계보 검색":
                 계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다.
             </div>
             """)
+            scroll_to_search_top()
         elif len(l_matches) > 1:
             render_html(f"""
             <div class="multi-ancestor-banner">
@@ -1561,7 +1722,7 @@ elif search_type == "계보 검색":
                 </div>
             </div>
             """)
-            up_gens = st.slider("직계 상대 선조수 선택", min_value=1, max_value=6, value=3, label_visibility="collapsed")
+            up_gens = st.slider("직계 상대 선조수 선택", min_value=1, max_value=6, value=3, format="", label_visibility="collapsed")
         with c_cond2:
             render_html("""
             <div class="slider-custom-header">
@@ -1576,7 +1737,7 @@ elif search_type == "계보 검색":
                 </div>
             </div>
             """)
-            down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, label_visibility="collapsed")
+            down_gens = st.slider("직계 하대 선조수 선택", min_value=1, max_value=6, value=2, format="", label_visibility="collapsed")
 
         if st.session_state.get('active_tree_gid'):
             if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
@@ -1590,11 +1751,22 @@ elif search_type == "계보 검색":
 
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
+
+    # ⭐ 과거 통합 검색어 중 1단어라도 입력하면 열거된 모든 과거 관련 단어를 통합 검색
+    if term in EXAM_GROUP_KEYWORDS:
+        search_terms_list = EXAM_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in EXAM_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (과거·문과·급제·사마·진사·생원 등 과거 관련 통합 검색)"
+    else:
+        search_terms_list = [term]
+        regex_pattern = re.escape(term)
+        banner_term_label = f"'{term}'"
+
     mask = (
-        df['한글 약력 정리'].astype(str).str.contains(term, case=False, na=False) |
-        df['한문 약력 정리'].astype(str).str.contains(term, case=False, na=False) |
-        df['한글 약력 원문'].astype(str).str.contains(term, case=False, na=False) |
-        df['한문 약력 원문'].astype(str).str.contains(term, case=False, na=False)
+        df['한글 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한글 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True)
     )
     word_matches = df[mask]
     
@@ -1604,10 +1776,11 @@ elif search_type == "단어 검색" and query_val.strip():
             입력하신 단어 '{term}'을(를) 포함하고 있는 약력 기록이 없습니다.
         </div>
         """)
+        scroll_to_search_top()
     else:
         render_html(f"""
         <div class="multi-ancestor-banner">
-            📢 검색어 <span class="search-word-red">'{term}'</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위(다수) 검색되었습니다. 아래 목록에서 선조를 선택하세요.
+            📢 검색어 <span class="search-word-red">{banner_term_label}</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위 검색되었습니다. 아래 목록에서 선조를 선택하세요.
         </div>
         """)
         candidate_list = [format_candidate_label(r) for _, r in word_matches.iterrows()]
@@ -1615,15 +1788,15 @@ elif search_type == "단어 검색" and query_val.strip():
         chosen_gid = chosen.split("고유ID: ")[-1].strip()
         chosen_row = word_matches[word_matches['고유ID'] == chosen_gid].iloc[0]
         
-        render_person_result_card(chosen_row, search_term=term)
+        render_person_result_card(chosen_row, search_term=search_terms_list)
         scroll_to_search_top()
 
 # =============================================================================
-# 6. 종중 주요 유적 및 문화재 안내 (항상 검색 결과 창 아래에 위치)
+# 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
 # =============================================================================
 render_html("""
 <div class="heritage-sub-container">
-    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내 (클릭 시 국가유산 포털로 이동)</div>
+    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내</div>
     <div class="heritage-sub-grid">
         <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" class="heritage-sub-card">
             <div class="h-card-name">1. 영천 완귀정(경상북도 민속문화재 제20호) <span>↗</span></div>
