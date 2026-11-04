@@ -598,7 +598,9 @@ div[role="option"] * {
     border: 1px solid #f87171;
 }
 
-/* 계보도 도형 박스 및 헤더 */
+/* ============================================================================
+   ⭐ 계보도 도형 박스 및 남형제·여형제 독립 그룹 박스 스타일
+   ============================================================================ */
 .tree-diagram-wrapper {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -622,13 +624,13 @@ div[role="option"] * {
     display: flex;
     align-items: center;
     margin-bottom: 0px !important;
-    padding: 3px 6px;
+    padding: 4px 6px;
     background: #f8fafc;
     border-radius: 5px;
     border: 1px solid #cbd5e1;
     line-height: 1.3;
 }
-/* ⭐ 세대와 세대를 연결하는 화살표의 길이를 절반으로 축소 */
+/* 세대와 세대를 연결하는 화살표의 길이를 절반으로 축소 */
 .tree-connector-line {
     text-align: center;
     color: #1e3c72;
@@ -649,61 +651,118 @@ div[role="option"] * {
     text-align: center;
     margin-right: 6px;
     line-height: 1.2;
+    flex-shrink: 0;
 }
-.tree-nodes-container {
+/* 남형제 박스와 여형제 박스를 감싸는 외부 컨테이너 */
+.tree-groups-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+}
+/* ⭐ 1) 직계가 포함된 그룹 박스: 모두 황색(#fde047) 바탕 */
+.tree-group-direct {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
     align-items: center;
+    background-color: #fde047 !important;
+    background: #fde047 !important;
+    border: 1.5px solid #eab308 !important;
+    border-radius: 5px !important;
+    padding: 3px 6px !important;
 }
+/* ⭐ 2) 남형제(하대 후손 등 비직계) 독립 박스: 옅은 청색(#dbeafe) 바탕 */
+.tree-group-male {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    background-color: #dbeafe !important;
+    background: #dbeafe !important;
+    border: 1.5px solid #93c5fd !important;
+    border-radius: 5px !important;
+    padding: 3px 6px !important;
+}
+/* ⭐ 3) 여형제(사위) 독립 박스: 흰색(#ffffff) 바탕 + 남형제 박스보다 오른쪽으로 2pt 들여쓰기 */
+.tree-group-female {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 5px !important;
+    padding: 3px 6px !important;
+    margin-left: 2pt !important;
+}
+
+/* 개별 인물 노드 (공통) */
 .tree-node-box {
     display: inline-block !important;
     text-decoration: none !important;
     cursor: pointer !important;
-    background: #ffffff !important;
-    border: 1.5px solid #64748b !important;
     border-radius: 4px !important;
-    padding: 2px 7px !important;
+    padding: 1px 6px !important;
     font-size: 9.5pt !important;
-    color: #0f172a !important;
     line-height: 1.3 !important;
     transition: all 0.15s ease-in-out !important;
 }
-.tree-node-box:hover {
+/* ⭐ 직계 인물: 글자색 황토색(#9a3412), 함자를 둘러싼 사각형은 표시 나지 않도록 황색(#fde047, 테두리 없음)으로 표시 */
+.tree-node-direct,
+.tree-node-direct * {
+    background-color: #fde047 !important;
+    background: #fde047 !important;
+    border: 1px solid #fde047 !important;
+    box-shadow: none !important;
+    color: #9a3412 !important;
+    -webkit-text-fill-color: #9a3412 !important;
+    font-weight: 900 !important;
+}
+.tree-node-direct:hover,
+.tree-node-direct:hover * {
+    background-color: #facc15 !important;
+    background: #facc15 !important;
+    border-color: #eab308 !important;
+    color: #7c2d12 !important;
+    -webkit-text-fill-color: #7c2d12 !important;
+}
+/* ⭐ 남형제 인물: 바탕색은 옅은 청색(#dbeafe) */
+.tree-node-male,
+.tree-node-male * {
+    background-color: #dbeafe !important;
     background: #dbeafe !important;
+    border: 1px solid #93c5fd !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 700 !important;
+}
+.tree-node-male:hover,
+.tree-node-male:hover * {
+    background-color: #bfdbfe !important;
+    background: #bfdbfe !important;
     border-color: #2563eb !important;
     color: #1d4ed8 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+    -webkit-text-fill-color: #1d4ed8 !important;
 }
-/* 본인 및 단일 직계 강조 */
-.tree-node-target {
-    background: #eff6ff !important;
-    border: 2px solid #2563eb !important;
-    font-weight: 800 !important;
-    color: #1e40af !important;
+/* ⭐ 여형제(사위) 인물: 바탕색은 흰색(#ffffff) */
+.tree-node-female,
+.tree-node-female * {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 700 !important;
 }
-/* ⭐ 여러 자녀 중 직계 선조: 황토색 배경(#b45309)에 흰색 글자(#ffffff) */
-.tree-node-ochre,
-.tree-node-ochre * {
-    background-color: #b45309 !important;
-    background: #b45309 !important;
-    border: 2px solid #78350f !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-weight: 800 !important;
-}
-.tree-node-ochre:hover,
-.tree-node-ochre:hover * {
-    background-color: #92400e !important;
-    background: #92400e !important;
-    border-color: #451a03 !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-}
-/* ⭐ 상대 선조가 여러 명일 경우 女박스는 子 박스보다 오른쪽으로 2포인트(2pt) 들여쓰기 */
-.tree-node-female-indent {
-    margin-left: 2pt !important;
+.tree-node-female:hover,
+.tree-node-female:hover * {
+    background-color: #f1f5f9 !important;
+    background: #f1f5f9 !important;
+    border-color: #64748b !important;
+    color: #1d4ed8 !important;
+    -webkit-text-fill-color: #1d4ed8 !important;
 }
 .tree-h-line {
     color: #64748b;
@@ -1464,20 +1523,15 @@ def get_siblings_list_fast(person_row):
 
 def render_tree_hierarchy(target_row, all_df):
     """
-    ⭐ 계보 검색 결과창 표시 규칙 (O(1) 해시맵 적용으로 0.001초 즉시 생성):
-    1) 모든 인물 한자 표기: [한글함자][한문한자] (예: 증嶒, 희수禧洙)
-    2) 계보 검색 결과창 제목 오른쪽 끝에 족보 페이지 표시 ('시직공파보' 줄바꿈 '1권 433p 5단' 형식, 글자크기 1p 축소)
-    3) 계보 검색 결과창 제목 밑 안내문: 괄호 없이 '네모 박스 인물 클릭시 새 계보 생성'으로 표시
-    4) 상대(선대): 24세 완귀공(증嶒)부터 본인 바로 위 부친까지 전 세대 표시
-       - 5대조 이상(lvl >= 5)은 직계만 단독 표시
-       - 4대조 이하(고조부·증조부·조부·부친, lvl <= 4)는 형제·자매 함께 표시
-    5) 상대 선조나 본인 행에서 여러 자녀(형제·자매)가 함께 표시되는 경우:
-       - 직계는 황토색 배경(#b45309)에 흰색 글자(#ffffff)로 표시
-       - 한자 오른쪽에 자녀 표시((1자), (2자), (1녀) 등) 생략
-       - 女박스는 子박스보다 오른쪽으로 2포인트(2pt) 들여쓰기
-    6) 본인 행 좌측 배지: '본인'과 '00세'를 줄바꿈하여 표시
-    7) 하대(후손): 4대손(자·손·증손·현손)까지 후손 모두 표시 (단독 자녀면 (1자) 표시, 여러 자녀면 한자 오른쪽에 자녀 표시 생략, 女박스 2pt 들여쓰기)
-    8) 세대와 세대를 연결하는 화살표 길이를 절반으로 축소
+    ⭐ 계보 검색 결과창 표시 규칙:
+    1) 좌측 삼각형 화살표 오른쪽 세수 배지에서 한자 전부 삭제 및 '고조부'->'고조', '증조부'->'증조' 변경:
+       - 상대: ▲ 부친(00세), ▲ 조부(00세), ▲ 증조(00세), ▲ 고조(00세), ▲ 5대조(00세)...
+       - 하대: ▼ 자(00세), ▼ 손(00세), ▼ 증손(00세), ▼ 현손(00세)
+    2) 직계 박스는 모두 황색(#fde047)으로 표시하고, 계보도의 직계 인명은 황토색(#9a3412)으로 표시하며,
+       함자를 둘러싼 사각형은 표시 나지 않도록 황색(#fde047, 테두리 없음)으로 표시
+    3) 남형제, 여형제(사위)를 구분하여 각각 독립된 박스를 생성하고 차례대로 모두 순서대로 기록:
+       - 남형제 박스 바탕색: 옅은 청색(#dbeafe) (단, 직계가 포함된 박스는 직계 박스이므로 황색(#fde047) 바탕에 비직계 남형제는 옅은 청색으로 표시)
+       - 여형제(사위) 박스 바탕색: 흰색(#ffffff) (단, 본인이나 직계가 여성이면 해당 직계 박스는 황색(#fde047))
     """
     target_gid = target_row['고유ID']
     target_name = target_row['인명']
@@ -1525,109 +1579,143 @@ def render_tree_hierarchy(target_row, all_df):
         if idx_a > 0:
             diagram_parts.append('<div class="tree-connector-line">▼</div>')
 
+        # ⭐ 좌측 삼각형 화살표 오른쪽 세수 배지: 한자 모두 삭제 & '증조부'->'증조', '고조부'->'고조'
         if lvl == 1:
-            lbl_badge = "부친(父)"
+            lbl_badge = "부친"
         elif lvl == 2:
-            lbl_badge = "조부(祖)"
+            lbl_badge = "조부"
         elif lvl == 3:
-            lbl_badge = "증조부"
+            lbl_badge = "증조"
         elif lvl == 4:
-            lbl_badge = "고조부"
+            lbl_badge = "고조"
         else:
             lbl_badge = f"{lvl}대조"
 
-        # 5대조 이상(lvl >= 5)은 직계만 단독 표시
+        # 5대조 이상(lvl >= 5)은 직계만 단독 표시 (직계 박스는 모두 황색, 직계 함자는 황토색, 사각형은 황색)
         if lvl >= 5:
             r_gid = r['고유ID']
             r_name = format_ko_hanja_attached(r['인명'])
             r_rel = str(r['관계']).strip()
             rel_suffix = f"({r_rel})" if len(sibs) == 1 else ""
-            cls = "tree-node-box tree-node-ochre" if len(sibs) > 1 else "tree-node-box tree-node-target"
             diagram_parts.append(f"""
             <div class="tree-level-row">
                 <span class="tree-gen-badge">▲ {lbl_badge}({g_num}세)</span>
-                <div class="tree-nodes-container">
-                    <a href="?tree_gid={r_gid}" target="_self" class="{cls}"><b>{r_name}</b>{rel_suffix}</a>
+                <div class="tree-groups-wrapper">
+                    <div class="tree-group-direct">
+                        <a href="?tree_gid={r_gid}" target="_self" class="tree-node-box tree-node-direct"><b>{r_name}</b>{rel_suffix}</a>
+                    </div>
                 </div>
             </div>
             """)
         else:
-            # 4대조 이하(고조부·증조부·조부·부친): 형제·자매 모두 표시
+            # 4대조 이하(고조·증조·조부·부친): 남형제 / 여형제(사위) 각각 독립된 박스에 순서대로 기록
             is_multi_sibs = len(sibs) > 1
-            node_htmls = []
-            for s_i, s in enumerate(sibs):
-                is_direct = (s['고유ID'] == r['고유ID'])
-                s_name = format_ko_hanja_attached(s['인명'])
-                s_rel = str(s['관계']).strip()
-                s_gid = s['고유ID']
+            male_sibs = [s for s in sibs if "녀" not in str(s.get("관계", ""))]
+            female_sibs = [s for s in sibs if "녀" in str(s.get("관계", ""))]
 
-                if is_direct:
-                    cls = "tree-node-box tree-node-ochre" if is_multi_sibs else "tree-node-box tree-node-target"
-                else:
-                    cls = "tree-node-box"
+            group_boxes_html = []
 
-                if is_multi_sibs and "녀" in s_rel:
-                    cls += " tree-node-female-indent"
+            # (1) 남형제 독립 박스 (직계가 포함되어 있으면 황색 직계 박스, 아니면 옅은 청색 박스)
+            if male_sibs:
+                has_direct_in_male = any(s['고유ID'] == r['고유ID'] for s in male_sibs)
+                m_box_cls = "tree-group-direct" if has_direct_in_male else "tree-group-male"
+                m_nodes = []
+                for s_i, s in enumerate(male_sibs):
+                    is_direct = (s['고유ID'] == r['고유ID'])
+                    s_name = format_ko_hanja_attached(s['인명'])
+                    s_rel = str(s['관계']).strip()
+                    s_gid = s['고유ID']
+                    n_cls = "tree-node-box tree-node-direct" if is_direct else "tree-node-box tree-node-male"
+                    rel_suffix = "" if is_multi_sibs else f"({s_rel})"
+                    if s_i > 0:
+                        m_nodes.append('<span class="tree-h-line">──</span>')
+                    m_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{n_cls}"><b>{s_name}</b>{rel_suffix}</a>')
+                group_boxes_html.append(f'<div class="{m_box_cls}">{"".join(m_nodes)}</div>')
 
-                rel_suffix = "" if is_multi_sibs else f"({s_rel})"
+            # (2) 여형제(사위) 독립 박스 (바탕색 흰색)
+            if female_sibs:
+                has_direct_in_female = any(s['고유ID'] == r['고유ID'] for s in female_sibs)
+                f_box_cls = "tree-group-direct" if has_direct_in_female else "tree-group-female"
+                f_nodes = []
+                for s_i, s in enumerate(female_sibs):
+                    is_direct = (s['고유ID'] == r['고유ID'])
+                    s_name = format_ko_hanja_attached(s['인명'])
+                    s_rel = str(s['관계']).strip()
+                    s_gid = s['고유ID']
+                    n_cls = "tree-node-box tree-node-direct" if is_direct else "tree-node-box tree-node-female"
+                    rel_suffix = "" if is_multi_sibs else f"({s_rel})"
+                    if s_i > 0:
+                        f_nodes.append('<span class="tree-h-line">──</span>')
+                    f_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{n_cls}"><b>{s_name}</b>{rel_suffix}</a>')
+                group_boxes_html.append(f'<div class="{f_box_cls}">{"".join(f_nodes)}</div>')
 
-                if s_i > 0:
-                    node_htmls.append('<span class="tree-h-line">──</span>')
-                node_htmls.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{cls}"><b>{s_name}</b>{rel_suffix}</a>')
-
-            nodes_joined = ''.join(node_htmls)
             diagram_parts.append(f"""
             <div class="tree-level-row">
                 <span class="tree-gen-badge">▲ {lbl_badge}({g_num}세)</span>
-                <div class="tree-nodes-container">{nodes_joined}</div>
+                <div class="tree-groups-wrapper">{"".join(group_boxes_html)}</div>
             </div>
             """)
 
     if len(ancestors) > 0:
         diagram_parts.append('<div class="tree-connector-line">▼</div>')
 
-    # 2. 본인 및 형제 행:
+    # 2. 본인 및 형제 행 (남형제 / 여형제(사위) 각각 독립된 박스로 구분, 직계 박스는 황색, 본인 함자는 황토색)
     t_sibs = get_siblings_list_fast(target_row)
     tg_num, _ = extract_generation_info(target_row['고유ID'])
     is_multi_t_sibs = len(t_sibs) > 1
-    
-    t_nodes = []
-    for s_i, s in enumerate(t_sibs):
-        is_t = (s['고유ID'] == target_row['고유ID'])
-        s_name = format_ko_hanja_attached(s['인명'])
-        s_rel = str(s['관계']).strip()
-        s_gid = s['고유ID']
 
-        if is_t:
-            cls = "tree-node-box tree-node-ochre" if is_multi_t_sibs else "tree-node-box tree-node-target"
-        else:
-            cls = "tree-node-box"
+    t_males = [s for s in t_sibs if "녀" not in str(s.get("관계", ""))]
+    t_females = [s for s in t_sibs if "녀" in str(s.get("관계", ""))]
+    t_group_boxes = []
 
-        if is_multi_t_sibs and "녀" in s_rel:
-            cls += " tree-node-female-indent"
+    if t_males:
+        has_t_in_male = any(s['고유ID'] == target_row['고유ID'] for s in t_males)
+        tm_box_cls = "tree-group-direct" if has_t_in_male else "tree-group-male"
+        tm_nodes = []
+        for s_i, s in enumerate(t_males):
+            is_t = (s['고유ID'] == target_row['고유ID'])
+            s_name = format_ko_hanja_attached(s['인명'])
+            s_rel = str(s['관계']).strip()
+            s_gid = s['고유ID']
+            n_cls = "tree-node-box tree-node-direct" if is_t else "tree-node-box tree-node-male"
+            marker = " 🎯[기준]" if is_t else ""
+            rel_suffix = "" if is_multi_t_sibs else f"({s_rel})"
+            if s_i > 0:
+                tm_nodes.append('<span class="tree-h-line">──</span>')
+            tm_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{n_cls}"><b>{s_name}</b>{marker}{rel_suffix}</a>')
+        t_group_boxes.append(f'<div class="{tm_box_cls}">{"".join(tm_nodes)}</div>')
 
-        marker = " 🎯[기준]" if is_t else ""
-        rel_suffix = "" if is_multi_t_sibs else f"({s_rel})"
+    if t_females:
+        has_t_in_female = any(s['고유ID'] == target_row['고유ID'] for s in t_females)
+        tf_box_cls = "tree-group-direct" if has_t_in_female else "tree-group-female"
+        tf_nodes = []
+        for s_i, s in enumerate(t_females):
+            is_t = (s['고유ID'] == target_row['고유ID'])
+            s_name = format_ko_hanja_attached(s['인명'])
+            s_rel = str(s['관계']).strip()
+            s_gid = s['고유ID']
+            n_cls = "tree-node-box tree-node-direct" if is_t else "tree-node-box tree-node-female"
+            marker = " 🎯[기준]" if is_t else ""
+            rel_suffix = "" if is_multi_t_sibs else f"({s_rel})"
+            if s_i > 0:
+                tf_nodes.append('<span class="tree-h-line">──</span>')
+            tf_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{n_cls}"><b>{s_name}</b>{marker}{rel_suffix}</a>')
+        t_group_boxes.append(f'<div class="{tf_box_cls}">{"".join(tf_nodes)}</div>')
 
-        if s_i > 0:
-            t_nodes.append('<span class="tree-h-line">──</span>')
-        t_nodes.append(f'<a href="?tree_gid={s_gid}" target="_self" class="{cls}"><b>{s_name}</b>{marker}{rel_suffix}</a>')
-
-    t_joined = ''.join(t_nodes)
     diagram_parts.append(f"""
     <div class="tree-level-row" style="background:#eff6ff; border:2px solid #2563eb;">
         <span class="tree-gen-badge" style="background:#1d4ed8; color:white;">● 본인<br>{tg_num}세</span>
-        <div class="tree-nodes-container">{t_joined}</div>
+        <div class="tree-groups-wrapper">{"".join(t_group_boxes)}</div>
     </div>
     """)
 
-    # 3. 하대 후손 탐색: 4대손(자·손·증손·현손)까지 O(1) 해시맵으로 즉시 조회
+    # 3. 하대 후손 탐색: 4대손(자·손·증손·현손)까지 한자 없는 세수 배지 + 남형제(옅은 청색 박스) / 여형제(흰색 박스) 분리 표시
     max_down = 4
     down_labels = {
-        1: "자(子)",
-        2: "손(孫)",
-        3: "증손(曾孫)",
-        4: "현손(玄孫)"
+        1: "자",
+        2: "손",
+        3: "증손",
+        4: "현손"
     }
     current_parents = [target_row]
     for down_lvl in range(1, max_down + 1):
@@ -1651,39 +1739,45 @@ def render_tree_hierarchy(target_row, all_df):
             ch_rel = str(ch['관계']).strip()
             ch_gid = ch['고유ID']
 
-            cls = "tree-node-box"
-            if is_multi_down and "녀" in ch_rel:
-                cls += " tree-node-female-indent"
-
             if is_multi_down:
                 rel_suffix = ""
             else:
                 rel_suffix = f"({ch_rel})" if down_lvl == 1 else f"({p_name_fmt}의 {ch_rel})"
 
-            node_html = f'<a href="?tree_gid={ch_gid}" target="_self" class="{cls}"><b>{ch_name}</b>{rel_suffix}</a>'
-
             if "녀" in ch_rel:
+                node_html = f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box tree-node-female"><b>{ch_name}</b>{rel_suffix}</a>'
                 female_items.append((ch, node_html))
             else:
+                node_html = f'<a href="?tree_gid={ch_gid}" target="_self" class="tree-node-box tree-node-male"><b>{ch_name}</b>{rel_suffix}</a>'
                 male_items.append((ch, node_html))
 
+        down_group_boxes = []
+        if male_items:
+            m_htmls = []
+            for idx_m, (_, html_str) in enumerate(male_items):
+                if idx_m > 0:
+                    m_htmls.append('<span class="tree-h-line">──</span>')
+                m_htmls.append(html_str)
+            down_group_boxes.append(f'<div class="tree-group-male">{"".join(m_htmls)}</div>')
+
+        if female_items:
+            f_htmls = []
+            for idx_f, (_, html_str) in enumerate(female_items):
+                if idx_f > 0:
+                    f_htmls.append('<span class="tree-h-line">──</span>')
+                f_htmls.append(html_str)
+            down_group_boxes.append(f'<div class="tree-group-female">{"".join(f_htmls)}</div>')
+
         ordered_items = male_items + female_items
-        node_htmls = []
-        next_gen_rows = []
-        for idx_item, (ch_row, html_str) in enumerate(ordered_items):
-            next_gen_rows.append(ch_row)
-            if idx_item > 0:
-                node_htmls.append('<span class="tree-h-line">──</span>')
-            node_htmls.append(html_str)
+        next_gen_rows = [ch_row for ch_row, _ in ordered_items]
 
         diagram_parts.append('<div class="tree-connector-line">▼</div>')
         dg_num = (tg_num + down_lvl) if tg_num else (24 + down_lvl)
         d_badge = down_labels.get(down_lvl, f"{down_lvl}대손")
-        d_joined = ''.join(node_htmls)
         diagram_parts.append(f"""
         <div class="tree-level-row">
             <span class="tree-gen-badge">▼ {d_badge}({dg_num}세)</span>
-            <div class="tree-nodes-container">{d_joined}</div>
+            <div class="tree-groups-wrapper">{"".join(down_group_boxes)}</div>
         </div>
         """)
         current_parents = next_gen_rows
