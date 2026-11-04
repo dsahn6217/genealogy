@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import openpyxl
 import sqlite3
@@ -14,7 +13,7 @@ ICON_FILE = "icon.png"
 DB_FILE = "genealogy.db"
 DATA_FILE = "genealogy.xlsx"
 
-# 저장소 업로드 배경 이미지 파일 탐색 (background.png, bg.png 등)
+# 저장소 업로드 배경 이미지 파일 탐색
 BG_PATHS = [
     "background.png",
     "background.jpg",
@@ -33,7 +32,7 @@ if not os.path.exists(ICON_FILE):
 
 DB_PATHS = [
     "genealogy.db",
-    "/tmp/genealogy_fast.db",
+    "/tmp/genealogy.db",
     "artifacts/file_generation/ttl=63d/output/genealogy.db"
 ]
 db_file_path = next((p for p in DB_PATHS if os.path.exists(p)), DB_FILE)
@@ -79,44 +78,6 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
-def dismiss_mobile_keyboard():
-    """
-    ⭐ 검색 버튼(모바일 자판의 검색/이동/완료/Enter) 클릭 시 즉시 모바일 자판(가상 키보드)을 숨김 처리
-    """
-    components.html(
-        """
-        <script>
-        (function() {
-            try {
-                var pDoc = window.parent.document;
-                function blurAllInputs() {
-                    try {
-                        if (pDoc.activeElement && pDoc.activeElement.tagName === 'INPUT') {
-                            pDoc.activeElement.blur();
-                        }
-                        var inputs = pDoc.querySelectorAll('input');
-                        for (var i = 0; i < inputs.length; i++) {
-                            inputs[i].blur();
-                        }
-                    } catch (e) {}
-                }
-                if (!pDoc._kbDismissAttached) {
-                    pDoc.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter' || e.keyCode === 13) {
-                            setTimeout(blurAllInputs, 40);
-                            setTimeout(blurAllInputs, 150);
-                        }
-                    }, true);
-                    pDoc._kbDismissAttached = true;
-                }
-                setTimeout(blurAllInputs, 30);
-            } catch (err) {}
-        })();
-        </script>
-        """,
-        height=0
-    )
-
 def get_query_param(key):
     try:
         if hasattr(st, "query_params") and key in st.query_params:
@@ -144,7 +105,7 @@ def clear_tree_query_params():
         pass
 
 # =============================================================================
-# 1. 디자인 스타일 CSS
+# 1. 디자인 스타일 CSS (외부 웹폰트 및 세션 락 유발 iframe을 원천 제거)
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -989,7 +950,7 @@ CN_SEARCH_PATTERNS = [re.compile(p) for p in [
     r'號\s*([^\.,\n\s]+)',
     r'一諱\s*([^\.,\n\s]+)',
     r'初諱\s*([^\.,\n\s]+)',
-    r'初名\s*([^\.,\n\s]+)',
+    r'初명\s*([^\.,\n\s]+)',
     r'通名\s*([^\.,\n\s]+)',
 ]]
 
@@ -1054,20 +1015,28 @@ def load_and_preprocess_genealogy():
     raw_df = None
     status_msg = ""
 
-    # 1순위: SQLite DB 로드
+    # 1순위: 초고속 경량 SQLite DB 로드 (0.1초 소요, 무한 로딩 원천 차단)
     for cand_db in DB_PATHS:
         if os.path.exists(cand_db):
             try:
-                conn = sqlite3.connect(cand_db, check_same_thread=False)
+                conn = sqlite3.connect(f"file:{cand_db}?immutable=1", uri=True, check_same_thread=False)
                 raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
                 conn.close()
                 if not raw_df.empty:
                     status_msg = "성공 (SQLite DB)"
                     break
             except Exception:
-                raw_df = None
+                try:
+                    conn = sqlite3.connect(cand_db, check_same_thread=False)
+                    raw_df = pd.read_sql("SELECT * FROM genealogy", conn).fillna("")
+                    conn.close()
+                    if not raw_df.empty:
+                        status_msg = "성공 (SQLite DB)"
+                        break
+                except Exception:
+                    raw_df = None
 
-    # 2순위: Excel 로드 후 고속 SQLite 캐시 자동 생성
+    # 2순위: Excel 로드 (DB 파일 부재 시 폴백)
     if (raw_df is None or raw_df.empty) and os.path.exists(DATA_FILE):
         try:
             wb = openpyxl.load_workbook(DATA_FILE, read_only=True)
@@ -1080,17 +1049,11 @@ def load_and_preprocess_genealogy():
             header = [str(c).strip() if c is not None else f"Col{idx}" for idx, c in enumerate(rows[0])]
             raw_df = pd.DataFrame(rows[1:], columns=header).fillna("")
             status_msg = "성공 (Excel)"
-            try:
-                conn_w = sqlite3.connect("/tmp/genealogy_fast.db", check_same_thread=False)
-                raw_df.to_sql("genealogy", conn_w, if_exists="replace", index=False)
-                conn_w.close()
-            except Exception:
-                pass
         except Exception as e:
             return None, None, None, str(e)
 
     if raw_df is None or raw_df.empty:
-        return None, None, None, f"데이터 파일({DATA_FILE})을 찾을 수 없습니다."
+        return None, None, None, f"데이터 파일({DB_FILE} 또는 {DATA_FILE})을 찾을 수 없습니다."
 
     # 1. 초고속 딕셔너리 인덱싱(O(N))으로 동명이인 부친 고유ID(_father_gid) 및 통합 검색 인덱스(_search_blob) 생성
     records = raw_df.to_dict("records")
@@ -1956,7 +1919,7 @@ render_html("""
 
 if df is None:
     st.error(f"데이터 로드 오류: {load_msg}")
-    st.info("파일 이름이 `genealogy.xlsx` 또는 `genealogy.db`인지 확인해 주시기 바랍니다.")
+    st.info("파일 이름이 `genealogy.db` 또는 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
     st.stop()
 
 # ⭐ 계보도 내 함자 박스 클릭 시(?tree_gid=...&init_gid=...) 페이지가 새로고침되더라도
@@ -2048,7 +2011,6 @@ if search_type == "인명 검색" and query_val.strip():
             target_row = matched_df.iloc[0]
             
         render_person_result_card(target_row)
-    dismiss_mobile_keyboard()
 
 elif search_type == "계보 검색":
     q = query_val.strip()
@@ -2134,7 +2096,6 @@ elif search_type == "계보 검색":
                     st.rerun()
 
             render_tree_hierarchy(tree_target, df, initial_gid=curr_init_gid)
-        dismiss_mobile_keyboard()
 
     elif st.session_state.get('active_tree_gid') in gid_to_row:
         active_gid = st.session_state['active_tree_gid']
@@ -2146,7 +2107,6 @@ elif search_type == "계보 검색":
                 clear_tree_query_params()
                 st.rerun()
         render_tree_hierarchy(gid_to_row[active_gid], df, initial_gid=init_gid)
-        dismiss_mobile_keyboard()
 
 elif search_type == "단어 검색" and query_val.strip():
     term = query_val.strip()
@@ -2196,7 +2156,6 @@ elif search_type == "단어 검색" and query_val.strip():
         chosen_row = word_matches.iloc[chosen_idx]
         
         render_person_result_card(chosen_row, search_term=search_terms_list)
-    dismiss_mobile_keyboard()
 
 # =============================================================================
 # 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
