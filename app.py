@@ -105,7 +105,7 @@ def clear_tree_query_params():
         pass
 
 # =============================================================================
-# 1. 디자인 스타일 CSS (외부 웹폰트 및 세션 락 유발 iframe을 원천 제거)
+# 1. 디자인 스타일 CSS
 # =============================================================================
 CUSTOM_CSS = """
 <style>
@@ -134,7 +134,7 @@ header[data-testid="stHeader"] {
 }
 
 div[data-testid="stVerticalBlock"] {
-    gap: 0.25rem !important;
+    gap: 0.22rem !important;
 }
 div[data-testid="stElementContainer"],
 .element-container {
@@ -151,7 +151,7 @@ div[data-testid="stElementContainer"],
     opacity: 1 !important;
 }
 
-/* ⭐ 제일 위 페이지 타이틀 창: 내부 상하 여백 80% 축소 (padding 상하 1.5px, 텍스트 상하 간격 최소화) */
+/* ⭐ 제일 위 페이지 타이틀 창: 내부 상하 여백 80% 축소 */
 .title-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -230,7 +230,7 @@ div[data-testid="stElementContainer"],
 .compact-search-header {
     width: 100% !important;
     text-align: center !important;
-    margin-top: 8px !important;
+    margin-top: 6px !important;
     margin-bottom: 2px !important;
     padding: 1px 2px !important;
     line-height: 1.3 !important;
@@ -247,7 +247,7 @@ div[data-testid="stElementContainer"],
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
-/* 검색 유형 선택 라인과 아래 검색어 입력창 간격을 50% 이상 축소 */
+/* ⭐ 검색 유형 라디오 라인 (윗줄: 인명·계보·단어 검색 / 아랫줄: 분파도·문화재·추모 글 조회 동일 형식) */
 div[data-testid="stRadio"] {
     margin-top: 0px !important;
     margin-bottom: 0px !important;
@@ -260,11 +260,11 @@ div[role="radiogroup"] {
     flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 14px !important;
+    gap: 12px !important;
     width: 100% !important;
     margin-top: 0px !important;
     margin-bottom: 0px !important;
-    padding: 0px 2px !important;
+    padding: 1px 2px !important;
     overflow-x: auto !important;
 }
 div[role="radiogroup"] > label,
@@ -278,7 +278,7 @@ div[role="radiogroup"] label[data-baseweb="radio"] {
 }
 div[role="radiogroup"] label p,
 div[role="radiogroup"] label span {
-    font-size: 12.5pt !important;
+    font-size: 12.0pt !important;
     font-weight: 800 !important;
     color: #ffffff !important;
     white-space: nowrap !important;
@@ -287,9 +287,18 @@ div[role="radiogroup"] label span {
     text-shadow: 0 1px 3px rgba(0,0,0,0.65);
 }
 
+/* ⭐ 인명·계보·단어 검색 라인과 분파도·문화재·추모 글 조회 라인 사이의 새 가로줄 */
+.radio-row-divider {
+    border: none !important;
+    border-top: 1.5px solid rgba(255, 255, 255, 0.55) !important;
+    margin: 3px 4px 3px 4px !important;
+    padding: 0px !important;
+    height: 0px !important;
+}
+
 /* 검색어 입력창: 테두리 흰색(3.5px solid #ffffff), 배경 청색, 세로 중앙 정렬 */
 div[data-testid="stTextInput"] {
-    margin-top: 0px !important;
+    margin-top: 2px !important;
     margin-bottom: 4px !important;
     padding-top: 0px !important;
     padding-bottom: 0px !important;
@@ -470,7 +479,7 @@ div[role="option"] * {
     border-radius: 8px;
     border: 1px solid #bfdbfe;
 }
-/* ⭐ 모든 족보 페이지 표시: '시직공파보' 줄바꿈 '1권 433p 5단' 형식 + 글자크기 1p 축소 (10.5pt -> 9.5pt) */
+/* ⭐ 모든 족보 페이지 표시: '시직공파보' 줄바꿈 '1권 433p 5단' 형식 + 글자크기 1p 축소 */
 .result-book-loc {
     font-size: 9.5pt !important;
     font-weight: 800 !important;
@@ -547,8 +556,12 @@ div[role="option"] * {
 }
 
 /* ============================================================================
-   ⭐ 계보도 검색 결과창 세대별 큰 박스, 좌·우 2영역 분할, 사촌별 단계 구분,
-      함자 상자 가로폭 축소 및 좌측 정렬, 입계(연한 초록)/출계(흰색) 및 중복 부친 회색 표시
+   ⭐ 계보도 검색 결과창 스타일
+   1) 선대 직계 함자 박스: 황색(#facc15) 바탕, 방계 박스: 옅은 황색(#fef08a), 출계 박스: 매우 옅은 황색(#fefce8), 여형제: 흰색(#ffffff)
+   2) 본인의 형제: 옅은 청색(#dbeafe), 본인 상자: 청색(#1d4ed8, 흰색 글자)
+   3) 선대와 하대의 왼쪽 대 표시 박스(.tree-gen-badge): 바탕색 흰색(#ffffff), 세 표시는 줄바꿈하여 '00세'로 표시
+   4) 대와 대 사이 화살표(.tree-connector-line): 함자박스 가로 중앙에 위치
+   5) 하대는 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하고 오른쪽에 남형제·여형제 그룹 박스(.tree-children-group-box) 생성
    ============================================================================ */
 .tree-diagram-wrapper {
     width: 100% !important;
@@ -593,28 +606,33 @@ div[role="option"] * {
     border: 1.5px solid #1d4ed8 !important;
     line-height: 1.3 !important;
 }
-/* 세대와 세대를 연결하는 화살표의 길이를 절반으로 축소 */
+/* ⭐ 대와 대 사이 화살표: 첫 번째 함자박스 가로 중앙에 정렬 */
 .tree-connector-line {
-    text-align: center;
-    color: #1e3c72;
-    font-weight: 900;
-    font-size: 8.5pt;
+    text-align: left !important;
+    padding-left: 112px !important;
+    color: #1e3c72 !important;
+    font-weight: 900 !important;
+    font-size: 8.5pt !important;
     line-height: 0.85 !important;
     margin: -1px 0px !important;
-    padding: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
+/* ⭐ 선대와 하대의 왼쪽 대 표시 박스: 바탕색 흰색(#ffffff), 줄바꿈 00세 표시 */
 .tree-gen-badge {
-    min-width: 62px;
-    width: 62px;
-    font-weight: 700;
-    color: #1e3c72;
-    font-size: 8.8pt;
+    min-width: 58px;
+    width: 58px;
+    font-weight: 800 !important;
+    color: #1e3c72 !important;
+    font-size: 8.6pt;
     padding: 2px 3px;
-    background: #dbeafe;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 1px solid #94a3b8 !important;
     border-radius: 4px;
     text-align: center;
     margin-right: 5px;
-    line-height: 1.2;
+    line-height: 1.18;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -622,19 +640,20 @@ div[role="option"] * {
 }
 /* 본인 창의 좌측 '본인 00세' 배지: 청색 바탕(#1d4ed8), 흰색 글자 */
 .tree-gen-badge-self {
-    min-width: 62px;
-    width: 62px;
+    min-width: 58px;
+    width: 58px;
     font-weight: 800 !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    font-size: 8.8pt;
+    font-size: 8.6pt;
     padding: 2px 3px;
     background: #1d4ed8 !important;
     background-color: #1d4ed8 !important;
+    border: 1px solid #1e3a8a !important;
     border-radius: 4px;
     text-align: center;
     margin-right: 5px;
-    line-height: 1.2;
+    line-height: 1.18;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -677,33 +696,59 @@ div[role="option"] * {
     min-height: 22px !important;
 }
 
-/* ⭐ 본인의 아랫대(자·손·증손·현손)에서 사촌별로(부친 단위로) 단계별 구분하는 컨테이너 */
+/* ⭐ 하대(자·손·증손·현손): 왼쪽에 父 함자 세로 박스 + 오른쪽에 남형제·여형제 그룹 박스 */
 .tree-cousin-steps-container {
     display: flex !important;
     flex-direction: column !important;
     flex: 1 !important;
     width: 100% !important;
-    gap: 0px !important;
+    gap: 4px !important;
     background: #ffffff !important;
 }
 .tree-cousin-step {
     display: flex !important;
     flex-direction: row !important;
-    align-items: flex-start !important;
+    align-items: stretch !important;
     justify-content: flex-start !important;
     width: 100% !important;
-    padding: 2px 0px !important;
+    gap: 4px !important;
     background: #ffffff !important;
 }
-.tree-cousin-step + .tree-cousin-step {
-    border-top: 1px dashed #94a3b8 !important;
-    margin-top: 3px !important;
-    padding-top: 4px !important;
+/* 남형제 박스 왼쪽에 생성하는 父 함자 세로 박스 */
+.tree-father-vert-box {
+    width: 22px !important;
+    min-width: 22px !important;
+    max-width: 22px !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #64748b !important;
+    border-radius: 4px !important;
+    color: #0f172a !important;
+    font-size: 8.2pt !important;
+    font-weight: 800 !important;
+    line-height: 1.08 !important;
+    padding: 3px 1px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+/* 오른쪽에 남형제와 여형제가 그룹을 이루도록 감싸는 박스 */
+.tree-children-group-box {
+    flex: 1 !important;
+    width: 100% !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 4px !important;
+    padding: 3px 4px !important;
+    background-color: #ffffff !important;
+    display: flex !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
 }
 
-/* ⭐ 개별 함자 박스:
-   - 가로폭을 112px(모바일 104px)로 축소하고 내부 텍스트를 좌측 정렬(flex-start / left)
-   - 테두리는 바깥 <a> 태그에 한 겹만 적용 */
+/* ⭐ 개별 함자 박스: 가로폭 축소 및 좌측 정렬, 한 겹 테두리 */
 .tree-node-box {
     display: inline-flex !important;
     align-items: center !important;
@@ -711,9 +756,9 @@ div[role="option"] * {
     text-align: left !important;
     text-decoration: none !important;
     cursor: pointer !important;
-    width: 112px !important;
-    min-width: 112px !important;
-    max-width: 112px !important;
+    width: 108px !important;
+    min-width: 108px !important;
+    max-width: 108px !important;
     box-sizing: border-box !important;
     border-radius: 4px !important;
     padding: 2px 4px !important;
@@ -735,32 +780,34 @@ div[role="option"] * {
     margin: 0 !important;
 }
 
-/* ⭐ 함자 박스 내의 머리글자 괄호 '(부친)' 표시:
-   - 첫 번째 박스(위 박스와 다른 부친): 흑색 글자
-   - 머리글자 내용이 바로 위 박스 내용과 동일할 경우: 매우 옅은 회색 글자(#b0b8c4) */
-.tree-node-box span.father-prefix-normal {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-    margin-right: 2px !important;
-}
-.tree-node-box span.father-prefix-faint {
-    color: #b0b8c4 !important;
-    -webkit-text-fill-color: #b0b8c4 !important;
-    font-weight: 400 !important;
-    margin-right: 2px !important;
-}
-
-/* 1) 직계 선조 함자 박스: 황색(#fde047) 바탕에 검은색(#000000) 글자, 한 겹 테두리 */
+/* 1) 선대 직계 함자 박스: 황색(#facc15) 바탕에 검은색(#000000) 글자 */
 a.tree-node-direct {
-    background-color: #fde047 !important;
-    background: #fde047 !important;
-    border: 1px solid #ca8a04 !important;
+    background-color: #facc15 !important;
+    background: #facc15 !important;
+    border: 1px solid #b45309 !important;
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
     font-weight: 800 !important;
 }
-/* 2) 본인 창의 본인 상자: 청색(#1d4ed8) 바탕에 흰색(#ffffff) 글자, 한 겹 테두리 */
+/* 2) 선대 방계(남형제) 함자 박스: 옅은 황색(#fef08a) 바탕에 검은색(#000000) 글자 */
+a.tree-node-collateral {
+    background-color: #fef08a !important;
+    background: #fef08a !important;
+    border: 1px solid #eab308 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 700 !important;
+}
+/* 3) 출계 인물 함자 박스: 매우 옅은 황색(#fefce8) 바탕에 검은색(#000000) 글자 */
+a.tree-node-chulgye {
+    background-color: #fefce8 !important;
+    background: #fefce8 !important;
+    border: 1px solid #fde047 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 700 !important;
+}
+/* 4) 본인 창의 본인 상자: 청색(#1d4ed8) 바탕에 흰색(#ffffff) 글자 */
 a.tree-node-self {
     background-color: #1d4ed8 !important;
     background: #1d4ed8 !important;
@@ -769,25 +816,7 @@ a.tree-node-self {
     -webkit-text-fill-color: #ffffff !important;
     font-weight: 800 !important;
 }
-/* 3) 입계 계자(_계자) 함자 박스: 연한 초록(#bbf7d0) 바탕에 검은색(#000000) 글자, 한 겹 테두리 */
-a.tree-node-gyeja {
-    background-color: #bbf7d0 !important;
-    background: #bbf7d0 !important;
-    border: 1px solid #22c55e !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-}
-/* 4) 출계 인물(_출계) 함자 박스: 흰색(#ffffff) 바탕에 검은색(#000000) 글자, 한 겹 테두리 */
-a.tree-node-chulgye {
-    background-color: #ffffff !important;
-    background: #ffffff !important;
-    border: 1px solid #94a3b8 !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-}
-/* 5) 일반 남형제 함자 박스: 옅은 청색(#dbeafe) 바탕에 검은색(#000000) 글자, 한 겹 테두리 */
+/* 5) 본인의 형제 및 하대 남형제 함자 박스: 옅은 청색(#dbeafe) 바탕에 검은색(#000000) 글자 */
 a.tree-node-male {
     background-color: #dbeafe !important;
     background: #dbeafe !important;
@@ -796,7 +825,7 @@ a.tree-node-male {
     -webkit-text-fill-color: #000000 !important;
     font-weight: 700 !important;
 }
-/* 6) 여형제(사위) 함자 박스: 흰색(#ffffff) 바탕에 검은색(#000000) 글자, 한 겹 테두리 */
+/* 6) 여형제(사위) 함자 박스: 흰색(#ffffff) 바탕에 검은색(#000000) 글자 */
 a.tree-node-female {
     background-color: #ffffff !important;
     background: #ffffff !important;
@@ -908,18 +937,29 @@ a.tree-node-female {
 
     .tree-gen-badge,
     .tree-gen-badge-self {
-        min-width: 54px !important;
-        width: 54px !important;
-        font-size: 8.2pt !important;
+        min-width: 50px !important;
+        width: 50px !important;
+        font-size: 8.1pt !important;
         margin-right: 4px !important;
         padding: 2px 2px !important;
     }
 
+    .tree-connector-line {
+        padding-left: 98px !important;
+    }
+
+    .tree-father-vert-box {
+        width: 20px !important;
+        min-width: 20px !important;
+        max-width: 20px !important;
+        font-size: 7.9pt !important;
+    }
+
     .tree-node-box {
-        width: 104px !important;
-        min-width: 104px !important;
-        max-width: 104px !important;
-        font-size: 8.0pt !important;
+        width: 98px !important;
+        min-width: 98px !important;
+        max-width: 98px !important;
+        font-size: 7.9pt !important;
         letter-spacing: -0.45px !important;
         padding: 2px 3px !important;
     }
@@ -950,7 +990,7 @@ CN_SEARCH_PATTERNS = [re.compile(p) for p in [
     r'號\s*([^\.,\n\s]+)',
     r'一諱\s*([^\.,\n\s]+)',
     r'初諱\s*([^\.,\n\s]+)',
-    r'初명\s*([^\.,\n\s]+)',
+    r'初名\s*([^\.,\n\s]+)',
     r'通名\s*([^\.,\n\s]+)',
 ]]
 
@@ -1178,7 +1218,7 @@ def load_and_preprocess_genealogy():
 df, gid_to_row, children_by_fgid, load_msg = load_and_preprocess_genealogy()
 
 # =============================================================================
-# 3. 보조 유틸리티 함수: '한글_한문' 표기, 계자/출계 색상·표기, 아랫대 '(부친)' 표기
+# 3. 보조 유틸리티 함수: '한글_한문' 표기, 계자/출계 표기 및 색상 분류
 # =============================================================================
 # 1) 과거 관련 통합 검색어 그룹 (1단어만 입력해도 그룹 전체 검색)
 EXAM_GROUP_KEYWORDS = [
@@ -1291,56 +1331,38 @@ def format_tree_node_label(row):
     """
     ⭐ 계보도 인물 박스 내부 표기:
     - 기본: '한글_한문' (예: '희수_禧洙')
-    - 계자와 출계의 경우에는 한자 함자 뒤에 '_계자' 또는 '_출계' 형식으로 표시 (예: '종경_宗慶_계자', '여행_汝行_출계')
-    - 그 외 자녀 표시((1자), (2자) 등)나 기준 표시는 붙이지 않음
+    - 출계와 계자인 경우는 '[함자][   계자 혹은 출계]' 형식으로 표시 (예: '종경_宗慶   계자', '여행_汝行   출계')
     """
     base_name = format_ko_hanja_attached(row.get("인명", ""))
     adopt_type, _, _ = get_adoption_info(row)
     if adopt_type == "입계":
-        return f"{base_name}_계자"
+        return f"{base_name}&nbsp;&nbsp;&nbsp;계자"
     elif adopt_type == "출계":
-        return f"{base_name}_출계"
+        return f"{base_name}&nbsp;&nbsp;&nbsp;출계"
     return base_name
 
-def format_descendant_node_label(ch_row, parent_row=None, faint_prefix=False):
-    """
-    ⭐ 계보도 본인의 아랫대(자·손·증손·현손) 인물 박스 내부 표기:
-    - 아랫대에는 함자 앞에 반드시 '(부친함자한글)' 머리글자를 삽입하여 부친이 누구인지를 분별케 함
-    - 머리글자 '(부친함자한글)' 내용이 위 박스 내용과 동일할 경우(faint_prefix=True) 매우 옅은 회색 글자로 표시
-    """
-    base_label = format_tree_node_label(ch_row)
-    father_ko = ""
-    if parent_row is not None:
-        father_ko = clean_ko_name(parent_row.get("인명", ""))
-    if not father_ko:
-        father_ko = clean_ko_name(ch_row.get("부친", ""))
-    if father_ko and father_ko != "-":
-        cls_name = "father-prefix-faint" if faint_prefix else "father-prefix-normal"
-        return f'<span class="{cls_name}">({father_ko})</span>{base_label}'
-    return base_label
-
-def get_tree_node_class(row, is_self=False, is_direct=False):
+def get_tree_node_class(row, is_self=False, is_direct=False, is_ancestor_row=False):
     """
     ⭐ 계보도 함자 박스 스타일 클래스 결정:
     1) 본인 상자(is_self): 청색 바탕(#1d4ed8), 흰색 글자 -> tree-node-self
-    2) 입계 계자(adopt_type == '입계', '_계자' 표시): 연한 초록 바탕(#bbf7d0), 흑색 글자 -> tree-node-gyeja
-    3) 출계 인물(adopt_type == '출계', '_출계' 표시): 흰색 바탕(#ffffff), 흑색 글자 -> tree-node-chulgye
-    4) 직계 선조(is_direct): 황색 바탕(#fde047), 흑색 글자 -> tree-node-direct
-    5) 여형제/사위('녀' in 관계): 흰색 바탕(#ffffff), 흑색 글자 -> tree-node-female
-    6) 일반 남형제/남자 후손: 옅은 청색 바탕(#dbeafe), 흑색 글자 -> tree-node-male
+    2) 선대 직계(is_direct): 황색 바탕(#facc15), 흑색 글자 -> tree-node-direct
+    3) 여형제/사위('녀' in 관계): 흰색 바탕(#ffffff), 흑색 글자 -> tree-node-female
+    4) 출계 인물(adopt_type == '출계'): 매우 옅은 황색 바탕(#fefce8), 흑색 글자 -> tree-node-chulgye
+    5) 선대 방계(is_ancestor_row and not is_direct): 옅은 황색 바탕(#fef08a), 흑색 글자 -> tree-node-collateral
+    6) 본인의 형제 및 하대 남형제: 옅은 청색 바탕(#dbeafe), 흑색 글자 -> tree-node-male
     """
     if is_self:
         return "tree-node-box tree-node-self"
-    adopt_type, _, _ = get_adoption_info(row)
-    if adopt_type == "입계":
-        return "tree-node-box tree-node-gyeja"
-    if adopt_type == "출계":
-        return "tree-node-box tree-node-chulgye"
     if is_direct:
         return "tree-node-box tree-node-direct"
     rel = str(row.get("관계", "")).strip()
     if "녀" in rel:
         return "tree-node-box tree-node-female"
+    adopt_type, _, _ = get_adoption_info(row)
+    if adopt_type == "출계":
+        return "tree-node-box tree-node-chulgye"
+    if is_ancestor_row:
+        return "tree-node-box tree-node-collateral"
     return "tree-node-box tree-node-male"
 
 def format_candidate_label(row):
@@ -1675,13 +1697,13 @@ def build_split_zones_html(male_htmls, female_htmls):
 def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     """
     ⭐ 계보 검색 결과창 표시 규칙:
-    1) 계보도 검색 결과창 박스 인명 테두리는 한 겹만 표시, 가로폭 축소 및 좌측 정렬
-    2) 출계 인물('_출계') 함자 박스는 바탕색 흰색(#ffffff), 입계 계자('_계자') 함자 박스는 바탕색 연한 초록(#bbf7d0)
-    3) 인명 박스를 좌·우 2개 영역으로 나누고 좌영역에는 남형제, 우영역에는 여형제(사위)를 배치
-    4) 본인 창에 본인 함자 박스 뒤에 있는 기준 표시 삭제, 본인 상자 바탕색은 청색(#1d4ed8), 글자색상은 흰색(#ffffff)
-    5) 본인의 아랫대(자·손·증손·현손)에는 함자 앞에 '(부친함자한글)'을 삽입하고 사촌별로 단계별 구분하며,
-       머리글자 '(부친함자한글)' 내용이 위 박스 내용과 동일할 경우 매우 옅은 회색 글자로 표시
-    6) 결과 창의 함자 박스를 클릭하면 즉시 해당 인물의 새로운 계보도가 생성되도록 링크 연결
+    1) 본인의 선대 직계 함자 박스 바탕은 황색(#facc15), 선대 방계 박스는 옅은 황색(#fef08a), 출계 박스는 매우 옅은 황색(#fefce8), 여형제는 흰색(#ffffff)
+    2) 본인의 형제는 옅은 청색(#dbeafe), 본인 상자는 청색(#1d4ed8, 흰색 글자)
+    3) 선대와 하대의 왼쪽 대 표시 박스 바탕색은 흰색(#ffffff), 세 표시는 줄바꿈하여 '00세'로 표시
+    4) 대와 대 사이 화살표는 함자박스 가로 중앙에 표시
+    5) 출계와 계자인 경우는 '[함자][   계자 혹은 출계]'로 표시
+    6) 하대는 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하여 부 함자를 세로형으로 입력하고,
+       오른쪽에 남형제와 여형제가 그룹을 이루도록 박스(.tree-children-group-box) 생성
     """
     target_gid = str(target_row['고유ID']).strip()
     root_init_gid = str(initial_gid).strip() if initial_gid else target_gid
@@ -1745,12 +1767,12 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         if lvl >= 5:
             r_gid = str(r['고유ID']).strip()
             r_label = format_tree_node_label(r)
-            n_cls = get_tree_node_class(r, is_self=False, is_direct=True)
+            n_cls = get_tree_node_class(r, is_self=False, is_direct=True, is_ancestor_row=True)
             node_tag = f'<a href="?tree_gid={r_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{r_label}</a>'
             split_html = build_split_zones_html([node_tag], [])
             diagram_parts.append(f"""
             <div class="tree-level-row">
-                <span class="tree-gen-badge">▲ {lbl_badge}({g_num}세)</span>
+                <span class="tree-gen-badge">▲ {lbl_badge}<br>{g_num}세</span>
                 {split_html}
             </div>
             """)
@@ -1763,7 +1785,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
                 s_label = format_tree_node_label(s)
                 s_rel = str(s['관계']).strip()
                 s_gid = str(s['고유ID']).strip()
-                n_cls = get_tree_node_class(s, is_self=False, is_direct=is_direct)
+                n_cls = get_tree_node_class(s, is_self=False, is_direct=is_direct, is_ancestor_row=True)
 
                 node_tag = f'<a href="?tree_gid={s_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{s_label}</a>'
                 if "녀" in s_rel:
@@ -1774,7 +1796,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
             split_html = build_split_zones_html(male_htmls, female_htmls)
             diagram_parts.append(f"""
             <div class="tree-level-row">
-                <span class="tree-gen-badge">▲ {lbl_badge}({g_num}세)</span>
+                <span class="tree-gen-badge">▲ {lbl_badge}<br>{g_num}세</span>
                 {split_html}
             </div>
             """)
@@ -1783,9 +1805,8 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         diagram_parts.append('<div class="tree-connector-line">▼</div>')
 
     # 2. 본인 및 형제 행:
-    #    - 좌영역(남형제) / 우영역(여형제·사위) 분할 배치
-    #    - 본인 상자 바탕색은 청색(#1d4ed8), 글자색상은 흰색(#ffffff)
-    #    - 형제 중 입계 계자는 연한 초록(#bbf7d0), 출계 인물은 흰색(#ffffff)
+    #    - 본인 상자 바탕색: 청색(#1d4ed8), 글자색: 흰색(#ffffff)
+    #    - 본인의 형제(남형제): 옅은 청색(#dbeafe), 출계: 매우 옅은 황색(#fefce8), 여형제: 흰색(#ffffff)
     t_sibs = get_siblings_list_fast(target_row)
     tg_num, _ = extract_generation_info(target_row['고유ID'])
 
@@ -1796,7 +1817,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         s_label = format_tree_node_label(s)
         s_rel = str(s['관계']).strip()
         s_gid = str(s['고유ID']).strip()
-        n_cls = get_tree_node_class(s, is_self=is_t, is_direct=False)
+        n_cls = get_tree_node_class(s, is_self=is_t, is_direct=False, is_ancestor_row=False)
 
         node_tag = f'<a href="?tree_gid={s_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{s_label}</a>'
         if "녀" in s_rel:
@@ -1812,10 +1833,9 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     </div>
     """)
 
-    # 3. 본인의 아랫대(하대 후손: 1대손 자, 2대손 손, 3대손 증손, 4대손 현손):
-    #    - 함자 앞에 반드시 '(부친함자한글)'을 삽입하여 부친이 누구인지를 분별케 함
-    #    - 머리글자 '(부친함자한글)' 내용이 위 박스 내용과 동일할 경우 매우 옅은 회색 글자로 표시
-    #    - 사촌별로(부친 단위로) 단계별(.tree-cousin-step)로 구분하여 위에서 아래로 배치
+    # 3. 하대(본인의 아랫대: 1대손 자, 2대손 손, 3대손 증손, 4대손 현손):
+    #    - 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하여 부 함자를 세로형으로 입력
+    #    - 오른쪽에 남형제와 여형제가 그룹을 이루도록 박스(.tree-children-group-box) 생성
     max_down = 4
     down_labels = {
         1: "자",
@@ -1827,8 +1847,6 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     for down_lvl in range(1, max_down + 1):
         cousin_step_htmls = []
         next_gen_rows = []
-        prev_male_father_ko = None
-        prev_female_father_ko = None
 
         for p_row in current_parents:
             p_gid = str(p_row['고유ID']).strip()
@@ -1839,32 +1857,30 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
             step_male_htmls = []
             step_female_htmls = []
             cur_father_ko = clean_ko_name(p_row.get("인명", ""))
+            father_vert_text = "<br>".join(list(cur_father_ko)) if cur_father_ko else "父"
 
             for ch in sorted_children:
                 ch_rel = str(ch['관계']).strip()
                 ch_gid = str(ch['고유ID']).strip()
-                n_cls = get_tree_node_class(ch, is_self=False, is_direct=False)
+                ch_label = format_tree_node_label(ch)
+                n_cls = get_tree_node_class(ch, is_self=False, is_direct=False, is_ancestor_row=False)
 
+                node_html = f'<a href="?tree_gid={ch_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{ch_label}</a>'
                 if "녀" in ch_rel:
-                    is_same_f = (prev_female_father_ko == cur_father_ko)
-                    ch_label = format_descendant_node_label(ch, parent_row=p_row, faint_prefix=is_same_f)
-                    prev_female_father_ko = cur_father_ko
-                    node_html = f'<a href="?tree_gid={ch_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{ch_label}</a>'
                     step_female_htmls.append(node_html)
+                    if children_by_fgid.get(ch_gid):
+                        next_gen_rows.append(ch)
                 else:
-                    is_same_f = (prev_male_father_ko == cur_father_ko)
-                    ch_label = format_descendant_node_label(ch, parent_row=p_row, faint_prefix=is_same_f)
-                    prev_male_father_ko = cur_father_ko
-                    node_html = f'<a href="?tree_gid={ch_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{ch_label}</a>'
                     step_male_htmls.append(node_html)
-                    # 다음 세대(손·증손·현손) 탐색을 위해 남성 후손을 장자계 순서대로 보존
-                    next_gen_rows.append(ch)
-
-                if "녀" in ch_rel and children_by_fgid.get(ch_gid):
                     next_gen_rows.append(ch)
 
             step_split_html = build_split_zones_html(step_male_htmls, step_female_htmls)
-            cousin_step_htmls.append(f'<div class="tree-cousin-step">{step_split_html}</div>')
+            cousin_step_htmls.append(
+                f'<div class="tree-cousin-step">'
+                f'<div class="tree-father-vert-box">{father_vert_text}</div>'
+                f'<div class="tree-children-group-box">{step_split_html}</div>'
+                f'</div>'
+            )
 
         if not cousin_step_htmls:
             break
@@ -1876,7 +1892,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         d_badge = down_labels.get(down_lvl, f"{down_lvl}대손")
         diagram_parts.append(f"""
         <div class="tree-level-row">
-            <span class="tree-gen-badge">▼ {d_badge}({dg_num}세)</span>
+            <span class="tree-gen-badge">▼ {d_badge}<br>{dg_num}세</span>
             {steps_container_html}
         </div>
         """)
@@ -1886,6 +1902,254 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     render_html("".join(diagram_parts))
 
     render_person_result_card(target_row)
+
+# =============================================================================
+# 3-B. 분파도 조회 / 문화재 조회 / 추모 글 조회 전용 렌더링 함수
+# =============================================================================
+def render_bunpado_view():
+    """
+    ⭐ 분파도 조회: 24세 파조 완귀공(증_嶒) ~ 30세 주요 지파 분파 체계도 및 클릭 시 계보 연동
+    """
+    render_html("""
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>🌳 광주안씨 완귀공파 분파도 (24세 ~ 30세)</span>
+            </div>
+            <div class="result-book-loc">시직공파보<br>1권 수록</div>
+        </div>
+        <div style="font-size:9.8pt; color:#dc2626; font-weight:700; margin-bottom:8px;">
+            ※ 각 선조의 함자 박스를 클릭하시면 해당 선조의 전체 계보도로 즉시 이동합니다.
+        </div>
+        <div class="meta-para-container" style="background:#ffffff;">
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">24세<br>파조</span>
+                <div class="tree-split-wrapper">
+                    <div class="tree-left-male-zone">
+                        <a href="?tree_gid=A-24-1-1-24&init_gid=A-24-1-1-24" target="_self" class="tree-node-box tree-node-direct">증_嶒</a>
+                        <span style="font-size:9.5pt; font-weight:700; color:#1e3c72;">완귀공 (시강원 설서·사서)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">25세<br>1대손</span>
+                <div class="tree-split-wrapper">
+                    <div class="tree-left-male-zone">
+                        <a href="?tree_gid=A-24-2-1-25&init_gid=A-24-2-1-25" target="_self" class="tree-node-box tree-node-direct">종경_宗慶&nbsp;&nbsp;&nbsp;계자</a>
+                        <span style="font-size:9.5pt; font-weight:700; color:#1e3c72;">참봉공 (헌릉참봉)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">26세<br>2대손</span>
+                <div class="tree-split-wrapper">
+                    <div class="tree-left-male-zone">
+                        <a href="?tree_gid=A-24-3-1-26&init_gid=A-24-3-1-26" target="_self" class="tree-node-box tree-node-direct">대해_大海</a>
+                        <span style="font-size:9.5pt; font-weight:700; color:#1e3c72;">참봉공 (음참봉)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">27세<br>3대손</span>
+                <div class="tree-split-wrapper">
+                    <div class="tree-left-male-zone">
+                        <a href="?tree_gid=A-24-4-1-27&init_gid=A-24-4-1-27" target="_self" class="tree-node-box tree-node-direct">전_琠&nbsp;&nbsp;&nbsp;계자</a>
+                        <span style="font-size:9.5pt; font-weight:700; color:#1e3c72;">감찰공 (사헌부 감찰)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">28세<br>4대손</span>
+                <div class="tree-split-wrapper">
+                    <div class="tree-left-male-zone">
+                        <a href="?tree_gid=A-24-5-1-28&init_gid=A-24-5-1-28" target="_self" class="tree-node-box tree-node-male">명한_鳴漢</a>
+                        <a href="?tree_gid=A-27-5-1-28&init_gid=A-27-5-1-28" target="_self" class="tree-node-box tree-node-male">시한_蓍漢</a>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">29세<br>5대손</span>
+                <div class="tree-cousin-steps-container">
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">명<br>한</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-81-1-1-29&init_gid=B-81-1-1-29" target="_self" class="tree-node-box tree-node-male">세영_世英</a>
+                                <a href="?tree_gid=B-123-1-1-29&init_gid=B-123-1-1-29" target="_self" class="tree-node-box tree-node-male">세익_世翼</a>
+                                <a href="?tree_gid=A-24-6-1-29&init_gid=A-24-6-1-29" target="_self" class="tree-node-box tree-node-male">세웅_世雄</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">시<br>한</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-130-1-1-29&init_gid=B-130-1-1-29" target="_self" class="tree-node-box tree-node-male">세징_世徵</a>
+                                <a href="?tree_gid=B-148-1-1-29&init_gid=B-148-1-1-29" target="_self" class="tree-node-box tree-node-male">세형_世亨</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tree-connector-line">▼</div>
+            <div class="tree-level-row">
+                <span class="tree-gen-badge">30세<br>주요지파</span>
+                <div class="tree-cousin-steps-container">
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">세<br>영</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-81-2-1-30&init_gid=B-81-2-1-30" target="_self" class="tree-node-box tree-node-male">후정_后靜</a>
+                                <a href="?tree_gid=B-119-2-1-30&init_gid=B-119-2-1-30" target="_self" class="tree-node-box tree-node-male">인정_仁靜</a>
+                                <span style="font-size:9pt; color:#334155; font-weight:700;">(상석계파 등)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">세<br>익</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-123-2-5-30&init_gid=B-123-2-5-30" target="_self" class="tree-node-box tree-node-male">태정_泰靜</a>
+                                <span style="font-size:9pt; color:#334155; font-weight:700;">(목계파 등)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">세<br>징</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-130-2-1-30&init_gid=B-130-2-1-30" target="_self" class="tree-node-box tree-node-male">처정_處靜</a>
+                                <a href="?tree_gid=B-145-2-1-30&init_gid=B-145-2-1-30" target="_self" class="tree-node-box tree-node-male">유정_逌靜</a>
+                                <a href="?tree_gid=B-146-2-1-30&init_gid=B-146-2-1-30" target="_self" class="tree-node-box tree-node-male">화정_和靜</a>
+                                <a href="?tree_gid=B-146-2-2-30&init_gid=B-146-2-2-30" target="_self" class="tree-node-box tree-node-male">유정_有靜</a>
+                                <a href="?tree_gid=B-147-2-1-30&init_gid=B-147-2-1-30" target="_self" class="tree-node-box tree-node-male">사정_思靜</a>
+                                <span style="font-size:9pt; color:#334155; font-weight:700;">(봉계파 등)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tree-cousin-step">
+                        <div class="tree-father-vert-box">세<br>형</div>
+                        <div class="tree-children-group-box">
+                            <div class="tree-left-male-zone">
+                                <a href="?tree_gid=B-148-2-3-30&init_gid=B-148-2-3-30" target="_self" class="tree-node-box tree-node-male">상정_尚靜</a>
+                                <a href="?tree_gid=B-149-2-1-30&init_gid=B-149-2-1-30" target="_self" class="tree-node-box tree-node-male">응정_應靜</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+def render_cultural_heritage_view():
+    """
+    ⭐ 문화재 조회: 광주안씨 완귀공파 종중 주요 문화재 및 유적 상세 안내
+    """
+    render_html("""
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>🏛️ 광주안씨 완귀공파 종중 문화재 및 유적 상세</span>
+            </div>
+            <div class="result-book-loc">국가유산청<br>등록·지정 유산</div>
+        </div>
+        <div class="meta-para-container">
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    1. 영천 완귀정 (永川 玩龜亭) — 경상북도 민속문화재 제20호
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 568.<br>
+                    • <b>건립 선조</b> : 24세 파조 완귀공(玩龜公) 휘 증_嶒 (1494~1553).<br>
+                    • <b>유래 및 역사</b> : 중종 35년(1540) 사마시에 합격하여 형조원외랑에 보임되었으나, 인종 1년(1545) 을사사화의 기미를 미리 내다보고 관직을 버린 뒤 영천 호계(壺溪) 위에 건립한 정자입니다. 남명 조식(曺植)의 사운시와 아계 이산해(李山海)의 절구시가 전해집니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    2. 영천 육우당 (永川 六友堂) — 경상북도 문화유산자료
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 566 (2012.09.17. 지정).<br>
+                    • <b>유래 및 역사</b> : 완귀정 인근 도남동에 자리한 광주안씨 문중의 유서 깊은 재사 및 강학 공간으로, 선조들의 학문 수양과 문중 강학 전통을 간직하고 있습니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    3. 청도 만회정 (淸道 晩悔亭) — 경상북도 문화유산
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 청도군 운문면 지촌리 907 (2026.02.19. 지정).<br>
+                    • <b>건립 관련 선조</b> : 32세 만회옹(晩悔翁) 휘 경시_景時 (1716~1797, 수직 통정대부).<br>
+                    • <b>유래 및 역사</b> : 효우와 문장으로 당대 사림의 추앙을 받으신 만회옹 선조의 유업을 기리는 정자 유적입니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    4. 삼괴당 (三槐堂)
+                </div>
+                <div class="meta-para-value">
+                    • <b>유래 및 역사</b> : 광주안씨 완귀공파 문중 선조들의 강학 및 추모 유적으로 전승되는 전통 당호입니다.
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+def render_memorial_writings_view():
+    """
+    ⭐ 추모 글 조회: 파조 완귀공 및 역대 선조 추모문·묘갈명·행장·실직 선조 기록 조회
+    """
+    render_html("""
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>📜 선조 추모 글 및 묘갈명·행장·유사 기록</span>
+            </div>
+            <div class="result-book-loc">시직공파보<br>문헌록·약력</div>
+        </div>
+        <div class="meta-para-container">
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    1. 파조 완귀공(휘 증_嶒, 24세) 추모 시문 및 묘갈명·행장
+                </div>
+                <div class="meta-para-value">
+                    • <b>완귀정 창건과 은거</b> : 중종 경자(1540) 사마시 합격 후 형조원외랑에 제수되었으나, 인종 원년(1545) 을사사화의 기미를 예견하고 영천 호계 위에 완귀정(玩龜亭)을 짓고 은거하셨습니다.<br>
+                    • <b>당대 현달의 추모 시문</b> : 남명 조식(曺植) 선생의 사운시(四韻詩)와 아계 이산해(李山海) 선생의 절구시(絶句詩)가 『설서 완귀선생 유사(說書 完龜先生 遺事)』에 전해집니다.<br>
+                    • <b>묘갈명 및 행장</b> : 신재 주세붕(周世鵬) 선생이 구 묘갈명을 찬술하고, 병와 이형상(李衡祥) 선생이 묘갈명을 개찬하였으며, 철종 계해(1863) 중건 시 정헌 이종상(李種祥) 선생이 비음기를 짓고 종인 순암 안정복(安鼎福) 선생이 행장을 찬술하였습니다.
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    2. 역대 주요 선조 묘갈명·행장·유집 찬술 기록
+                </div>
+                <div class="meta-para-value">
+                    • <b>27세 감찰공(휘 전_琠)</b> : 인조 계해(1623) 현량 천거로 사헌부 감찰을 역임하셨으며, 병와 이형상(李衡祥) 선생이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 주부공(휘 명한_鳴漢)</b> : 사옹원 주부를 역임하시고 손자 성재공(후정)의 귀함으로 통정대부 장례원 판결사에 증직되셨으며, 오천 정환국(鄭煥國)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 휘 시한_蓍漢</b> : 광주 이채진(李采鎭)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>30세 성재공(휘 후정_后靜)</b> : 숙종 기묘(1699) 문과 급제 후 성균관 학유·학록·학정을 역임하셨으며, 실기(實記) 상·하 두 책이 전해집니다.<br>
+                    • <b>32세 신암공(휘 경열_景說)</b> : 영조 병자(1756) 문과 급제 후 성균관 전적·사헌부 감찰을 역임하셨으며, 척암 김도화(金道和) 선생이 묘갈명을 찬술하였습니다.
+                </div>
+            </div>
+            <div class="meta-para-item">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    3. 문집·유고·비문 상세 검색 안내
+                </div>
+                <div class="meta-para-value">
+                    • 상단 검색 방식에서 <b>[단어 검색]</b>을 선택하시고 <code>묘갈</code>, <code>행장</code>, <code>유사</code>, <code>문집</code>, <code>실기</code> 등을 입력하시면 원문과 한글 번역문이 수록된 모든 선조의 추모 기록을 즉시 열람하실 수 있습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
 
 # =============================================================================
 # 4. 최상단 헤더(황색 배경 + 내부 상하 여백 80% 축소 + 좌측 아이콘 밀착) 및 검색 인터페이스
@@ -1927,9 +2191,18 @@ if df is None:
 param_tree_gid = get_query_param("tree_gid")
 param_init_gid = get_query_param("init_gid")
 
+if "active_mode" not in st.session_state:
+    st.session_state["active_mode"] = "인명 검색"
+if "top_search_radio" not in st.session_state:
+    st.session_state["top_search_radio"] = "인명 검색"
+if "bottom_inquiry_radio" not in st.session_state:
+    st.session_state["bottom_inquiry_radio"] = None
+
 if param_tree_gid and param_tree_gid in gid_to_row:
     effective_init_gid = param_init_gid if (param_init_gid and param_init_gid in gid_to_row) else param_tree_gid
-    st.session_state["default_search_type"] = "계보 검색"
+    st.session_state["active_mode"] = "계보 검색"
+    st.session_state["top_search_radio"] = "계보 검색"
+    st.session_state["bottom_inquiry_radio"] = None
 
     if st.session_state.get("_applied_url_tree_gid") != param_tree_gid:
         st.session_state["_applied_url_tree_gid"] = param_tree_gid
@@ -1944,46 +2217,82 @@ if param_tree_gid and param_tree_gid in gid_to_row:
         else:
             st.session_state["last_lineage_query"] = st.session_state.get("lineage_query", "").strip()
 
-# 검색 방식 선택 (인명 검색, 계보 검색, 단어 검색)
-default_idx = 0
-if st.session_state.get('default_search_type') == "계보 검색":
-    default_idx = 1
+def on_top_radio_change():
+    val = st.session_state.get("top_search_radio")
+    if val:
+        st.session_state["active_mode"] = val
+        st.session_state["bottom_inquiry_radio"] = None
 
-search_type = st.radio(
+def on_bottom_radio_change():
+    val = st.session_state.get("bottom_inquiry_radio")
+    if val:
+        st.session_state["active_mode"] = val
+        st.session_state["top_search_radio"] = None
+        clear_tree_query_params()
+
+# 1) 윗줄: 인명 검색, 계보 검색, 단어 검색
+st.radio(
     "검색 종류 선택",
     ["인명 검색", "계보 검색", "단어 검색"],
-    index=default_idx,
     horizontal=True,
+    key="top_search_radio",
+    on_change=on_top_radio_change,
     label_visibility="collapsed"
 )
 
-# 검색어 안내문은 기존 그대로 유지하되, 내부 검색은 자·초자·일휘·초휘까지 모두 포함
-if search_type == "인명 검색":
+# 2) 새 가로줄
+render_html('<hr class="radio-row-divider">')
+
+# 3) 아랫줄: 분파도 조회, 문화재 조회, 추모 글 조회 (가로줄 위의 검색 형식과 동일하게 표시)
+st.radio(
+    "조회 종류 선택",
+    ["분파도 조회", "문화재 조회", "추모 글 조회"],
+    horizontal=True,
+    key="bottom_inquiry_radio",
+    on_change=on_bottom_radio_change,
+    label_visibility="collapsed"
+)
+
+active_mode = st.session_state.get("active_mode", "인명 검색")
+
+# 검색어 입력창
+if active_mode == "인명 검색":
     query_val = st.text_input(
         "검색어 입력",
         placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
         key="name_query",
         label_visibility="collapsed"
     )
-elif search_type == "계보 검색":
+elif active_mode == "계보 검색":
     query_val = st.text_input(
         "검색어 입력",
         placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
         key="lineage_query",
         label_visibility="collapsed"
     )
-else:
+elif active_mode == "단어 검색":
     query_val = st.text_input(
         "검색어 입력",
         placeholder="관직, 과거, 학문 등 모든 약력 내용 검색 가능",
         key="word_query",
         label_visibility="collapsed"
     )
+else:
+    query_val = ""
 
 # =============================================================================
-# 5. 검색 결과 창
+# 5. 검색 및 조회 결과 창
 # =============================================================================
-if search_type == "인명 검색" and query_val.strip():
+if active_mode == "분파도 조회":
+    render_bunpado_view()
+
+elif active_mode == "문화재 조회":
+    render_cultural_heritage_view()
+
+elif active_mode == "추모 글 조회":
+    render_memorial_writings_view()
+
+elif active_mode == "인명 검색" and query_val.strip():
     q = query_val.strip()
     matched_df = fast_search_by_name(df, q)
     
@@ -2012,7 +2321,7 @@ if search_type == "인명 검색" and query_val.strip():
             
         render_person_result_card(target_row)
 
-elif search_type == "계보 검색":
+elif active_mode == "계보 검색":
     q = query_val.strip()
     prev_q = st.session_state.get('last_lineage_query', '')
 
@@ -2108,7 +2417,7 @@ elif search_type == "계보 검색":
                 st.rerun()
         render_tree_hierarchy(gid_to_row[active_gid], df, initial_gid=init_gid)
 
-elif search_type == "단어 검색" and query_val.strip():
+elif active_mode == "단어 검색" and query_val.strip():
     term = query_val.strip()
 
     # 1) 과거 통합 검색어 그룹
