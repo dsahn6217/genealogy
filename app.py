@@ -2488,10 +2488,10 @@ elif active_mode == "단어 검색" and query_val.strip():
         render_person_result_card(chosen_row, search_term=search_terms_list)
 
 # =============================================================================
-# 6. 종중 분파도 PNG 이미지 게시
+# 6. 종중 분파도 이미지 게시
 # =============================================================================
 
-BRANCH_MAP_FILE = "분파도.png"
+BRANCH_MAP_FILE = "branch_diagram.png"
 
 if os.path.exists(BRANCH_MAP_FILE):
 
@@ -2504,10 +2504,9 @@ if os.path.exists(BRANCH_MAP_FILE):
 else:
 
     st.warning(
-        "분파도 이미지 파일(분파도.png)이 없습니다. "
+        "분파도 이미지 파일(branch_diagram.png)이 없습니다. "
         "GitHub 저장소에 PNG 파일을 업로드해 주십시오."
     )
-
 # =============================================================================
 # 7. 하단 푸터 (Footer): '구축(고위 기준 2,887명)' 표기 + 줄바꿈 연락처 + 비볼드체
 # =============================================================================
