@@ -91,6 +91,146 @@ def dismiss_mobile_keyboard():
         'var ins=document.querySelectorAll(\'input[type=text]\');for(var i=0;i<ins.length;i++){ins[i].blur();}}catch(e){}" />'
     )
 
+
+def enable_image_lightbox():
+    """
+    ⭐ 모바일/PC 공용 이미지 터치 확대(Lightbox) 뷰어:
+    - 작은 시스템 아이콘(80px 미만)은 제외하고 모든 본문 사진(초기 분파도, 묘소, 비석 등)에 자동 적용
+    - 스마트폰 두 손가락 핀치 줌(최대 6배), 더블 탭 확대, 손가락 드래그 이동 지원
+    - PC 마우스 휠 확대/축소 및 드래그 이동 지원
+    - ✕ 버튼 또는 빈 공간 터치 시 닫기
+    """
+    js_code = """
+(function() {
+    if (window._lightboxInitialized) return;
+    window._lightboxInitialized = true;
+
+    var modal = document.createElement("div");
+    modal.id = "stLightboxModal";
+    modal.style.cssText = "display:none; position:fixed; z-index:99999999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.92); backdrop-filter:blur(6px); justify-content:center; align-items:center; overflow:hidden; touch-action:none;";
+    
+    var closeBtn = document.createElement("div");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.style.cssText = "position:absolute; top:18px; right:20px; color:#ffffff; font-size:36px; font-weight:bold; cursor:pointer; z-index:100000000; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; line-height:1; user-select:none;";
+
+    var hint = document.createElement("div");
+    hint.innerText = "두 손가락으로 확대(핀치 줌) / 더블 탭";
+    hint.style.cssText = "position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.9); font-size:12.5px; background:rgba(0,0,0,0.65); padding:6px 16px; border-radius:20px; pointer-events:none; z-index:100000000; letter-spacing:0.5px;";
+
+    var img = document.createElement("img");
+    img.id = "stLightboxImg";
+    img.style.cssText = "max-width:95vw; max-height:90vh; object-fit:contain; transform-origin:center center; transition:transform 0.05s ease-out; cursor:grab; user-select:none; -webkit-user-drag:none;";
+
+    modal.appendChild(closeBtn);
+    modal.appendChild(hint);
+    modal.appendChild(img);
+    document.body.appendChild(modal);
+
+    var scale = 1, posX = 0, posY = 0;
+    var startDist = 0, startScale = 1;
+    var startX = 0, startY = 0;
+    var isDragging = false;
+    var lastTap = 0;
+
+    function updateTransform() {
+        img.style.transform = "translate(" + posX + "px, " + posY + "px) scale(" + scale + ")";
+    }
+
+    function resetZoom() {
+        scale = 1; posX = 0; posY = 0;
+        updateTransform();
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+        resetZoom();
+    }
+
+    closeBtn.onclick = closeModal;
+    modal.onclick = function(e) {
+        if (e.target === modal) closeModal();
+    };
+
+    img.addEventListener("touchend", function(e) {
+        var currentTime = new Date().getTime();
+        var tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            if (scale > 1) {
+                resetZoom();
+            } else {
+                scale = 2.5;
+                updateTransform();
+            }
+        }
+        lastTap = currentTime;
+    });
+
+    modal.addEventListener("touchstart", function(e) {
+        if (e.touches.length === 2) {
+            var dx = e.touches[0].clientX - e.touches[1].clientX;
+            var dy = e.touches[0].clientY - e.touches[1].clientY;
+            startDist = Math.hypot(dx, dy);
+            startScale = scale;
+        } else if (e.touches.length === 1) {
+            startX = e.touches[0].clientX - posX;
+            startY = e.touches[0].clientY - posY;
+            isDragging = true;
+        }
+    }, { passive: false });
+
+    modal.addEventListener("touchmove", function(e) {
+        e.preventDefault();
+        if (e.touches.length === 2) {
+            var dx = e.touches[0].clientX - e.touches[1].clientX;
+            var dy = e.touches[0].clientY - e.touches[1].clientY;
+            var dist = Math.hypot(dx, dy);
+            if (startDist > 0) {
+                scale = Math.min(Math.max(startScale * (dist / startDist), 1), 6);
+                updateTransform();
+            }
+        } else if (e.touches.length === 1 && isDragging && scale > 1) {
+            posX = e.touches[0].clientX - startX;
+            posY = e.touches[0].clientY - startY;
+            updateTransform();
+        }
+    }, { passive: false });
+
+    modal.addEventListener("touchend", function(e) {
+        isDragging = false;
+        if (scale < 1) resetZoom();
+    });
+
+    modal.addEventListener("wheel", function(e) {
+        e.preventDefault();
+        var delta = e.deltaY < 0 ? 1.2 : 0.8;
+        scale = Math.min(Math.max(scale * delta, 1), 6);
+        if (scale === 1) { posX = 0; posY = 0; }
+        updateTransform();
+    }, { passive: false });
+
+    document.addEventListener("click", function(e) {
+        var t = e.target;
+        if (t && t.tagName === "IMG") {
+            if (t.id === "stLightboxImg") return;
+            if (t.classList.contains("no-zoom")) return;
+            if (t.naturalWidth < 80 || t.naturalHeight < 80) return;
+            
+            img.src = t.src;
+            modal.style.display = "flex";
+            resetZoom();
+        }
+    }, true);
+})();
+"""
+    import base64
+    b64_js = base64.b64encode(js_code.encode("utf-8")).decode("utf-8")
+    render_html(
+        f'<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" '
+        f'style="display:none;width:0;height:0;" onload="eval(atob(\'{b64_js}\'))" />'
+    )
+
+
 def get_query_param(key):
     try:
         if hasattr(st, "query_params") and key in st.query_params:
@@ -2174,6 +2314,9 @@ bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; 
 if bg_style_tag:
     render_html(bg_style_tag)
 
+# ⭐ 모든 본문 이미지 터치 확대(라이트박스 팝업 및 핀치 줌) 활성화
+enable_image_lightbox()
+
 # 타이틀 상자 출력 (내부 상하 여백 80% 축소, 한글_한문 표기)
 render_html(f"""
 <div class="title-container">
@@ -2487,26 +2630,69 @@ elif active_mode == "단어 검색" and query_val.strip():
         
         render_person_result_card(chosen_row, search_term=search_terms_list)
 
+
 # =============================================================================
-# 6. 종중 분파도 이미지 게시
+# ⭐ 초기 화면 (검색어 입력 전) 안내 문구 및 분파도 이미지 표시
 # =============================================================================
+_is_init_screen = False
+if active_mode == "인명 검색" and not query_val.strip():
+    _is_init_screen = True
+elif active_mode == "단어 검색" and not query_val.strip():
+    _is_init_screen = True
+elif active_mode == "계보 검색" and not query_val.strip() and not st.session_state.get('active_tree_gid') and not param_tree_gid:
+    _is_init_screen = True
 
-BRANCH_MAP_FILE = "branch_diagram.png"
+if _is_init_screen:
+    BUNPADO_PATHS = [
+        "광주안씨_분파도.png",
+        "광주안씨_분파도.jpg",
+        "bunpado.png",
+        "bunpado.jpg",
+        "분파도.png",
+        "분파도.jpg",
+        "모바일분파도.png",
+        "모바일분파도.jpg",
+        "artifacts/file_generation/ttl=63d/output/모바일분파도.png"
+    ]
+    bunpado_img_path = next((p for p in BUNPADO_PATHS if os.path.exists(p)), None)
+    
+    render_html("""
+    <div style="text-align:center; margin-top:14px; margin-bottom:8px;">
+        <span style="display:inline-block; font-size:9.5pt; color:#ffffff; background:rgba(0,0,0,0.55); padding:5px 14px; border-radius:16px; border:1px solid rgba(255,255,255,0.2); text-shadow:0 1px 2px rgba(0,0,0,0.8);">
+            💡 이미지를 터치하시면 전체화면으로 크게 확대(두 손가락 줌)하여 보실 수 있습니다.
+        </span>
+    </div>
+    """)
+    if bunpado_img_path:
+        st.image(bunpado_img_path, use_container_width=True)
 
-if os.path.exists(BRANCH_MAP_FILE):
+# =============================================================================
+# 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
+# =============================================================================
+render_html("""
+<div class="heritage-sub-container">
+    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내</div>
+    <div class="heritage-sub-grid">
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">1. 영천 완귀정(경상북도 민속문화재 제20호) <span>↗</span></div>
+            <div class="h-card-desc">완귀 안증(1494~1553) 건립 | 경북 영천시 도남동</div>
+        </a>
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">2. 영천 육우당(육우당_六友堂) <span>↗</span></div>
+            <div class="h-card-desc">경상북도 영천시 도남동 566 (2012.09.17. 지정)</div>
+        </a>
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">3. 청도 만회정(만회정_晩悔亭) <span>↗</span></div>
+            <div class="h-card-desc">경북 청도군 운문면 지촌리 907 (2026.02.19. 지정)</div>
+        </a>
+        <div class="heritage-sub-card">
+            <div class="h-card-name">4. 삼괴당(삼괴당_三槐堂)</div>
+            <div class="h-card-desc">광주안씨 문중 선조 강학 및 추모 유적</div>
+        </div>
+    </div>
+</div>
+""")
 
-    st.image(
-        BRANCH_MAP_FILE,
-        caption="광주안씨 완귀공파 종중 분파도",
-        use_container_width=True
-    )
-
-else:
-
-    st.warning(
-        "분파도 이미지 파일(branch_diagram.png)이 없습니다. "
-        "GitHub 저장소에 PNG 파일을 업로드해 주십시오."
-    )
 # =============================================================================
 # 7. 하단 푸터 (Footer): '구축(고위 기준 2,887명)' 표기 + 줄바꿈 연락처 + 비볼드체
 # =============================================================================
