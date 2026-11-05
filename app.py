@@ -24,6 +24,20 @@ BG_PATHS = [
 ]
 bg_file = next((p for p in BG_PATHS if os.path.exists(p)), None)
 
+# 저장소 업로드 분파도(branch diagram) 이미지 파일 탐색
+BRANCH_DIAGRAM_PATHS = [
+    "branch diagram.png",
+    "branch_diagram.png",
+    "branch-diagram.png",
+    "branchdiagram.png",
+    "branch diagram.jpg",
+    "branch_diagram.jpg",
+    "광주안씨_분파도.png",
+    "모바일분파도.png",
+    "분파도.png"
+]
+branch_diagram_file = next((p for p in BRANCH_DIAGRAM_PATHS if os.path.exists(p)), "branch diagram.png")
+
 # 폴백 경로 탐색
 if not os.path.exists(ICON_FILE):
     alt_icon = "artifacts/file_generation/ttl=63d/output/icon.png"
@@ -2632,7 +2646,7 @@ elif active_mode == "단어 검색" and query_val.strip():
 
 
 # =============================================================================
-# ⭐ 초기 화면 (검색어 입력 전) 안내 문구 및 분파도 이미지 표시
+# ⭐ 초기 화면 (검색어 입력 전) 분파도(branch diagram.png) 이미지 표시
 # =============================================================================
 _is_init_screen = False
 if active_mode == "인명 검색" and not query_val.strip():
@@ -2643,28 +2657,13 @@ elif active_mode == "계보 검색" and not query_val.strip() and not st.session
     _is_init_screen = True
 
 if _is_init_screen:
-    BUNPADO_PATHS = [
-        "광주안씨_분파도.png",
-        "광주안씨_분파도.jpg",
-        "bunpado.png",
-        "bunpado.jpg",
-        "분파도.png",
-        "분파도.jpg",
-        "모바일분파도.png",
-        "모바일분파도.jpg",
-        "artifacts/file_generation/ttl=63d/output/모바일분파도.png"
-    ]
-    bunpado_img_path = next((p for p in BUNPADO_PATHS if os.path.exists(p)), None)
-    
-    render_html("""
-    <div style="text-align:center; margin-top:14px; margin-bottom:8px;">
-        <span style="display:inline-block; font-size:9.5pt; color:#ffffff; background:rgba(0,0,0,0.55); padding:5px 14px; border-radius:16px; border:1px solid rgba(255,255,255,0.2); text-shadow:0 1px 2px rgba(0,0,0,0.8);">
-            💡 이미지를 터치하시면 전체화면으로 크게 확대(두 손가락 줌)하여 보실 수 있습니다.
-        </span>
-    </div>
-    """)
-    if bunpado_img_path:
-        st.image(bunpado_img_path, use_container_width=True)
+    if os.path.exists(branch_diagram_file):
+        st.image(branch_diagram_file, use_container_width=True)
+    else:
+        try:
+            st.image("branch diagram.png", use_container_width=True)
+        except Exception:
+            pass
 
 # =============================================================================
 # 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
