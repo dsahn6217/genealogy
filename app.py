@@ -78,6 +78,19 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
+def dismiss_mobile_keyboard():
+    """
+    ⭐ 검색 후 스마트폰·태블릿 가상 자판(키보드)을 자동으로 숨기는 함수:
+    iframe(components.html) 없이 제로 크기(0x0) 이미지의 onload 핸들러로 현재 활성화된 input 요소를 blur 처리하여
+    모바일 인앱 브라우저에서도 무한 로딩 현상 없이 즉시 자판을 내려줍니다.
+    """
+    render_html(
+        '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" '
+        'style="display:none;width:0;height:0;" '
+        'onload="try{if(document.activeElement&&document.activeElement.tagName===\'INPUT\'){document.activeElement.blur();}'
+        'var ins=document.querySelectorAll(\'input[type=text]\');for(var i=0;i<ins.length;i++){ins[i].blur();}}catch(e){}" />'
+    )
+
 def get_query_param(key):
     try:
         if hasattr(st, "query_params") and key in st.query_params:
@@ -556,12 +569,14 @@ div[role="option"] * {
 }
 
 /* ============================================================================
-   ⭐ 계보도 검색 결과창 스타일
-   1) 선대 직계 함자 박스: 황색(#facc15) 바탕, 방계 박스: 옅은 황색(#fef08a), 출계 박스: 매우 옅은 황색(#fefce8), 여형제: 흰색(#ffffff)
-   2) 본인의 형제: 옅은 청색(#dbeafe), 본인 상자: 청색(#1d4ed8, 흰색 글자)
-   3) 선대와 하대의 왼쪽 대 표시 박스(.tree-gen-badge): 바탕색 흰색(#ffffff), 세 표시는 줄바꿈하여 '00세'로 표시
-   4) 대와 대 사이 화살표(.tree-connector-line): 함자박스 가로 중앙에 위치
-   5) 하대는 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하고 오른쪽에 남형제·여형제 그룹 박스(.tree-children-group-box) 생성
+   ⭐ 계보도 검색 결과창 스타일 (최신 테두리·바탕색 규격 완벽 반영)
+   1) 모든 함자 박스의 테두리는 굵게(2.5px solid) 처리, 바탕색은 흰색(#ffffff), 글자색은 검정색(#000000)
+   2) 본인 위 선대 직계의 함자 박스: 바탕색 흰색(#ffffff), 굵은 황색(#eab308) 테두리
+   3) 방계인 경우: 바탕색 흰색(#ffffff), 굵은 옅은 황색(#fde047) 테두리
+   4) 본인 박스: 바탕색 흰색(#ffffff), 굵은 청색(#1d4ed8) 테두리
+   5) 본인의 형제가 있을 경우: 바탕색 흰색(#ffffff), 굵은 옅은 청색(#60a5fa) 테두리
+   6) 하대의 함자 박스: 바탕색 흰색(#ffffff), 굵은 검정색(#000000) 테두리
+   7) 출계의 경우: 바탕색 흰색(#ffffff), 굵은 회색(#9ca3af) 테두리
    ============================================================================ */
 .tree-diagram-wrapper {
     width: 100% !important;
@@ -748,7 +763,7 @@ div[role="option"] * {
     box-sizing: border-box !important;
 }
 
-/* ⭐ 개별 함자 박스: 가로폭 축소 및 좌측 정렬, 한 겹 테두리 */
+/* ⭐ 개별 함자 박스 공통: 모든 함자 박스 테두리를 굵게(2.5px solid), 바탕색은 흰색(#ffffff) */
 .tree-node-box {
     display: inline-flex !important;
     align-items: center !important;
@@ -770,6 +785,10 @@ div[role="option"] * {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     box-shadow: none !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
 }
 /* 내부 요소에는 절대로 테두리가 생기지 않도록 강제 (한 겹 테두리 원칙) */
 .tree-node-box * {
@@ -780,56 +799,56 @@ div[role="option"] * {
     margin: 0 !important;
 }
 
-/* 1) 선대 직계 함자 박스: 황색(#facc15) 바탕에 검은색(#000000) 글자 */
+/* 1) 본인 위 선대 직계 함자 박스: 바탕색 흰색(#ffffff), 굵은 황색(#eab308) 테두리 */
 a.tree-node-direct {
-    background-color: #facc15 !important;
-    background: #facc15 !important;
-    border: 1px solid #b45309 !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 800 !important;
-}
-/* 2) 선대 방계(남형제) 함자 박스: 옅은 황색(#fef08a) 바탕에 검은색(#000000) 글자 */
-a.tree-node-collateral {
-    background-color: #fef08a !important;
-    background: #fef08a !important;
-    border: 1px solid #eab308 !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-}
-/* 3) 출계 인물 함자 박스: 매우 옅은 황색(#fefce8) 바탕에 검은색(#000000) 글자 */
-a.tree-node-chulgye {
-    background-color: #fefce8 !important;
-    background: #fefce8 !important;
-    border: 1px solid #fde047 !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-}
-/* 4) 본인 창의 본인 상자: 청색(#1d4ed8) 바탕에 흰색(#ffffff) 글자 */
-a.tree-node-self {
-    background-color: #1d4ed8 !important;
-    background: #1d4ed8 !important;
-    border: 1px solid #1e3a8a !important;
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    font-weight: 800 !important;
-}
-/* 5) 본인의 형제 및 하대 남형제 함자 박스: 옅은 청색(#dbeafe) 바탕에 검은색(#000000) 글자 */
-a.tree-node-male {
-    background-color: #dbeafe !important;
-    background: #dbeafe !important;
-    border: 1px solid #60a5fa !important;
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    font-weight: 700 !important;
-}
-/* 6) 여형제(사위) 함자 박스: 흰색(#ffffff) 바탕에 검은색(#000000) 글자 */
-a.tree-node-female {
     background-color: #ffffff !important;
     background: #ffffff !important;
-    border: 1px solid #94a3b8 !important;
+    border: 2.5px solid #eab308 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 800 !important;
+}
+/* 2) 방계 함자 박스: 바탕색 흰색(#ffffff), 굵은 옅은 황색(#fde047) 테두리 */
+a.tree-node-collateral {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 2.5px solid #fde047 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 700 !important;
+}
+/* 3) 출계 함자 박스: 바탕색 흰색(#ffffff), 굵은 회색(#9ca3af) 테두리 */
+a.tree-node-chulgye {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 2.5px solid #9ca3af !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 700 !important;
+}
+/* 4) 본인 함자 박스: 바탕색 흰색(#ffffff), 굵은 청색(#1d4ed8) 테두리 */
+a.tree-node-self {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 2.5px solid #1d4ed8 !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 800 !important;
+}
+/* 5) 본인의 형제 함자 박스: 바탕색 흰색(#ffffff), 굵은 옅은 청색(#60a5fa) 테두리 */
+a.tree-node-self-sibling {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 2.5px solid #60a5fa !important;
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    font-weight: 700 !important;
+}
+/* 6) 하대(자·손·증손·현손) 함자 박스: 바탕색 흰색(#ffffff), 굵은 검정색(#000000) 테두리 */
+a.tree-node-lower {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    border: 2.5px solid #000000 !important;
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
     font-weight: 700 !important;
@@ -1341,29 +1360,28 @@ def format_tree_node_label(row):
         return f"{base_name}&nbsp;&nbsp;&nbsp;출계"
     return base_name
 
-def get_tree_node_class(row, is_self=False, is_direct=False, is_ancestor_row=False):
+def get_tree_node_class(row, is_self=False, is_direct=False, is_ancestor_row=False, is_self_row=False):
     """
-    ⭐ 계보도 함자 박스 스타일 클래스 결정:
-    1) 본인 상자(is_self): 청색 바탕(#1d4ed8), 흰색 글자 -> tree-node-self
-    2) 선대 직계(is_direct): 황색 바탕(#facc15), 흑색 글자 -> tree-node-direct
-    3) 여형제/사위('녀' in 관계): 흰색 바탕(#ffffff), 흑색 글자 -> tree-node-female
-    4) 출계 인물(adopt_type == '출계'): 매우 옅은 황색 바탕(#fefce8), 흑색 글자 -> tree-node-chulgye
-    5) 선대 방계(is_ancestor_row and not is_direct): 옅은 황색 바탕(#fef08a), 흑색 글자 -> tree-node-collateral
-    6) 본인의 형제 및 하대 남형제: 옅은 청색 바탕(#dbeafe), 흑색 글자 -> tree-node-male
+    ⭐ 계보도 함자 박스 스타일 클래스 결정 (모든 함자 박스 바탕색 흰색, 굵은 테두리 색상 구분):
+    1) 본인 상자(is_self): 청색 굵은 테두리(#1d4ed8) -> tree-node-self
+    2) 본인 위 선대 직계(is_direct): 황색 굵은 테두리(#eab308) -> tree-node-direct
+    3) 출계 인물(adopt_type == '출계'): 회색 굵은 테두리(#9ca3af) -> tree-node-chulgye
+    4) 선대 방계(is_ancestor_row and not is_direct): 옅은 황색 굵은 테두리(#fde047) -> tree-node-collateral
+    5) 본인의 형제(is_self_row and not is_self): 옅은 청색 굵은 테두리(#60a5fa) -> tree-node-self-sibling
+    6) 하대의 함자 박스(자·손·증손·현손): 검정색 굵은 테두리(#000000) -> tree-node-lower
     """
     if is_self:
         return "tree-node-box tree-node-self"
     if is_direct:
         return "tree-node-box tree-node-direct"
-    rel = str(row.get("관계", "")).strip()
-    if "녀" in rel:
-        return "tree-node-box tree-node-female"
     adopt_type, _, _ = get_adoption_info(row)
     if adopt_type == "출계":
         return "tree-node-box tree-node-chulgye"
     if is_ancestor_row:
         return "tree-node-box tree-node-collateral"
-    return "tree-node-box tree-node-male"
+    if is_self_row:
+        return "tree-node-box tree-node-self-sibling"
+    return "tree-node-box tree-node-lower"
 
 def format_candidate_label(row):
     """
@@ -1509,7 +1527,8 @@ def ensure_sentence_periods(text, with_linebreak=False):
 
 def parse_person_hangul_details(row):
     """
-    한글 약력 항목 구성 및 모든 문장 끝 마침표(.) 적용
+    ⭐ 한글 약력 항목 구성 및 모든 문장 끝 마침표(.) 적용
+    - 관련 기록에 '기일'이라는 단어가 있으면 '신상'이 아닌 '졸년' 항목의 내용으로 기록
     """
     gid = row.get("고유ID", "")
     _, gen_str = extract_generation_info(gid)
@@ -1561,23 +1580,23 @@ def parse_person_hangul_details(row):
     if m: details.append(("초명", ensure_sentence_periods(m.group(1).strip())))
 
     first_parts = [p.strip() for p in first_ko.split(".") if p.strip()]
-    birth_str = ""
-    death_str = ""
+    birth_parts = []
+    death_parts = []
     other_first_parts = []
     for p in first_parts:
         if re.match(r"^(자는|호는|초자는?|초휘는?|일휘는?|통명은?|초명은?|생부\s|양부\s)", p):
             continue
         if p.endswith("생") or "년생" in p:
-            birth_str = p
-        elif "졸" in p or "향년" in p or "수 " in p or "별세" in p:
-            death_str = p
+            birth_parts.append(p)
+        elif "졸" in p or "향년" in p or "수 " in p or "별세" in p or "기일" in p:
+            death_parts.append(p)
         elif p != "-":
             other_first_parts.append(p)
 
-    if birth_str:
-        details.append(("생년", ensure_sentence_periods(birth_str)))
-    if death_str:
-        details.append(("졸년", ensure_sentence_periods(death_str)))
+    if birth_parts:
+        details.append(("생년", ensure_sentence_periods(". ".join(birth_parts))))
+    if death_parts:
+        details.append(("졸년", ensure_sentence_periods(". ".join(death_parts))))
     if other_first_parts:
         details.append(("신상", ensure_sentence_periods(". ".join(other_first_parts))))
 
@@ -1696,14 +1715,19 @@ def build_split_zones_html(male_htmls, female_htmls):
 
 def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     """
-    ⭐ 계보 검색 결과창 표시 규칙:
-    1) 본인의 선대 직계 함자 박스 바탕은 황색(#facc15), 선대 방계 박스는 옅은 황색(#fef08a), 출계 박스는 매우 옅은 황색(#fefce8), 여형제는 흰색(#ffffff)
-    2) 본인의 형제는 옅은 청색(#dbeafe), 본인 상자는 청색(#1d4ed8, 흰색 글자)
-    3) 선대와 하대의 왼쪽 대 표시 박스 바탕색은 흰색(#ffffff), 세 표시는 줄바꿈하여 '00세'로 표시
-    4) 대와 대 사이 화살표는 함자박스 가로 중앙에 표시
-    5) 출계와 계자인 경우는 '[함자][   계자 혹은 출계]'로 표시
-    6) 하대는 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하여 부 함자를 세로형으로 입력하고,
-       오른쪽에 남형제와 여형제가 그룹을 이루도록 박스(.tree-children-group-box) 생성
+    ⭐ 계보 검색 결과창 표시 규칙 (최신 테두리·바탕색 규격):
+    1) 모든 함자 박스의 테두리는 굵게(2.5px solid) 처리, 바탕색은 흰색(#ffffff)
+    2) 본인 위 선대 직계 함자 박스: 흰색 바탕, 황색(#eab308) 테두리
+    3) 방계 함자 박스: 흰색 바탕, 옅은 황색(#fde047) 테두리
+    4) 본인 박스: 흰색 바탕, 청색(#1d4ed8) 테두리
+    5) 본인의 형제 박스: 흰색 바탕, 옅은 청색(#60a5fa) 테두리
+    6) 하대의 함자 박스: 흰색 바탕, 검정색(#000000) 테두리
+    7) 출계의 경우: 흰색 바탕, 회색(#9ca3af) 테두리
+    8) 선대와 하대의 왼쪽 대 표시 박스 바탕색은 흰색(#ffffff), 세 표시는 줄바꿈하여 '00세'로 표시
+    9) 대와 대 사이 화살표는 함자박스 가로 중앙에 표시
+    10) 출계와 계자인 경우는 '[함자][   계자 혹은 출계]'로 표시
+    11) 하대는 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하여 부 함자를 세로형으로 입력하고,
+        오른쪽에 남형제와 여형제가 그룹을 이루도록 박스(.tree-children-group-box) 생성
     """
     target_gid = str(target_row['고유ID']).strip()
     root_init_gid = str(initial_gid).strip() if initial_gid else target_gid
@@ -1767,7 +1791,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         if lvl >= 5:
             r_gid = str(r['고유ID']).strip()
             r_label = format_tree_node_label(r)
-            n_cls = get_tree_node_class(r, is_self=False, is_direct=True, is_ancestor_row=True)
+            n_cls = get_tree_node_class(r, is_self=False, is_direct=True, is_ancestor_row=True, is_self_row=False)
             node_tag = f'<a href="?tree_gid={r_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{r_label}</a>'
             split_html = build_split_zones_html([node_tag], [])
             diagram_parts.append(f"""
@@ -1785,7 +1809,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
                 s_label = format_tree_node_label(s)
                 s_rel = str(s['관계']).strip()
                 s_gid = str(s['고유ID']).strip()
-                n_cls = get_tree_node_class(s, is_self=False, is_direct=is_direct, is_ancestor_row=True)
+                n_cls = get_tree_node_class(s, is_self=False, is_direct=is_direct, is_ancestor_row=True, is_self_row=False)
 
                 node_tag = f'<a href="?tree_gid={s_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{s_label}</a>'
                 if "녀" in s_rel:
@@ -1805,8 +1829,8 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         diagram_parts.append('<div class="tree-connector-line">▼</div>')
 
     # 2. 본인 및 형제 행:
-    #    - 본인 상자 바탕색: 청색(#1d4ed8), 글자색: 흰색(#ffffff)
-    #    - 본인의 형제(남형제): 옅은 청색(#dbeafe), 출계: 매우 옅은 황색(#fefce8), 여형제: 흰색(#ffffff)
+    #    - 본인 박스: 흰색 바탕, 청색(#1d4ed8) 굵은 테두리
+    #    - 본인의 형제 박스: 흰색 바탕, 옅은 청색(#60a5fa) 굵은 테두리 (출계는 회색 테두리)
     t_sibs = get_siblings_list_fast(target_row)
     tg_num, _ = extract_generation_info(target_row['고유ID'])
 
@@ -1817,7 +1841,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
         s_label = format_tree_node_label(s)
         s_rel = str(s['관계']).strip()
         s_gid = str(s['고유ID']).strip()
-        n_cls = get_tree_node_class(s, is_self=is_t, is_direct=False, is_ancestor_row=False)
+        n_cls = get_tree_node_class(s, is_self=is_t, is_direct=False, is_ancestor_row=False, is_self_row=True)
 
         node_tag = f'<a href="?tree_gid={s_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{s_label}</a>'
         if "녀" in s_rel:
@@ -1834,6 +1858,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
     """)
 
     # 3. 하대(본인의 아랫대: 1대손 자, 2대손 손, 3대손 증손, 4대손 현손):
+    #    - 하대의 함자 박스 테두리는 검정색(#000000) 굵은 테두리 (출계는 회색 테두리)
     #    - 남형제 박스 왼쪽에 父의 함자를 넣은 세로 박스(.tree-father-vert-box)를 생성하여 부 함자를 세로형으로 입력
     #    - 오른쪽에 남형제와 여형제가 그룹을 이루도록 박스(.tree-children-group-box) 생성
     max_down = 4
@@ -1863,7 +1888,7 @@ def render_tree_hierarchy(target_row, all_df, initial_gid=None):
                 ch_rel = str(ch['관계']).strip()
                 ch_gid = str(ch['고유ID']).strip()
                 ch_label = format_tree_node_label(ch)
-                n_cls = get_tree_node_class(ch, is_self=False, is_direct=False, is_ancestor_row=False)
+                n_cls = get_tree_node_class(ch, is_self=False, is_direct=False, is_ancestor_row=False, is_self_row=False)
 
                 node_html = f'<a href="?tree_gid={ch_gid}&init_gid={root_init_gid}" target="_self" class="{n_cls}">{ch_label}</a>'
                 if "녀" in ch_rel:
@@ -1966,8 +1991,8 @@ def render_bunpado_view():
                 <span class="tree-gen-badge">28세<br>4대손</span>
                 <div class="tree-split-wrapper">
                     <div class="tree-left-male-zone">
-                        <a href="?tree_gid=A-24-5-1-28&init_gid=A-24-5-1-28" target="_self" class="tree-node-box tree-node-male">명한_鳴漢</a>
-                        <a href="?tree_gid=A-27-5-1-28&init_gid=A-27-5-1-28" target="_self" class="tree-node-box tree-node-male">시한_蓍漢</a>
+                        <a href="?tree_gid=A-24-5-1-28&init_gid=A-24-5-1-28" target="_self" class="tree-node-box tree-node-lower">명한_鳴漢</a>
+                        <a href="?tree_gid=A-27-5-1-28&init_gid=A-27-5-1-28" target="_self" class="tree-node-box tree-node-lower">시한_蓍漢</a>
                     </div>
                 </div>
             </div>
@@ -1979,9 +2004,9 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">명<br>한</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-81-1-1-29&init_gid=B-81-1-1-29" target="_self" class="tree-node-box tree-node-male">세영_世英</a>
-                                <a href="?tree_gid=B-123-1-1-29&init_gid=B-123-1-1-29" target="_self" class="tree-node-box tree-node-male">세익_世翼</a>
-                                <a href="?tree_gid=A-24-6-1-29&init_gid=A-24-6-1-29" target="_self" class="tree-node-box tree-node-male">세웅_世雄</a>
+                                <a href="?tree_gid=B-81-1-1-29&init_gid=B-81-1-1-29" target="_self" class="tree-node-box tree-node-lower">세영_世英</a>
+                                <a href="?tree_gid=B-123-1-1-29&init_gid=B-123-1-1-29" target="_self" class="tree-node-box tree-node-lower">세익_世翼</a>
+                                <a href="?tree_gid=A-24-6-1-29&init_gid=A-24-6-1-29" target="_self" class="tree-node-box tree-node-lower">세웅_世雄</a>
                             </div>
                         </div>
                     </div>
@@ -1989,8 +2014,8 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">시<br>한</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-130-1-1-29&init_gid=B-130-1-1-29" target="_self" class="tree-node-box tree-node-male">세징_世徵</a>
-                                <a href="?tree_gid=B-148-1-1-29&init_gid=B-148-1-1-29" target="_self" class="tree-node-box tree-node-male">세형_世亨</a>
+                                <a href="?tree_gid=B-130-1-1-29&init_gid=B-130-1-1-29" target="_self" class="tree-node-box tree-node-lower">세징_世徵</a>
+                                <a href="?tree_gid=B-148-1-1-29&init_gid=B-148-1-1-29" target="_self" class="tree-node-box tree-node-lower">세형_世亨</a>
                             </div>
                         </div>
                     </div>
@@ -2004,8 +2029,8 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">세<br>영</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-81-2-1-30&init_gid=B-81-2-1-30" target="_self" class="tree-node-box tree-node-male">후정_后靜</a>
-                                <a href="?tree_gid=B-119-2-1-30&init_gid=B-119-2-1-30" target="_self" class="tree-node-box tree-node-male">인정_仁靜</a>
+                                <a href="?tree_gid=B-81-2-1-30&init_gid=B-81-2-1-30" target="_self" class="tree-node-box tree-node-lower">후정_后靜</a>
+                                <a href="?tree_gid=B-119-2-1-30&init_gid=B-119-2-1-30" target="_self" class="tree-node-box tree-node-lower">인정_仁靜</a>
                                 <span style="font-size:9pt; color:#334155; font-weight:700;">(상석계파 등)</span>
                             </div>
                         </div>
@@ -2014,7 +2039,7 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">세<br>익</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-123-2-5-30&init_gid=B-123-2-5-30" target="_self" class="tree-node-box tree-node-male">태정_泰靜</a>
+                                <a href="?tree_gid=B-123-2-5-30&init_gid=B-123-2-5-30" target="_self" class="tree-node-box tree-node-lower">태정_泰靜</a>
                                 <span style="font-size:9pt; color:#334155; font-weight:700;">(목계파 등)</span>
                             </div>
                         </div>
@@ -2023,11 +2048,11 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">세<br>징</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-130-2-1-30&init_gid=B-130-2-1-30" target="_self" class="tree-node-box tree-node-male">처정_處靜</a>
-                                <a href="?tree_gid=B-145-2-1-30&init_gid=B-145-2-1-30" target="_self" class="tree-node-box tree-node-male">유정_逌靜</a>
-                                <a href="?tree_gid=B-146-2-1-30&init_gid=B-146-2-1-30" target="_self" class="tree-node-box tree-node-male">화정_和靜</a>
-                                <a href="?tree_gid=B-146-2-2-30&init_gid=B-146-2-2-30" target="_self" class="tree-node-box tree-node-male">유정_有靜</a>
-                                <a href="?tree_gid=B-147-2-1-30&init_gid=B-147-2-1-30" target="_self" class="tree-node-box tree-node-male">사정_思靜</a>
+                                <a href="?tree_gid=B-130-2-1-30&init_gid=B-130-2-1-30" target="_self" class="tree-node-box tree-node-lower">처정_處靜</a>
+                                <a href="?tree_gid=B-145-2-1-30&init_gid=B-145-2-1-30" target="_self" class="tree-node-box tree-node-lower">유정_逌靜</a>
+                                <a href="?tree_gid=B-146-2-1-30&init_gid=B-146-2-1-30" target="_self" class="tree-node-box tree-node-lower">화정_和靜</a>
+                                <a href="?tree_gid=B-146-2-2-30&init_gid=B-146-2-2-30" target="_self" class="tree-node-box tree-node-lower">유정_有靜</a>
+                                <a href="?tree_gid=B-147-2-1-30&init_gid=B-147-2-1-30" target="_self" class="tree-node-box tree-node-lower">사정_思靜</a>
                                 <span style="font-size:9pt; color:#334155; font-weight:700;">(봉계파 등)</span>
                             </div>
                         </div>
@@ -2036,8 +2061,8 @@ def render_bunpado_view():
                         <div class="tree-father-vert-box">세<br>형</div>
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
-                                <a href="?tree_gid=B-148-2-3-30&init_gid=B-148-2-3-30" target="_self" class="tree-node-box tree-node-male">상정_尚靜</a>
-                                <a href="?tree_gid=B-149-2-1-30&init_gid=B-149-2-1-30" target="_self" class="tree-node-box tree-node-male">응정_應靜</a>
+                                <a href="?tree_gid=B-148-2-3-30&init_gid=B-148-2-3-30" target="_self" class="tree-node-box tree-node-lower">상정_尚靜</a>
+                                <a href="?tree_gid=B-149-2-1-30&init_gid=B-149-2-1-30" target="_self" class="tree-node-box tree-node-lower">응정_應靜</a>
                             </div>
                         </div>
                     </div>
@@ -2284,15 +2309,19 @@ else:
 # 5. 검색 및 조회 결과 창
 # =============================================================================
 if active_mode == "분파도 조회":
+    dismiss_mobile_keyboard()
     render_bunpado_view()
 
 elif active_mode == "문화재 조회":
+    dismiss_mobile_keyboard()
     render_cultural_heritage_view()
 
 elif active_mode == "추모 글 조회":
+    dismiss_mobile_keyboard()
     render_memorial_writings_view()
 
 elif active_mode == "인명 검색" and query_val.strip():
+    dismiss_mobile_keyboard()
     q = query_val.strip()
     matched_df = fast_search_by_name(df, q)
     
@@ -2337,6 +2366,7 @@ elif active_mode == "계보 검색":
         st.session_state['last_lineage_query'] = q
 
     if q:
+        dismiss_mobile_keyboard()
         l_matches = fast_search_by_name(df, q)
         if len(l_matches) == 0:
             active_gid_fallback = st.session_state.get('active_tree_gid')
@@ -2407,6 +2437,7 @@ elif active_mode == "계보 검색":
             render_tree_hierarchy(tree_target, df, initial_gid=curr_init_gid)
 
     elif st.session_state.get('active_tree_gid') in gid_to_row:
+        dismiss_mobile_keyboard()
         active_gid = st.session_state['active_tree_gid']
         init_gid = st.session_state.get('initial_tree_gid') or active_gid
         if active_gid != init_gid:
@@ -2418,6 +2449,7 @@ elif active_mode == "계보 검색":
         render_tree_hierarchy(gid_to_row[active_gid], df, initial_gid=init_gid)
 
 elif active_mode == "단어 검색" and query_val.strip():
+    dismiss_mobile_keyboard()
     term = query_val.strip()
 
     # 1) 과거 통합 검색어 그룹
