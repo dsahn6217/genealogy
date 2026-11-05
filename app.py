@@ -2488,31 +2488,25 @@ elif active_mode == "단어 검색" and query_val.strip():
         render_person_result_card(chosen_row, search_term=search_terms_list)
 
 # =============================================================================
-# 6. 종중 주요 유적 및 문화재 안내 ('클릭 시 국가유산 포털로 이동' 문구 삭제 + 녹색 바탕)
+# 6. 종중 분파도 PNG 이미지 게시
 # =============================================================================
-render_html("""
-<div class="heritage-sub-container">
-    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내</div>
-    <div class="heritage-sub-grid">
-        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" class="heritage-sub-card">
-            <div class="h-card-name">1. 영천 완귀정(경상북도 민속문화재 제20호) <span>↗</span></div>
-            <div class="h-card-desc">완귀 안증(1494~1553) 건립 | 경북 영천시 도남동</div>
-        </a>
-        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" class="heritage-sub-card">
-            <div class="h-card-name">2. 영천 육우당(육우당_六友堂) <span>↗</span></div>
-            <div class="h-card-desc">경상북도 영천시 도남동 566 (2012.09.17. 지정)</div>
-        </a>
-        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" class="heritage-sub-card">
-            <div class="h-card-name">3. 청도 만회정(만회정_晩悔亭) <span>↗</span></div>
-            <div class="h-card-desc">경북 청도군 운문면 지촌리 907 (2026.02.19. 지정)</div>
-        </a>
-        <div class="heritage-sub-card">
-            <div class="h-card-name">4. 삼괴당(삼괴당_三槐堂)</div>
-            <div class="h-card-desc">광주안씨 문중 선조 강학 및 추모 유적</div>
-        </div>
-    </div>
-</div>
-""")
+
+BRANCH_MAP_FILE = "분파도.png"
+
+if os.path.exists(BRANCH_MAP_FILE):
+
+    st.image(
+        BRANCH_MAP_FILE,
+        caption="광주안씨 완귀공파 종중 분파도",
+        use_container_width=True
+    )
+
+else:
+
+    st.warning(
+        "분파도 이미지 파일(분파도.png)이 없습니다. "
+        "GitHub 저장소에 PNG 파일을 업로드해 주십시오."
+    )
 
 # =============================================================================
 # 7. 하단 푸터 (Footer): '구축(고위 기준 2,887명)' 표기 + 줄바꿈 연락처 + 비볼드체
