@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import openpyxl
 import sqlite3
@@ -108,142 +109,174 @@ def dismiss_mobile_keyboard():
 
 def enable_image_lightbox():
     """
-    ⭐ 모바일/PC 공용 이미지 터치 확대(Lightbox) 뷰어:
-    - 작은 시스템 아이콘(80px 미만)은 제외하고 모든 본문 사진(초기 분파도, 묘소, 비석 등)에 자동 적용
-    - 스마트폰 두 손가락 핀치 줌(최대 6배), 더블 탭 확대, 손가락 드래그 이동 지원
-    - PC 마우스 휠 확대/축소 및 드래그 이동 지원
-    - ✕ 버튼 또는 빈 공간 터치 시 닫기
+    ⭐ 모바일/PC 공용 대형 딥 줌(Deep Zoom & Pan) 라이트박스 뷰어:
+    - Streamlit iframe 격리를 넘어 최상위 브라우저 창(window.parent.document)에 직접 주입
+    - 화면 크기에 갇히지 않고 최대 8배(800%)까지 화면 밖으로 시원하게 확대
+    - 확대된 상태에서 손가락으로 상하좌우 구석구석 자유롭게 드래그(Pan) 이동
+    - 스마트폰 더블 탭(톡톡) 시 2.8배 즉시 확대 및 원래 크기 토글
+    - 상단 '1:1 원본' 리셋 버튼 및 '✕' 닫기 버튼 제공
+    - 80px 미만 작은 아이콘은 제외하고 본문 모든 사진(분파도, 묘소, 비석 등)에 일괄 자동 적용
     """
-    js_code = """
-(function() {
-    if (window._lightboxInitialized) return;
-    window._lightboxInitialized = true;
+    components.html("""
+    <script>
+    (function() {
+        try {
+            var doc = window.parent.document;
+            if (doc._stDeepZoomInitialized) return;
+            doc._stDeepZoomInitialized = true;
 
-    var modal = document.createElement("div");
-    modal.id = "stLightboxModal";
-    modal.style.cssText = "display:none; position:fixed; z-index:99999999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.92); backdrop-filter:blur(6px); justify-content:center; align-items:center; overflow:hidden; touch-action:none;";
-    
-    var closeBtn = document.createElement("div");
-    closeBtn.innerHTML = "&times;";
-    closeBtn.style.cssText = "position:absolute; top:18px; right:20px; color:#ffffff; font-size:36px; font-weight:bold; cursor:pointer; z-index:100000000; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; line-height:1; user-select:none;";
+            // 1. 전체화면 딥 줌 모달 생성 (화면 밖으로 무제한 확대 지원)
+            var modal = doc.createElement('div');
+            modal.id = 'stDeepZoomModal';
+            modal.style.cssText = 'display:none; position:fixed; z-index:99999999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); backdrop-filter:blur(8px); justify-content:center; align-items:center; overflow:hidden; touch-action:none;';
 
-    var hint = document.createElement("div");
-    hint.innerText = "두 손가락으로 확대(핀치 줌) / 더블 탭";
-    hint.style.cssText = "position:absolute; bottom:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,0.9); font-size:12.5px; background:rgba(0,0,0,0.65); padding:6px 16px; border-radius:20px; pointer-events:none; z-index:100000000; letter-spacing:0.5px;";
+            var closeBtn = doc.createElement('div');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.style.cssText = 'position:absolute; top:18px; right:20px; color:#ffffff; font-size:38px; font-weight:bold; cursor:pointer; z-index:100000000; width:48px; height:48px; border-radius:50%; background:rgba(0,0,0,0.65); display:flex; align-items:center; justify-content:center; line-height:1; user-select:none; box-shadow:0 2px 10px rgba(0,0,0,0.6);';
 
-    var img = document.createElement("img");
-    img.id = "stLightboxImg";
-    img.style.cssText = "max-width:95vw; max-height:90vh; object-fit:contain; transform-origin:center center; transition:transform 0.05s ease-out; cursor:grab; user-select:none; -webkit-user-drag:none;";
+            var resetBtn = doc.createElement('div');
+            resetBtn.innerText = '1:1 맞춤';
+            resetBtn.style.cssText = 'position:absolute; top:20px; left:20px; color:#ffffff; font-size:12.5px; font-weight:600; cursor:pointer; z-index:100000000; padding:8px 14px; border-radius:20px; background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.3); user-select:none;';
 
-    modal.appendChild(closeBtn);
-    modal.appendChild(hint);
-    modal.appendChild(img);
-    document.body.appendChild(modal);
+            var imgWrapper = doc.createElement('div');
+            imgWrapper.style.cssText = 'width:100%; height:100%; display:flex; justify-content:center; align-items:center; overflow:hidden; pointer-events:none;';
 
-    var scale = 1, posX = 0, posY = 0;
-    var startDist = 0, startScale = 1;
-    var startX = 0, startY = 0;
-    var isDragging = false;
-    var lastTap = 0;
+            var img = doc.createElement('img');
+            img.id = 'stDeepZoomImg';
+            img.style.cssText = 'max-width:92vw; max-height:88vh; object-fit:contain; transform-origin:center center; cursor:grab; user-select:none; -webkit-user-drag:none; pointer-events:auto; will-change:transform;';
 
-    function updateTransform() {
-        img.style.transform = "translate(" + posX + "px, " + posY + "px) scale(" + scale + ")";
-    }
+            imgWrapper.appendChild(img);
+            modal.appendChild(closeBtn);
+            modal.appendChild(resetBtn);
+            modal.appendChild(imgWrapper);
+            doc.body.appendChild(modal);
 
-    function resetZoom() {
-        scale = 1; posX = 0; posY = 0;
-        updateTransform();
-    }
+            // 확대(Scale) 및 이동(Position) 상태
+            var scale = 1, posX = 0, posY = 0;
+            var startDist = 0, startScale = 1;
+            var startX = 0, startY = 0;
+            var isDragging = false;
+            var lastTap = 0;
 
-    function closeModal() {
-        modal.style.display = "none";
-        resetZoom();
-    }
+            function updateTransform() {
+                img.style.transform = 'translate(' + posX + 'px, ' + posY + 'px) scale(' + scale + ')';
+            }
 
-    closeBtn.onclick = closeModal;
-    modal.onclick = function(e) {
-        if (e.target === modal) closeModal();
-    };
+            function resetZoom() {
+                scale = 1; posX = 0; posY = 0;
+                updateTransform();
+            }
 
-    img.addEventListener("touchend", function(e) {
-        var currentTime = new Date().getTime();
-        var tapLength = currentTime - lastTap;
-        if (tapLength < 300 && tapLength > 0) {
-            e.preventDefault();
-            if (scale > 1) {
+            function closeModal() {
+                modal.style.display = 'none';
                 resetZoom();
-            } else {
-                scale = 2.5;
-                updateTransform();
             }
-        }
-        lastTap = currentTime;
-    });
 
-    modal.addEventListener("touchstart", function(e) {
-        if (e.touches.length === 2) {
-            var dx = e.touches[0].clientX - e.touches[1].clientX;
-            var dy = e.touches[0].clientY - e.touches[1].clientY;
-            startDist = Math.hypot(dx, dy);
-            startScale = scale;
-        } else if (e.touches.length === 1) {
-            startX = e.touches[0].clientX - posX;
-            startY = e.touches[0].clientY - posY;
-            isDragging = true;
-        }
-    }, { passive: false });
+            closeBtn.onclick = closeModal;
+            resetBtn.onclick = resetZoom;
+            modal.onclick = function(e) {
+                if (e.target === modal || e.target === imgWrapper) closeModal();
+            };
 
-    modal.addEventListener("touchmove", function(e) {
-        e.preventDefault();
-        if (e.touches.length === 2) {
-            var dx = e.touches[0].clientX - e.touches[1].clientX;
-            var dy = e.touches[0].clientY - e.touches[1].clientY;
-            var dist = Math.hypot(dx, dy);
-            if (startDist > 0) {
-                scale = Math.min(Math.max(startScale * (dist / startDist), 1), 6);
+            // 더블 탭 확대 (화면 밖 2.8배 확대 또는 원래 크기)
+            img.addEventListener('touchend', function(e) {
+                var currentTime = new Date().getTime();
+                var tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    e.preventDefault();
+                    if (scale > 1.2) {
+                        resetZoom();
+                    } else {
+                        scale = 2.8;
+                        updateTransform();
+                    }
+                }
+                lastTap = currentTime;
+            });
+
+            // 스마트폰 핀치 줌 (최대 8배까지 화면 밖으로 무제한 확대) & 드래그 이동
+            modal.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    var dx = e.touches[0].clientX - e.touches[1].clientX;
+                    var dy = e.touches[0].clientY - e.touches[1].clientY;
+                    startDist = Math.hypot(dx, dy);
+                    startScale = scale;
+                } else if (e.touches.length === 1) {
+                    startX = e.touches[0].clientX - posX;
+                    startY = e.touches[0].clientY - posY;
+                    isDragging = true;
+                }
+            }, { passive: false });
+
+            modal.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                if (e.touches.length === 2) {
+                    var dx = e.touches[0].clientX - e.touches[1].clientX;
+                    var dy = e.touches[0].clientY - e.touches[1].clientY;
+                    var dist = Math.hypot(dx, dy);
+                    if (startDist > 0) {
+                        scale = Math.min(Math.max(startScale * (dist / startDist), 0.8), 8.0);
+                        updateTransform();
+                    }
+                } else if (e.touches.length === 1 && isDragging) {
+                    posX = e.touches[0].clientX - startX;
+                    posY = e.touches[0].clientY - startY;
+                    updateTransform();
+                }
+            }, { passive: false });
+
+            modal.addEventListener('touchend', function(e) {
+                isDragging = false;
+                if (scale < 1) resetZoom();
+            });
+
+            // PC 마우스 드래그 및 휠 줌 (최대 8배)
+            var mouseStartX = 0, mouseStartY = 0, isMouseDown = false;
+            img.addEventListener('mousedown', function(e) {
+                isMouseDown = true;
+                mouseStartX = e.clientX - posX;
+                mouseStartY = e.clientY - posY;
+                img.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+            doc.addEventListener('mousemove', function(e) {
+                if (!isMouseDown) return;
+                posX = e.clientX - mouseStartX;
+                posY = e.clientY - mouseStartY;
                 updateTransform();
-            }
-        } else if (e.touches.length === 1 && isDragging && scale > 1) {
-            posX = e.touches[0].clientX - startX;
-            posY = e.touches[0].clientY - startY;
-            updateTransform();
+            });
+            doc.addEventListener('mouseup', function(e) {
+                if (isMouseDown) {
+                    isMouseDown = false;
+                    img.style.cursor = 'grab';
+                }
+            });
+            modal.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                var delta = e.deltaY < 0 ? 1.25 : 0.8;
+                scale = Math.min(Math.max(scale * delta, 0.8), 8.0);
+                updateTransform();
+            }, { passive: false });
+
+            // Streamlit 부모 문서의 모든 이미지 클릭 감지
+            doc.addEventListener('click', function(e) {
+                var t = e.target;
+                if (t && t.tagName === 'IMG') {
+                    if (t.id === 'stDeepZoomImg') return;
+                    if (t.classList.contains('no-zoom')) return;
+                    if (t.naturalWidth < 80 || t.naturalHeight < 80) return;
+                    
+                    img.src = t.src;
+                    modal.style.display = 'flex';
+                    resetZoom();
+                }
+            }, true);
+        } catch(e) {
+            console.error("DeepZoom error:", e);
         }
-    }, { passive: false });
-
-    modal.addEventListener("touchend", function(e) {
-        isDragging = false;
-        if (scale < 1) resetZoom();
-    });
-
-    modal.addEventListener("wheel", function(e) {
-        e.preventDefault();
-        var delta = e.deltaY < 0 ? 1.2 : 0.8;
-        scale = Math.min(Math.max(scale * delta, 1), 6);
-        if (scale === 1) { posX = 0; posY = 0; }
-        updateTransform();
-    }, { passive: false });
-
-    document.addEventListener("click", function(e) {
-        var t = e.target;
-        if (t && t.tagName === "IMG") {
-            if (t.id === "stLightboxImg") return;
-            if (t.classList.contains("no-zoom")) return;
-            if (t.naturalWidth < 80 || t.naturalHeight < 80) return;
-            
-            img.src = t.src;
-            modal.style.display = "flex";
-            resetZoom();
-        }
-    }, true);
-})();
-"""
-    import base64
-    b64_js = base64.b64encode(js_code.encode("utf-8")).decode("utf-8")
-    render_html(
-        f'<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" '
-        f'style="display:none;width:0;height:0;" onload="eval(atob(\'{b64_js}\'))" />'
-    )
-
+    })();
+    </script>
+    """, height=0)
 
 def get_query_param(key):
     try:
