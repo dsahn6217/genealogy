@@ -2107,4 +2107,522 @@ def render_bunpado_view():
                         <div class="tree-children-group-box">
                             <div class="tree-left-male-zone">
                                 <a href="?tree_gid=B-148-2-3-30&init_gid=B-148-2-3-30" target="_self" class="tree-node-box tree-node-male">상정_尚靜</a>
-                                <a href="?tree_gid=B-149-2-1-30&init_gid=B-149-2-1-30" target="_self" class="tree-node-box tree-node-male">응정
+                                <a href="?tree_gid=B-149-2-1-30&init_gid=B-149-2-1-30" target="_self" class="tree-node-box tree-node-male">응정_應靜</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+def render_cultural_heritage_view():
+    render_html("""
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>🏛️ 광주안씨 완귀공파 종중 문화재 및 유적 상세</span>
+            </div>
+            <div class="result-book-loc">국가유산청<br>등록·지정 유산</div>
+        </div>
+        <div class="meta-para-container">
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    1. 영천 완귀정 (永川 玩龜亭) — 경상북도 민속문화재 제20호
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 568.<br>
+                    • <b>건립 선조</b> : 24세 파조 완귀공(玩龜公) 휘 증_嶒 (1494~1553).<br>
+                    • <b>유래 및 역사</b> : 중종 35년(1540) 사마시에 합격하여 형조원외랑에 보임되었으나, 인종 1년(1545) 을사사화의 기미를 미리 내다보고 관직을 버린 뒤 영천 호계(壺溪) 위에 건립한 정자입니다. 남명 조식(曺植)의 사운시와 아계 이산해(李山海)의 절구시가 전해집니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    2. 영천 육우당 (永川 六友堂) — 경상북도 문화유산자료
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 566 (2012.09.17. 지정).<br>
+                    • <b>유래 및 역사</b> : 완귀정 인근 도남동에 자리한 광주안씨 문중의 유서 깊은 재사 및 강학 공간으로, 선조들의 학문 수양과 문중 강학 전통을 간직하고 있습니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    3. 청도 만회정 (淸道 晩悔亭) — 경상북도 문화유산
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 청도군 운문면 지촌리 907 (2026.02.19. 지정).<br>
+                    • <b>건립 관련 선조</b> : 32세 만회옹(晩悔翁) 휘 경시_景時 (1716~1797, 수직 통정대부).<br>
+                    • <b>유래 및 역사</b> : 효우와 문장으로 당대 사림의 추앙을 받으신 만회옹 선조의 유업을 기리는 정자 유적입니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
+            </div>
+            <div class="meta-para-item">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    4. 삼괴당 (三槐堂)
+                </div>
+                <div class="meta-para-value">
+                    • <b>유래 및 역사</b> : 광주안씨 완귀공파 문중 선조들의 강학 및 추모 유적으로 전승되는 전통 당호입니다.
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+def render_memorial_writings_view():
+    render_html("""
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>📜 선조 추모 글 및 묘갈명·행장·유사 기록</span>
+            </div>
+            <div class="result-book-loc">시직공파보<br>문헌록·약력</div>
+        </div>
+        <div class="meta-para-container">
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    1. 파조 완귀공(휘 증_嶒, 24세) 추모 시문 및 묘갈명·행장
+                </div>
+                <div class="meta-para-value">
+                    • <b>완귀정 창건과 은거</b> : 중종 경자(1540) 사마시 합격 후 형조원외랑에 제수되었으나, 인종 원년(1545) 을사사화의 기미를 예견하고 영천 호계 위에 완귀정(玩龜亭)을 짓고 은거하셨습니다.<br>
+                    • <b>당대 현달의 추모 시문</b> : 남명 조식(曺植) 선생의 사운시(四韻詩)와 아계 이산해(李山海) 선생의 절구시(絶句詩)가 『설서 완귀선생 유사(說書 完龜先生 遺事)』에 전해집니다.<br>
+                    • <b>묘갈명 및 행장</b> : 신재 주세붕(周世鵬) 선생이 구 묘갈명을 찬술하고, 병와 이형상(李衡祥) 선생이 묘갈명을 개찬하였으며, 철종 계해(1863) 중건 시 정헌 이종상(李種祥) 선생이 비음기를 짓고 종인 순암 안정복(安鼎福) 선생이 행장을 찬술하였습니다.
+                </div>
+            </div>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    2. 역대 주요 선조 묘갈명·행장·유집 찬술 기록
+                </div>
+                <div class="meta-para-value">
+                    • <b>27세 감찰공(휘 전_琠)</b> : 인조 계해(1623) 현량 천거로 사헌부 감찰을 역임하셨으며, 병와 이형상(李衡祥) 선생이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 주부공(휘 명한_鳴漢)</b> : 사옹원 주부를 역임하시고 손자 성재공(후정)의 귀함으로 통정대부 장례원 판결사에 증직되셨으며, 오천 정환국(鄭煥國)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 휘 시한_蓍漢</b> : 광주 이채진(李采鎭)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>30세 성재공(휘 후정_后靜)</b> : 숙종 기묘(1699) 문과 급제 후 성균관 학유·학록·학정을 역임하셨으며, 실기(實記) 상·하 두 책이 전해집니다.<br>
+                    • <b>32세 신암공(휘 경열_景說)</b> : 영조 병자(1756) 문과 급제 후 성균관 전적·사헌부 감찰을 역임하셨으며, 척암 김도화(金道和) 선생이 묘갈명을 찬술하였습니다.
+                </div>
+            </div>
+            <div class="meta-para-item">
+                <div style="font-weight:800; color:#1e3c72; font-size:11.2pt; margin-bottom:4px;">
+                    3. 문집·유고·비문 상세 검색 안내
+                </div>
+                <div class="meta-para-value">
+                    • 상단 검색 방식에서 <b>[단어 검색]</b>을 선택하시고 <code>묘갈</code>, <code>행장</code>, <code>유사</code>, <code>문집</code>, <code>실기</code> 등을 입력하시면 원문과 한글 번역문이 수록된 모든 선조의 추모 기록을 즉시 열람하실 수 있습니다.
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+# =============================================================================
+# 4. 최상단 헤더 및 검색 인터페이스
+# =============================================================================
+icon_img_tag = f'<img src="{icon_b64}" style="width:82px; height:82px; object-fit:contain; display:block; margin:0px;">' if icon_b64 else '<span style="font-size:52px;">📜</span>'
+
+bg_style_tag = f"<style>.stApp {{ background-image: url('{bg_b64}') !important; background-size: cover !important; background-position: center top !important; opacity: 1 !important; }}</style>" if bg_b64 else ""
+if bg_style_tag:
+    render_html(bg_style_tag)
+
+enable_image_lightbox()
+
+render_html(f"""
+<div class="title-container">
+    <div class="title-left-icon">
+        {icon_img_tag}
+    </div>
+    <div class="title-right-content">
+        <div class="title-clan-name">광주안씨 완귀공파 종중</div>
+        <div class="title-main-center">족보 검색 시스템</div>
+        <div class="title-sub-bottom">- 완귀공(휘 증_嶒, 24세) ~ 44세<br>총 2,887인(고위 기준) -</div>
+    </div>
+</div>
+""")
+
+render_html("""
+<div id="search-section-anchor"></div>
+<div class="compact-search-header">
+    <div class="compact-search-subtitle">다음 중 하나를 선택하고 검색어를 한글로 입력</div>
+</div>
+""")
+
+if df is None:
+    st.error(f"데이터 로드 오류: {load_msg}")
+    st.info("파일 이름이 `genealogy.db` 또는 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
+    st.stop()
+
+param_tree_gid = get_query_param("tree_gid")
+param_init_gid = get_query_param("init_gid")
+
+if "active_mode" not in st.session_state:
+    st.session_state["active_mode"] = "인명 검색"
+if "top_search_radio" not in st.session_state:
+    st.session_state["top_search_radio"] = "인명 검색"
+if "bottom_inquiry_radio" not in st.session_state:
+    st.session_state["bottom_inquiry_radio"] = None
+
+if param_tree_gid and param_tree_gid in gid_to_row:
+    effective_init_gid = param_init_gid if (param_init_gid and param_init_gid in gid_to_row) else param_tree_gid
+    st.session_state["active_mode"] = "계보 검색"
+    st.session_state["top_search_radio"] = "계보 검색"
+    st.session_state["bottom_inquiry_radio"] = None
+
+    if st.session_state.get("_applied_url_tree_gid") != param_tree_gid:
+        st.session_state["_applied_url_tree_gid"] = param_tree_gid
+        st.session_state["active_tree_gid"] = param_tree_gid
+        st.session_state["initial_tree_gid"] = effective_init_gid
+        st.session_state["last_selected_initial_gid"] = effective_init_gid
+
+        if not st.session_state.get("lineage_query", "").strip():
+            init_ko_name = clean_ko_name(gid_to_row[effective_init_gid].get("인명", ""))
+            st.session_state["lineage_query"] = init_ko_name
+            st.session_state["last_lineage_query"] = init_ko_name
+        else:
+            st.session_state["last_lineage_query"] = st.session_state.get("lineage_query", "").strip()
+
+def on_top_radio_change():
+    val = st.session_state.get("top_search_radio")
+    if val:
+        st.session_state["active_mode"] = val
+        st.session_state["bottom_inquiry_radio"] = None
+
+def on_bottom_radio_change():
+    val = st.session_state.get("bottom_inquiry_radio")
+    if val:
+        st.session_state["active_mode"] = val
+        st.session_state["top_search_radio"] = None
+        clear_tree_query_params()
+
+st.radio(
+    "검색 종류 선택",
+    ["인명 검색", "계보 검색", "단어 검색"],
+    horizontal=True,
+    key="top_search_radio",
+    on_change=on_top_radio_change,
+    label_visibility="collapsed"
+)
+
+render_html('<hr class="radio-row-divider">')
+
+st.radio(
+    "조회 종류 선택",
+    ["분파도 조회", "문화재 조회", "추모 글 조회"],
+    horizontal=True,
+    key="bottom_inquiry_radio",
+    on_change=on_bottom_radio_change,
+    label_visibility="collapsed"
+)
+
+active_mode = st.session_state.get("active_mode", "인명 검색")
+
+if active_mode == "인명 검색":
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
+        key="name_query",
+        label_visibility="collapsed"
+    )
+elif active_mode == "계보 검색":
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="함자, 성명, 호, 초명, 통명을 한글로 입력",
+        key="lineage_query",
+        label_visibility="collapsed"
+    )
+elif active_mode == "단어 검색":
+    query_val = st.text_input(
+        "검색어 입력",
+        placeholder="관직, 과거, 학문 등 모든 약력 내용 검색 가능",
+        key="word_query",
+        label_visibility="collapsed"
+    )
+else:
+    query_val = ""
+
+# =============================================================================
+# 5. 검색 및 조회 결과 창
+# =============================================================================
+if active_mode == "분파도 조회":
+    dismiss_mobile_keyboard()
+    render_bunpado_view()
+
+elif active_mode == "문화재 조회":
+    dismiss_mobile_keyboard()
+    render_cultural_heritage_view()
+
+elif active_mode == "추모 글 조회":
+    dismiss_mobile_keyboard()
+    render_memorial_writings_view()
+
+elif active_mode == "인명 검색" and query_val.strip():
+    dismiss_mobile_keyboard()
+    q = query_val.strip()
+    matched_df = fast_search_by_name(df, q)
+    
+    if len(matched_df) == 0:
+        render_html(f"""
+        <div class="no-result-notice">
+            입력하신 검색어 '{q}'에 해당하는 인물을 찾을 수 없습니다.
+        </div>
+        """)
+    else:
+        if len(matched_df) > 1:
+            render_html(f"""
+            <div class="multi-ancestor-banner">
+                📢 동명이인 또는 복수 후보가 총 {len(matched_df)}위 검색되었습니다. 아래에서 조회할 인물을 선택하세요.
+            </div>
+            """)
+            selected_idx = st.selectbox(
+                "선조 선택",
+                range(len(matched_df)),
+                format_func=lambda i: format_candidate_label(matched_df.iloc[i]),
+                label_visibility="collapsed"
+            )
+            target_row = matched_df.iloc[selected_idx]
+        else:
+            target_row = matched_df.iloc[0]
+            
+        render_person_result_card(target_row)
+
+elif active_mode == "계보 검색":
+    q = query_val.strip()
+    prev_q = st.session_state.get('last_lineage_query', '')
+
+    if q and prev_q and q != prev_q:
+        st.session_state['last_lineage_query'] = q
+        st.session_state['active_tree_gid'] = None
+        st.session_state['initial_tree_gid'] = None
+        st.session_state['last_selected_initial_gid'] = None
+        st.session_state['_applied_url_tree_gid'] = None
+        clear_tree_query_params()
+    elif q and not prev_q:
+        st.session_state['last_lineage_query'] = q
+
+    if q:
+        dismiss_mobile_keyboard()
+        l_matches = fast_search_by_name(df, q)
+        if len(l_matches) == 0:
+            active_gid_fallback = st.session_state.get('active_tree_gid')
+            if active_gid_fallback and active_gid_fallback in gid_to_row:
+                init_gid_fb = st.session_state.get('initial_tree_gid') or active_gid_fallback
+                render_tree_hierarchy(gid_to_row[active_gid_fallback], df, initial_gid=init_gid_fb)
+            else:
+                render_html(f"""
+                <div class="no-result-notice">
+                    계보를 작성할 선조 인명('{q}')을 찾을 수 없습니다.
+                </div>
+                """)
+        else:
+            if len(l_matches) > 1:
+                render_html(f"""
+                <div class="multi-ancestor-banner">
+                    📢 동명이인 또는 복수 후보가 총 {len(l_matches)}위 검색되었습니다. 아래에서 계보 기준 인물을 선택하세요.
+                </div>
+                """)
+                default_sel_idx = 0
+                saved_init_gid = st.session_state.get('initial_tree_gid') or st.session_state.get('last_selected_initial_gid')
+                if saved_init_gid:
+                    matched_indices = [i for i in range(len(l_matches)) if str(l_matches.iloc[i]['고유ID']).strip() == str(saved_init_gid).strip()]
+                    if matched_indices:
+                        default_sel_idx = matched_indices[0]
+
+                sel_idx = st.selectbox(
+                    "계보 기준 인물 선택",
+                    range(len(l_matches)),
+                    index=default_sel_idx,
+                    format_func=lambda i: format_candidate_label(l_matches.iloc[i]),
+                    label_visibility="collapsed"
+                )
+                initial_target = l_matches.iloc[sel_idx]
+            else:
+                initial_target = l_matches.iloc[0]
+
+            curr_init_gid = str(initial_target['고유ID']).strip()
+            prev_init_gid = st.session_state.get('last_selected_initial_gid')
+
+            if prev_init_gid is not None and prev_init_gid != curr_init_gid:
+                st.session_state['last_selected_initial_gid'] = curr_init_gid
+                st.session_state['initial_tree_gid'] = curr_init_gid
+                st.session_state['active_tree_gid'] = None
+                st.session_state['_applied_url_tree_gid'] = None
+                clear_tree_query_params()
+            elif prev_init_gid is None:
+                st.session_state['last_selected_initial_gid'] = curr_init_gid
+                if not st.session_state.get('initial_tree_gid'):
+                    st.session_state['initial_tree_gid'] = curr_init_gid
+
+            tree_target = initial_target
+            active_gid = st.session_state.get('active_tree_gid')
+            if active_gid and active_gid in gid_to_row:
+                tree_target = gid_to_row[active_gid]
+
+            if active_gid and active_gid != curr_init_gid:
+                if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+                    st.session_state['active_tree_gid'] = None
+                    st.session_state['_applied_url_tree_gid'] = None
+                    clear_tree_query_params()
+                    st.rerun()
+
+            render_tree_hierarchy(tree_target, df, initial_gid=curr_init_gid)
+
+    elif st.session_state.get('active_tree_gid') in gid_to_row:
+        dismiss_mobile_keyboard()
+        active_gid = st.session_state['active_tree_gid']
+        init_gid = st.session_state.get('initial_tree_gid') or active_gid
+        if active_gid != init_gid:
+            if st.button("🔄 초기 검색 인물로 복귀", use_container_width=True):
+                st.session_state['active_tree_gid'] = init_gid
+                st.session_state['_applied_url_tree_gid'] = None
+                clear_tree_query_params()
+                st.rerun()
+        render_tree_hierarchy(gid_to_row[active_gid], df, initial_gid=init_gid)
+
+elif active_mode == "단어 검색" and query_val.strip():
+    dismiss_mobile_keyboard()
+    term = query_val.strip()
+
+    if term in EXAM_GROUP_KEYWORDS:
+        search_terms_list = EXAM_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in EXAM_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (과거·문과·급제·사마·진사·생원 등 통합 검색)"
+    elif term in LITERARY_GROUP_KEYWORDS:
+        search_terms_list = LITERARY_GROUP_KEYWORDS
+        regex_pattern = "|".join(re.escape(k) for k in LITERARY_GROUP_KEYWORDS)
+        banner_term_label = f"'{term}' (문집·유집·유고·실기·서집록·저서·논문 통합 검색)"
+    else:
+        search_terms_list = [term]
+        regex_pattern = re.escape(term)
+        banner_term_label = f"'{term}'"
+
+    mask = (
+        df['한글 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 정리'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한글 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True) |
+        df['한문 약력 원문'].astype(str).str.contains(regex_pattern, case=False, na=False, regex=True)
+    )
+    word_matches = df[mask].reset_index(drop=True)
+    word_matches = sort_search_candidates_df(word_matches)
+    
+    if len(word_matches) == 0:
+        render_html(f"""
+        <div class="no-result-notice">
+            입력하신 단어 '{term}'을(를) 포함하고 있는 약력 기록이 없습니다.
+        </div>
+        """)
+    else:
+        render_html(f"""
+        <div class="multi-ancestor-banner">
+            📢 검색어 <span class="search-word-red">{banner_term_label}</span>을(를) 포함하는 약력을 가진 선조가 총 {len(word_matches):,}위 검색되었습니다. 아래 목록에서 선조를 선택하세요.
+        </div>
+        """)
+        chosen_idx = st.selectbox(
+            "조회할 선조를 선택하세요",
+            range(len(word_matches)),
+            format_func=lambda i: format_candidate_label(word_matches.iloc[i]),
+            label_visibility="collapsed"
+        )
+        chosen_row = word_matches.iloc[chosen_idx]
+        
+        render_person_result_card(chosen_row, search_term=search_terms_list)
+
+
+# =============================================================================
+# ⭐ 초기 화면 (검색어 입력 전) 분파도 이미지 표시 및 탭 선택 (한글 / 한문 / 나란히 비교)
+# =============================================================================
+_is_init_screen = False
+if active_mode == "인명 검색" and not query_val.strip():
+    _is_init_screen = True
+elif active_mode == "단어 검색" and not query_val.strip():
+    _is_init_screen = True
+elif active_mode == "계보 검색" and not query_val.strip() and not st.session_state.get('active_tree_gid') and not param_tree_gid:
+    _is_init_screen = True
+
+if _is_init_screen:
+    hangul_diagram_candidates = [
+        "branch_diagram_hangul.png",
+        "branch-diagram-hangul.png",
+        "한글분파도.png",
+        branch_diagram_file
+    ]
+    hanmoon_diagram_candidates = [
+        "branch_diagram_hanmoon.png",
+        "branch-diagram-hanmoon.png",
+        "한문분파도.png",
+        "branch diagram.png"
+    ]
+    
+    hangul_file = next((p for p in hangul_diagram_candidates if os.path.exists(p)), branch_diagram_file)
+    hanmoon_file = next((p for p in hanmoon_diagram_candidates if os.path.exists(p)), branch_diagram_file)
+
+    col_tab1, col_tab2, col_tab3 = st.columns(3)
+    
+    if "diagram_view_mode" not in st.session_state:
+        st.session_state["diagram_view_mode"] = "한글 분파도"
+
+    with col_tab1:
+        if st.button("한글 분파도", use_container_width=True):
+            st.session_state["diagram_view_mode"] = "한글 분파도"
+    with col_tab2:
+        if st.button("한문 분파도", use_container_width=True):
+            st.session_state["diagram_view_mode"] = "한문 분파도"
+    with col_tab3:
+        if st.button("나란히 비교", use_container_width=True):
+            st.session_state["diagram_view_mode"] = "나란히 비교"
+
+    current_mode = st.session_state.get("diagram_view_mode", "한글 분파도")
+
+    if current_mode == "한글 분파도":
+        if os.path.exists(hangul_file):
+            st.image(hangul_file, caption="한글 분파도 (확대/축소 가능)", use_container_width=True)
+        else:
+            st.warning("한글 분파도 이미지 파일을 찾을 수 없습니다.")
+    elif current_mode == "한문 분파도":
+        if os.path.exists(hanmoon_file):
+            st.image(hanmoon_file, caption="한문 분파도 (확대/축소 가능)", use_container_width=True)
+        else:
+            st.warning("한문 분파도 이미지 파일을 찾을 수 없습니다.")
+    else:
+        col_img1, col_img2 = st.columns(2)
+        with col_img1:
+            if os.path.exists(hangul_file):
+                st.image(hangul_file, caption="한글 분파도", use_container_width=True)
+        with col_img2:
+            if os.path.exists(hanmoon_file):
+                st.image(hanmoon_file, caption="한문 분파도", use_container_width=True)
+
+# =============================================================================
+# 6. 종중 주요 유적 및 문화재 안내
+# =============================================================================
+render_html("""
+<div class="heritage-sub-container">
+    <div class="heritage-sub-header">🏛️ 종중 주요 유적 및 문화재 안내</div>
+    <div class="heritage-sub-grid">
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">1. 영천 완귀정(경상북도 민속문화재 제20호) <span>↗</span></div>
+            <div class="h-card-desc">완귀 안증(1494~1553) 건립 | 경북 영천시 도남동</div>
+        </a>
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">2. 영천 육우당(육우당_六友堂) <span>↗</span></div>
+            <div class="h-card-desc">경상북도 영천시 도남동 566 (2012.09.17. 지정)</div>
+        </a>
+        <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" class="heritage-sub-card">
+            <div class="h-card-name">3. 청도 만회정(만회정_晩悔亭) <span>↗</span></div>
+            <div class="h-card-desc">경북 청도군 운문면 지촌리 907 (2026.02.19. 지정)</div>
+        </a>
+        <div class="heritage-sub-card">
+            <div class="h-card-name">4. 삼괴당(삼괴당_三槐堂)</div>
+            <div class="h-card-desc">광주안씨 문중 선조 강학 및 추모 유적</div>
+        </div>
+    </div>
+</div>
+""")
+
+# =============================================================================
+# 7. 하단 푸터 (Footer)
+# =============================================================================
+render_html("""
+<div style="text-align:center; padding:8px 4px 6px 4px; color:#ffffff; font-size:9.3pt; font-weight:400; border-top:1px solid #475569; margin-top:8px; line-height:1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
+    📚 데이터 출처: 2008년 발간 시직공파보 PDF파일 변환후 데이터베이스 구축(고위 기준 2,887명)<br>
+    &lt;연락처 안동수 010 5097 6403&gt;
+</div>
+""")
