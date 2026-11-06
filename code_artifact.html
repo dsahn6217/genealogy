@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>광주안씨 분파도 뷰어</title>
+    <!-- Tailwind CSS 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 아이콘 로드 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PWA Manifest 연동 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .pinch-zoom-container {
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- 상단 헤더 -->
+    <header class="bg-blue-900 border-b border-blue-800 shadow-lg sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-700 p-2 rounded-xl text-yellow-400 text-xl shadow-inner">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-white">廣州安氏 分派圖</h1>
+                    <p class="text-xs text-blue-200">광주안씨 대종회 인터랙티브 뷰어</p>
+                </div>
+            </div>
+
+            <!-- 탭 전환 및 홈 추가 버튼 그룹 -->
+            <div class="flex items-center space-x-2 w-full sm:w-auto justify-between sm:justify-end">
+                <div class="inline-flex rounded-xl bg-blue-950 p-1 border border-blue-700 shadow-inner">
+                    <button onclick="switchTab('hangul')" id="tab-hangul" class="px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all bg-yellow-500 text-slate-950 shadow">
+                        한글 분파도
+                    </button>
+                    <button onclick="switchTab('hanmoon')" id="tab-hanmoon" class="px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-blue-200 hover:text-white">
+                        한문 분파도
+                    </button>
+                    <button onclick="switchTab('compare')" id="tab-compare" class="px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all text-blue-200 hover:text-white">
+                        나란히 비교
+                    </button>
+                </div>
+
+                <!-- 홈 화면 추가 버튼 (PWA) -->
+                <button id="install-btn" onclick="installApp()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow flex items-center space-x-1.5 transition-all">
+                    <i class="fa-solid fa-arrow-down-to-bracket"></i>
+                    <span>홈에 추가</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 뷰어 영역 -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-2 sm:p-4 flex flex-col">
+
+        <!-- 단독 뷰어 (한글 / 한문) -->
+        <div id="single-view" class="flex-1 flex flex-col bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden relative min-h-[75vh]">
+            <!-- 툴바 -->
+            <div class="bg-slate-900/80 backdrop-blur px-4 py-2 border-b border-slate-800 flex justify-between items-center text-xs text-slate-400">
+                <span id="current-title"><i class="fa-solid fa-image text-blue-400 mr-1.5"></i> 한글 분파도 (확대/축소 가능)</span>
+                <div class="flex space-x-2">
+                    <button onclick="zoomImage(1.2)" class="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded-lg border border-slate-700"><i class="fa-solid fa-magnifying-glass-plus"></i> 확대</button>
+                    <button onclick="zoomImage(0.8)" class="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded-lg border border-slate-700"><i class="fa-solid fa-magnifying-glass-minus"></i> 축소</button>
+                    <button onclick="resetZoom()" class="bg-slate-800 hover:bg-slate-700 text-white px-2.5 py-1 rounded-lg border border-slate-700"><i class="fa-solid fa-rotate-right"></i> 초기화</button>
+                </div>
+            </div>
+
+            <!-- 이미지 컨테이너 -->
+            <div class="pinch-zoom-container flex-1 flex items-center justify-center p-4 relative">
+                <img id="main-image" src="branch_diagram_hangul.jpg" alt="광주안씨 분파도" 
+                     onerror="this.src='https://placehold.co/1200x1600/1e293b/ffffff?text=%EA%B4%91%EC%A3%BC%EC%95%88%EC%94%A8+%EB%B6%84%ED%8C%8C%EB%8F%84+(%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%A4%80%EB%B9%84%EC%A4%91)'; scale=1; updateZoom();"
+                     class="max-w-none transition-transform duration-200 origin-center cursor-grab active:cursor-grabbing select-none shadow-2xl rounded-lg">
+            </div>
+        </div>
+
+        <!-- 비교 뷰어 (한글 & 한문 나란히) -->
+        <div id="compare-view" class="hidden flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[75vh]">
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden">
+                <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 text-xs font-bold text-blue-300">한글 분파도</div>
+                <div class="pinch-zoom-container flex-1 flex items-center justify-center p-2 relative">
+                    <img src="branch_diagram_hangul.jpg" alt="한글 분파도" class="max-w-full h-auto object-contain rounded shadow" onerror="this.src='https://placehold.co/800x1000/1e293b/ffffff?text=Hangul+Diagram'">
+                </div>
+            </div>
+            <div class="bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl flex flex-col overflow-hidden">
+                <div class="bg-slate-900 px-4 py-2 border-b border-slate-800 text-xs font-bold text-yellow-300">한문 분파도</div>
+                <div class="pinch-zoom-container flex-1 flex items-center justify-center p-2 relative">
+                    <img src="branch_diagram_hanmoon.jpg" alt="한문 분파도" class="max-w-full h-auto object-contain rounded shadow" onerror="this.src='https://placehold.co/800x1000/1e293b/ffffff?text=Hanmoon+Diagram'">
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 하단 안내 바 -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-3 text-center text-xs text-slate-500">
+        <p>광주안씨 분파도 모바일 뷰어 • 안동수(玩龜公派) 편찬</p>
+    </footer>
+
+    <!-- JavaScript 로직 -->
+    <script>
+        let currentTab = 'hangul';
+        let scale = 1;
+        const img = document.getElementById('main-image');
+        const titleEl = document.getElementById('current-title');
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const singleView = document.getElementById('single-view');
+            const compareView = document.getElementById('compare-view');
+            
+            document.getElementById('tab-hangul').className = "px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all " + (tab === 'hangul' ? "bg-yellow-500 text-slate-950 shadow" : "text-blue-200 hover:text-white");
+            document.getElementById('tab-hanmoon').className = "px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all " + (tab === 'hanmoon' ? "bg-yellow-500 text-slate-950 shadow" : "text-blue-200 hover:text-white");
+            document.getElementById('tab-compare').className = "px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-lg transition-all " + (tab === 'compare' ? "bg-yellow-500 text-slate-950 shadow" : "text-blue-200 hover:text-white");
+
+            if (tab === 'compare') {
+                singleView.classList.add('hidden');
+                compareView.classList.remove('hidden');
+            } else {
+                compareView.classList.add('hidden');
+                singleView.classList.remove('hidden');
+                resetZoom();
+                if (tab === 'hangul') {
+                    img.src = 'branch_diagram_hangul.jpg';
+                    titleEl.innerHTML = '<i class="fa-solid fa-image text-blue-400 mr-1.5"></i> 한글 분파도 (확대/축소 가능)';
+                } else {
+                    img.src = 'branch_diagram_hanmoon.jpg';
+                    titleEl.innerHTML = '<i class="fa-solid fa-image text-yellow-400 mr-1.5"></i> 한문 분파도 (확대/축소 가능)';
+                }
+            }
+        }
+
+        function zoomImage(factor) {
+            scale *= factor;
+            if (scale < 0.5) scale = 0.5;
+            if (scale > 5) scale = 5;
+            updateZoom();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            updateZoom();
+        }
+
+        function updateZoom() {
+            img.style.transform = `scale(${scale})`;
+        }
+
+        // PWA 설치 프롬프트 처리
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-btn').classList.remove('hidden');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('install-btn').classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert("브라우저 메뉴(점 세 개 또는 공유 버튼)에서 [홈 화면에 추가]를 선택하시면 앱처럼 사용하실 수 있습니다.");
+            }
+        }
+    </script>
+</body>
+</html>
