@@ -679,7 +679,6 @@ div[role="option"] * {
     border-radius: 8px;
     border: 1px solid #bfdbfe;
 }
-/* ⭐ 모든 족보 페이지 표시: '시직공파보' 줄바꿈 '1권 433p 5단' 형식 + 글자크기 1p 축소 */
 .result-book-loc {
     font-size: 9.5pt !important;
     font-weight: 800 !important;
@@ -693,7 +692,6 @@ div[role="option"] * {
     flex-shrink: 0 !important;
 }
 
-/* 한글 약력 컨테이너 */
 .meta-para-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -721,7 +719,6 @@ div[role="option"] * {
     color: #1e293b;
 }
 
-/* 한문 약력 원문 전용 컨테이너 */
 .hanmun-raw-container {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -755,9 +752,6 @@ div[role="option"] * {
     border: 1px solid #f87171;
 }
 
-/* ============================================================================
-   ⭐ 계보도 검색 결과창 스타일
-   ============================================================================ */
 .tree-diagram-wrapper {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -2527,7 +2521,7 @@ elif active_mode == "단어 검색" and query_val.strip():
 
 
 # =============================================================================
-# ⭐ 초기 화면 (검색어 입력 전) 분파도 이미지 표시 및 탭 선택 (한글 / 한문 / 나란히 비교)
+# ⭐ 초기 화면 (검색어 입력 전) 분파도 이미지 표시 및 탭 선택 (한글 / 한문 / 나란히 비교) - 수정 완료
 # =============================================================================
 _is_init_screen = False
 if active_mode == "인명 검색" and not query_val.strip():
@@ -2538,17 +2532,19 @@ elif active_mode == "계보 검색" and not query_val.strip() and not st.session
     _is_init_screen = True
 
 if _is_init_screen:
+    # 한글 분파도 파일 후보군 (한글 파일명 우선 매칭)
     hangul_diagram_candidates = [
         "branch_diagram_hangul.png",
         "branch-diagram-hangul.png",
         "한글분파도.png",
-        branch_diagram_file
+        "branch diagram.png"
     ]
+    # 한문 분파도 파일 후보군 (한문 파일명 우선 매칭)
     hanmoon_diagram_candidates = [
         "branch_diagram_hanmoon.png",
         "branch-diagram-hanmoon.png",
         "한문분파도.png",
-        "branch diagram.png"
+        branch_diagram_file
     ]
     
     hangul_file = next((p for p in hangul_diagram_candidates if os.path.exists(p)), branch_diagram_file)
