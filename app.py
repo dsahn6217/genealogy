@@ -289,32 +289,7 @@ def enable_image_lightbox():
   )
 
 
-# ⭐ PDF 파일을 Base64로 인코딩하여 화면 내 전자책 뷰어로 임베딩하는 함수
-def render_pdf_embed(pdf_path, download_label, file_name):
-  if os.path.exists(pdf_path):
-    with open(pdf_path, "rb") as f:
-      pdf_bytes = f.read()
-
-    # 인쇄 및 내려받기 버튼
-    st.download_button(
-        label=download_label,
-        data=pdf_bytes,
-        file_name=file_name,
-        mime="application/pdf",
-        use_container_width=True,
-    )
-
-    base64_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
-    pdf_html = f"""
-        <iframe 
-            src="data:application/pdf;base64,{base64_pdf}" 
-            width="100%" 
-            height="850" 
-            type="application/pdf"
-            style="border: 2px solid #cbd5e1; border-radius: 8px; margin-top: 8px;">
-        </iframe>
-        """
-    st.markdown(pdf_html, unsafe_allow_html=True)
+render_pdf_embed
   else:
     st.info(
         f"💡 안내: 현재 저장소에 `{pdf_path}` 파일이 준비되어 있지 않습니다."
