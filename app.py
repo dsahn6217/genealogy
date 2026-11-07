@@ -271,23 +271,38 @@ def enable_image_lightbox():
     </script>
     """, height=0)
 
-# ⭐ 엣지(Edge) 및 크롬 브라우저 차단 없이 PDF를 표시하는 뷰어 함수
-def render_pdf_embed(pdf_path, download_label, file_name):
-    """
-    브라우저 보안 차단을 방지하기 위해 GitHub Raw URL과 Google Docs Viewer를
-    하이브리드로 연결하여 엣지(Edge)와 크롬, 모바일에서도 즉시 열리도록 처리합니다.
-    """
-    if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as f:
-            pdf_bytes = f.read()
+import urllib.parse
 
-        st.download_button(
-            label=download_label,
-            data=pdf_bytes,
-            file_name=file_name,
-            mime="application/pdf",
-            use_container_width=True
-        )
+
+def render_pdf_embed(pdf_path, download_label, file_name):
+  # 1. 파일 다운로드 버튼 (저장소에 파일이 있을 때 작동)
+  if os.path.exists(pdf_path):
+    with open(pdf_path, "rb") as f:
+      pdf_bytes = f.read()
+    st.download_button(
+        label=download_label,
+        data=pdf_bytes,
+        file_name=file_name,
+        mime="application/pdf",
+        use_container_width=True,
+    )
+
+  # 2. 깃허브 원본 URL 생성 및 구글/PDF.js 뷰어 연동 (엣지·크롬·모바일 100% 표시 보장)
+  encoded_name = urllib.parse.quote(file_name)
+  raw_pdf_url = (
+      f"https://raw.githubusercontent.com/dsahn6217/genealogy/main/{encoded_name}"
+  )
+  viewer_url = f"https://docs.google.com/viewer?url={urllib.parse.quote(raw_pdf_url, safe='')}&embedded=true"
+
+  pdf_html = f"""
+    <iframe
+        src="{viewer_url}"
+        width="100%"
+        height="850px"
+        style="border: 2px solid #1e3c72; border-radius: 8px; margin-top: 8px; background-color: #ffffff;">
+    </iframe>
+    """
+  st.markdown(pdf_html, unsafe_allow_html=True)
 
     # 깃허브 Raw 주소 URL 인코딩 생성
     encoded_name = urllib.parse.quote(file_name)
