@@ -15,10 +15,10 @@ ICON_FILE = "icon.png"
 DB_FILE = "genealogy.db"
 DATA_FILE = "genealogy.xlsx"
 
-# 유적지 소개 PDF 파일 경로 및 깃허브 실물 사진 경로
+# 깃허브 저장소 업로드 PDF 및 실물 사진 파일 경로
 PDF_HOYEONSA = "호연사(서원) 소개문.pdf"
 PDF_CHEONGJE = "영천 청제 및 청제비 소개문.pdf"
-HOYEONSA_IMG_URL = "https://raw.githubusercontent.com/dsahn6217/genealogy/main/%ED%98%B8%EC%97%B0%EC%82%AC%20%EC%98%9B%20%EC%82%AC%EC%A7%84.png"
+HOYEONSA_IMG_URL = "https://github.com/dsahn6217/genealogy/blob/main/%ED%98%B8%EC%97%B0%EC%82%AC%20%EC%98%9B%20%EC%82%AC%EC%A7%84.png?raw=true"
 
 # 저장소 업로드 배경 이미지 파일 탐색
 BG_PATHS = [
@@ -81,7 +81,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ⭐ 이미지 Base64 인코딩을 @st.cache_resource로 메모리에 영구 캐싱하여 디스크 재읽기 제거
+# ⭐ 이미지 Base64 인코딩을 @st.cache_resource로 메모리에 영구 캐싱하여 부팅 시 디스크 재읽기 제거
 @st.cache_resource(show_spinner=False)
 def get_base64_image(image_path):
     if image_path and os.path.exists(image_path):
@@ -97,7 +97,8 @@ bg_b64 = get_base64_image(bg_file) if bg_file else None
 
 def render_html(html_content):
     """
-    마크다운 파서가 4칸 이상의 들여쓰기 공백을 코드 블록으로 오인하는 현상을 방지합니다.
+    마크다운 파서가 4칸 이상의 들여쓰기 공백을 코드 블록(<pre><code>)으로 오인하는 현상을
+    원천 방지하기 위해 모든 줄의 앞뒤 공백을 제거하고 순수 HTML로 안전하게 렌더링합니다.
     """
     if not html_content:
         return
@@ -105,8 +106,38 @@ def render_html(html_content):
     clean_html = chr(10).join(clean_lines)
     st.markdown(clean_html, unsafe_allow_html=True)
 
+def render_pdf_embed(pdf_path, download_label, file_name):
+    """
+    ⭐ 엣지(Edge)/크롬/모바일 브라우저 차단 없이 100% 열리는 PDF 뷰어 및 다운로드 함수
+    """
+    if os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            pdf_bytes = f.read()
+        st.download_button(
+            label=download_label,
+            data=pdf_bytes,
+            file_name=file_name,
+            mime="application/pdf",
+            use_container_width=True
+        )
+
+    encoded_name = urllib.parse.quote(file_name)
+    raw_pdf_url = f"https://raw.githubusercontent.com/dsahn6217/genealogy/main/{encoded_name}"
+    viewer_url = f"https://docs.google.com/viewer?url={urllib.parse.quote(raw_pdf_url, safe='')}&embedded=true"
+
+    render_html(f"""
+    <iframe
+        src="{viewer_url}"
+        width="100%"
+        height="850px"
+        style="border: 2px solid #1e3c72; border-radius: 8px; margin-top: 6px; margin-bottom: 10px; background-color: #ffffff;">
+    </iframe>
+    """)
+
 def dismiss_mobile_keyboard():
-    """모바일 가상 키보드 자동 숨김 함수"""
+    """
+    ⭐ 검색 후 스마트폰·태블릿 가상 자판(키보드)을 자동으로 숨기는 함수
+    """
     render_html(
         '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" '
         'style="display:none;width:0;height:0;" '
@@ -115,7 +146,9 @@ def dismiss_mobile_keyboard():
     )
 
 def enable_image_lightbox():
-    """모바일/PC 공용 대형 딥 줌 라이트박스 뷰어"""
+    """
+    ⭐ 모바일/PC 공용 대형 딥 줌(Deep Zoom & Pan) 라이트박스 뷰어
+    """
     components.html("""
     <script>
     (function() {
@@ -270,54 +303,6 @@ def enable_image_lightbox():
     })();
     </script>
     """, height=0)
-
-import urllib.parse
-
-
-def render_pdf_embed(pdf_path, download_label, file_name):
-  # 1. 파일 다운로드 버튼 (저장소에 파일이 있을 때 작동)
-  if os.path.exists(pdf_path):
-    with open(pdf_path, "rb") as f:
-      pdf_bytes = f.read()
-    st.download_button(
-        label=download_label,
-        data=pdf_bytes,
-        file_name=file_name,
-        mime="application/pdf",
-        use_container_width=True,
-    )
-
-  # 2. 깃허브 원본 URL 생성 및 구글/PDF.js 뷰어 연동 (엣지·크롬·모바일 100% 표시 보장)
-  encoded_name = urllib.parse.quote(file_name)
-  raw_pdf_url = (
-      f"https://raw.githubusercontent.com/dsahn6217/genealogy/main/{encoded_name}"
-  )
-  viewer_url = f"https://docs.google.com/viewer?url={urllib.parse.quote(raw_pdf_url, safe='')}&embedded=true"
-
-  pdf_html = f"""
-    <iframe
-        src="{viewer_url}"
-        width="100%"
-        height="850px"
-        style="border: 2px solid #1e3c72; border-radius: 8px; margin-top: 8px; background-color: #ffffff;">
-    </iframe>
-    """
-  st.markdown(pdf_html, unsafe_allow_html=True)
-
-    # 깃허브 Raw 주소 URL 인코딩 생성
-    encoded_name = urllib.parse.quote(file_name)
-    raw_pdf_url = f"https://raw.githubusercontent.com/dsahn6217/genealogy/main/{encoded_name}"
-    viewer_url = f"https://docs.google.com/viewer?embedded=true&url={raw_pdf_url}"
-
-    pdf_html = f'''
-        <iframe 
-            src="{viewer_url}" 
-            width="100%" 
-            height="850px" 
-            style="border: 2px solid #cbd5e1; border-radius: 8px; margin-top: 8px;">
-        </iframe>
-    '''
-    st.markdown(pdf_html, unsafe_allow_html=True)
 
 def get_query_param(key):
     try:
@@ -575,6 +560,15 @@ div[data-testid="stTextInput"] input::placeholder {
     line-height: 46px !important;
     vertical-align: middle !important;
 }
+div[data-testid="stTextInput"] input::-webkit-input-placeholder {
+    color: #cbd5e1 !important;
+    -webkit-text-fill-color: #cbd5e1 !important;
+    font-size: 9.6pt !important;
+    font-weight: 400 !important;
+    opacity: 1 !important;
+    line-height: 46px !important;
+    vertical-align: middle !important;
+}
 
 .no-result-notice {
     width: 100% !important;
@@ -647,6 +641,17 @@ div[data-testid="stSelectbox"] div[data-baseweb="select"] span {
     font-weight: 800 !important;
     color: #0f172a !important;
     line-height: 1.4 !important;
+}
+ul[data-testid="stSelectboxVirtualDropdown"] li,
+ul[data-testid="stSelectboxVirtualDropdown"] li *,
+div[role="listbox"] li,
+div[role="listbox"] li *,
+div[role="option"],
+div[role="option"] * {
+    font-size: 11.5pt !important;
+    font-weight: 800 !important;
+    color: #0f172a !important;
+    line-height: 1.45 !important;
 }
 
 .result-card {
@@ -1068,7 +1073,9 @@ a.tree-node-female {
 }
 
 @media (max-width: 768px) {
-    html, body, #root {
+    html,
+    body,
+    #root {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
@@ -1101,6 +1108,13 @@ a.tree-node-female {
         margin-right: auto !important;
         padding-left: 6px !important;
         padding-right: 6px !important;
+        box-sizing: border-box !important;
+    }
+
+    [data-testid="stMarkdownContainer"],
+    .stMarkdown {
+        width: 100% !important;
+        max-width: 100% !important;
         box-sizing: border-box !important;
     }
 
@@ -1139,7 +1153,7 @@ a.tree-node-female {
 render_html(CUSTOM_CSS)
 
 # =============================================================================
-# 2. 데이터 로드 및 초고속(0.05초) 메모리 인덱싱
+# 2. 데이터 로드 및 초고속(0.05초) 메모리 인덱싱 (@st.cache_resource 영구 공유)
 # =============================================================================
 VOL_ORDER_MAP = {"A": 1, "B": 2, "C": 3, "D": 4}
 
@@ -2113,83 +2127,104 @@ def render_bunpado_view():
     </div>
     """)
 
-def render_cultural_heritage_view():
+def render_hoyeonsa_section():
     """
-    문화재 조회: 호연사 및 청제 PDF 뷰어를 상단에 배치하고 문중 문화유산 상세 안내
+    ⭐ 호연사(호연서원) 실물 사진 및 소개문 PDF 전자책 뷰어 출력
     """
     render_html("""
-    <div class="result-card">
+    <div class="result-card" style="margin-top:8px;">
         <div class="result-card-header">
             <div class="result-name-big">
-                <span>🏛️ 광주안씨 완귀공파 종중 문화재 및 유적 상세</span>
+                <span>🏛️ 영천 호연사(虎淵祠) 및 호연서원 유허비각</span>
             </div>
-            <div class="result-book-loc">국가유산청·지자체<br>등록 및 지정 유산</div>
+            <div class="result-book-loc">완귀공파 종중<br>주요 유적지</div>
+        </div>
+        <div class="meta-para-container" style="margin-bottom:4px;">
+            <div class="meta-para-value">
+                • <b>당호</b> : 호연서원(虎淵書院) &nbsp;|&nbsp; <b>묘우</b> : 상청사(尙淸祠) &nbsp;|&nbsp; <b>유적</b> : 유허비각(遺墟碑閣)<br>
+                • 완귀 안증(安嶒) 선생의 학덕을 기리기 위해 숙종 12년(1686) 사림에서 창건하여 위패를 모셨던 유서 깊은 서원 유적지입니다.
+            </div>
         </div>
     </div>
     """)
-
-    # 1. 호연사(호연서원) 소개 및 PDF 뷰어
-    st.markdown("### 1. 영천 호연사(虎淵祠) 및 호연서원 유허비각")
-    st.image(
-        HOYEONSA_IMG_URL,
-        caption="영천 호연서원 유허비각(遺墟碑閣) 실물 전경",
-        use_container_width=True
-    )
-    st.markdown("""
-    > **당호** : 호연서원(虎淵書院) · **묘우** : 상청사(尙淸祠) · **유적** : 유허비각(遺墟碑閣)  
-    > 완귀 안증(安潧) 선생의 학덕과 도학을 기리기 위해 숙종 12년(1686) 사림에서 창건하여 위패를 모셨던 유서 깊은 서원 터입니다.
-    """)
+    st.image(HOYEONSA_IMG_URL, caption="영천 호연서원 유허비각(遺墟碑閣) 전경", use_container_width=True)
     render_pdf_embed(
         pdf_path=PDF_HOYEONSA,
         download_label="📥 호연사(서원) 소개문 전문 PDF 내려받기 / 인쇄",
         file_name="호연사(서원) 소개문.pdf"
     )
 
-    st.write("---")
+def render_cultural_heritage_view():
+    """
+    ⭐ 문화재 조회: 호연사(서원) PDF 뷰어 + 완귀정·육우당·만회정 상세 안내
+    """
+    render_hoyeonsa_section()
 
-    # 2. 영천 청제 및 청제비 소개 및 PDF 뷰어
-    st.markdown("### 2. 영천 청제(菁堤) 및 청제비(菁堤碑)")
-    st.markdown("""
-    > **대한민국 국보 제351호** : 1,500년 고대 신라의 수리시설이자 도동 광주안씨 세거지와 선조 묘역의 터전입니다.
-    """)
-    render_pdf_embed(
-        pdf_path=PDF_CHEONGJE,
-        download_label="📥 영천 청제 및 청제비 소개문 전문 PDF 내려받기 / 인쇄",
-        file_name="영천 청제 및 청제비 소개문.pdf"
-    )
+    if os.path.exists(PDF_CHEONGJE):
+        render_html("""
+        <div class="result-card" style="margin-top:8px;">
+            <div class="result-card-header">
+                <div class="result-name-big">
+                    <span>🏛️ 영천 청제(菁堤) 및 청제비(菁堤碑) 소개문</span>
+                </div>
+                <div class="result-book-loc">국가지정 보물<br>제517호</div>
+            </div>
+        </div>
+        """)
+        render_pdf_embed(
+            pdf_path=PDF_CHEONGJE,
+            download_label="📥 영천 청제 및 청제비 소개문 PDF 내려받기 / 인쇄",
+            file_name="영천 청제 및 청제비 소개문.pdf"
+        )
 
-    st.write("---")
-
-    # 3. 기타 완귀정, 육우당, 만회정 요약 안내
     render_html("""
-    <div class="meta-para-container" style="margin-top:10px;">
-        <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
-            <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
-                3. 영천 완귀정 (永川 玩龜亭) — 경상북도 민속문화재 제20호
+    <div class="result-card">
+        <div class="result-card-header">
+            <div class="result-name-big">
+                <span>🏛️ 광주안씨 완귀공파 종중 문화재 및 유적 상세</span>
             </div>
-            <div class="meta-para-value">
-                • <b>소재지</b> : 경상북도 영천시 도남동 568.<br>
-                • <b>건립 선조</b> : 24세 파조 완귀공(玩龜公) 휘 증_嶒 (1494~1553).<br>
-                • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
-            </div>
+            <div class="result-book-loc">국가유산청<br>등록·지정 유산</div>
         </div>
-        <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
-            <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
-                4. 영천 육우당 (永川 六友堂) — 경상북도 문화유산자료
+        <div class="meta-para-container">
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    1. 영천 완귀정 (永川 玩龜亭) — 경상북도 민속문화재 제20호
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 568.<br>
+                    • <b>건립 선조</b> : 24세 파조 완귀공(玩龜公) 휘 증_嶒 (1494~1553).<br>
+                    • <b>유래 및 역사</b> : 중종 35년(1540) 사마시에 합격하여 형조원외랑에 보임되었으나, 인종 1년(1545) 을사사화의 기미를 미리 내다보고 관직을 버린 뒤 영천 호계(壺溪) 위에 건립한 정자입니다. 남명 조식(曺植)의 사운시와 아계 이산해(李山海)의 절구시가 전해집니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=2443700200000#audioDiv" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
             </div>
-            <div class="meta-para-value">
-                • <b>소재지</b> : 경상북도 영천시 도남동 566 (2012.09.17. 지정).<br>
-                • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    2. 영천 육우당 (永川 六友堂) — 경상북도 문화유산자료
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 영천시 도남동 566 (2012.09.17. 지정).<br>
+                    • <b>유래 및 역사</b> : 완귀정 인근 도남동에 자리한 광주안씨 문중의 유서 깊은 재사 및 강학 공간으로, 선조들의 학문 수양과 문중 강학 전통을 간직하고 있습니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=Y&ccbaCpno=3413705940000" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
             </div>
-        </div>
-        <div class="meta-para-item">
-            <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
-                5. 청도 만회정 (淸道 晩悔亭) — 경상북도 문화유산자료 제722호
+            <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    3. 청도 만회정 (淸道 晩悔亭) — 경상북도 문화유산자료 제722호
+                </div>
+                <div class="meta-para-value">
+                    • <b>소재지</b> : 경상북도 청도군 운문면 지촌리 907 (2026.02.19. 지정).<br>
+                    • <b>건립 관련 선조</b> : 32세 만회옹(晩悔翁) 휘 경시_景時 (1716~1797, 수직 통정대부).<br>
+                    • <b>유래 및 역사</b> : 효우와 문장으로 당대 사림의 추앙을 받으신 만회옹 선조의 유업을 기리는 정자 유적입니다.<br>
+                    • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+                </div>
             </div>
-            <div class="meta-para-value">
-                • <b>소재지</b> : 경상북도 청도군 운문면 지촌리 907 (2026.02.19. 지정).<br>
-                • <b>건립 관련 선조</b> : 32세 만회옹(晩悔翁) 휘 경시_景時 (1716~1797).<br>
-                • <a href="https://www.heritage.go.kr/heri/cul/culSelectDetail.do?pageNo=1_1_1_1&sngl=N&ccbaAsno=0007220000000&ccbaCpno=3412603100001" target="_blank" style="color:#1d4ed8; font-weight:800;">🔗 국가유산포털 상세 보기 ↗</a>
+            <div class="meta-para-item">
+                <div style="font-weight:800; color:#14532d; font-size:11.5pt; margin-bottom:3px;">
+                    4. 삼괴당 (三槐堂)
+                </div>
+                <div class="meta-para-value">
+                    • <b>유래 및 역사</b> : 광주안씨 완귀공파 문중 선조들의 강학 및 추모 유적으로 전승되는 전통 당호입니다.
+                </div>
             </div>
         </div>
     </div>
@@ -2210,9 +2245,9 @@ def render_memorial_writings_view():
                     1. 파조 완귀공(휘 증_嶒, 24세) 추모 시문 및 묘갈명·행장
                 </div>
                 <div class="meta-para-value">
-                    • <b>완귀정 창건과 은거</b> : 중종 경자(1540) 사마시 합격 후 형조원외랑에 제수되었으나, 을사사화의 기미를 예견하고 영천 호계 위에 완귀정(玩龜亭)을 짓고 은거하셨습니다.<br>
-                    • <b>당대 현달의 추모 시문</b> : 남명 조식 선생의 사운시와 아계 이산해 선생의 절구시가 『설서 완귀선생 유사』에 전해집니다.<br>
-                    • <b>묘갈명 및 행장</b> : 신재 주세붕 선생이 구 묘갈명을 찬술하고, 병와 이형상 선생이 개찬하였으며, 순암 안정복 선생이 행장을 찬술하였습니다.
+                    • <b>완귀정 창건과 은거</b> : 중종 경자(1540) 사마시 합격 후 형조원외랑에 제수되었으나, 인종 원년(1545) 을사사화의 기미를 예견하고 영천 호계 위에 완귀정(玩龜亭)을 짓고 은거하셨습니다.<br>
+                    • <b>당대 현달의 추모 시문</b> : 남명 조식(曺植) 선생의 사운시(四韻詩)와 아계 이산해(李山海) 선생의 절구시(絶句詩)가 『설서 완귀선생 유사(說書 完龜先生 遺事)』에 전해집니다.<br>
+                    • <b>묘갈명 및 행장</b> : 신재 주세붕(周世鵬) 선생이 구 묘갈명을 찬술하고, 병와 이형상(李衡祥) 선생이 묘갈명을 개찬하였으며, 철종 계해(1863) 중건 시 정헌 이종상(李種祥) 선생이 비음기를 짓고 종인 순암 안정복(安鼎福) 선생이 행장을 찬술하였습니다.
                 </div>
             </div>
             <div class="meta-para-item" style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px dashed #cbd5e1;">
@@ -2220,10 +2255,11 @@ def render_memorial_writings_view():
                     2. 역대 주요 선조 묘갈명·행장·유집 찬술 기록
                 </div>
                 <div class="meta-para-value">
-                    • <b>27세 감찰공(휘 전_琠)</b> : 인조 계해(1623) 현량 천거로 사헌부 감찰 역임, 병와 이형상 선생 찬술.<br>
-                    • <b>28세 주부공(휘 명한_鳴漢)</b> : 사옹원 주부, 오천 정환국 찬술.<br>
-                    • <b>30세 성재공(휘 후정_后靜)</b> : 숙종 기묘(1699) 문과 급제, 성균관 학유·학록·학정 역임, 실기(實記) 전승.<br>
-                    • <b>32세 신암공(휘 경열_景說)</b> : 영조 병자(1756) 문과 급제, 사헌부 감찰 역임, 척암 김도화 선생 찬술.
+                    • <b>27세 감찰공(휘 전_琠)</b> : 인조 계해(1623) 현량 천거로 사헌부 감찰을 역임하셨으며, 병와 이형상(李衡祥) 선생이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 주부공(휘 명한_鳴漢)</b> : 사옹원 주부를 역임하시고 손자 성재공(후정)의 귀함으로 통정대부 장례원 판결사에 증직되셨으며, 오천 정환국(鄭煥國)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>28세 휘 시한_蓍漢</b> : 광주 이채진(李采鎭)이 묘갈명을 찬술하였습니다.<br>
+                    • <b>30세 성재공(휘 후정_后靜)</b> : 숙종 기묘(1699) 문과 급제 후 성균관 학유·학록·학정을 역임하셨으며, 실기(實記) 상·하 두 책이 전해집니다.<br>
+                    • <b>32세 신암공(휘 경열_景說)</b> : 영조 병자(1756) 문과 급제 후 성균관 전적·사헌부 감찰을 역임하셨으며, 척암 김도화(金道和) 선생이 묘갈명을 찬술하였습니다.
                 </div>
             </div>
             <div class="meta-para-item">
@@ -2231,7 +2267,7 @@ def render_memorial_writings_view():
                     3. 문집·유고·비문 상세 검색 안내
                 </div>
                 <div class="meta-para-value">
-                    • 상단 검색 방식에서 <b>[단어 검색]</b>을 선택하시고 <code>묘갈</code>, <code>행장</code>, <code>유사</code>, <code>문집</code>, <code>실기</code> 등을 입력하시면 모든 선조의 추모 기록을 즉시 열람하실 수 있습니다.
+                    • 상단 검색 방식에서 <b>[단어 검색]</b>을 선택하시고 <code>묘갈</code>, <code>행장</code>, <code>유사</code>, <code>문집</code>, <code>실기</code> 등을 입력하시면 원문과 한글 번역문이 수록된 모든 선조의 추모 기록을 즉시 열람하실 수 있습니다.
                 </div>
             </div>
         </div>
@@ -2271,7 +2307,7 @@ render_html("""
 
 if df is None:
     st.error(f"데이터 로드 오류: {load_msg}")
-    st.info(f"파일 이름이 `{DB_FILE}` 또는 `{DATA_FILE}`인지 확인해 주시기 바랍니다.")
+    st.info("파일 이름이 `genealogy.db` 또는 `genealogy.xlsx`인지 확인해 주시기 바랍니다.")
     st.stop()
 
 param_tree_gid = get_query_param("tree_gid")
@@ -2549,7 +2585,7 @@ elif active_mode == "단어 검색" and query_val.strip():
         render_person_result_card(chosen_row, search_term=search_terms_list)
 
 # =============================================================================
-# ⭐ 초기 화면 (검색어 입력 전) 한글/한문 분파도 선택 및 이미지 표시
+# ⭐ 초기 화면 (검색어 입력 전) 한글/한문 분파도 선택 + 호연사 소개문 즉시 표시
 # =============================================================================
 _is_init_screen = False
 if active_mode == "인명 검색" and not query_val.strip():
@@ -2596,8 +2632,11 @@ if _is_init_screen:
         except Exception:
             pass
 
+    # 첫 화면 분파도 바로 아래에 호연사(서원) 실물 사진과 PDF 소개문 즉시 표시
+    render_hoyeonsa_section()
+
 # =============================================================================
-# 6. 종중 주요 유적 및 문화재 안내 하단 카드
+# 6. 종중 주요 유적 및 문화재 안내
 # =============================================================================
 render_html("""
 <div class="heritage-sub-container">
